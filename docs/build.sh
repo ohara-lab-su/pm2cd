@@ -6,7 +6,7 @@ DOCS_DIR="$SCRIPT_DIR"
 ROOT_DIR="$(cd "$DOCS_DIR/.." && pwd)"
 SRC_DIR="$ROOT_DIR/src"
 
-PKG_NAME="cobotta2"   # パッケージ名を明示
+PKG_NAME="pm2cd"   # パッケージ名を明示
 
 export PYTHONPATH="$SRC_DIR:${PYTHONPATH:-}"
 
