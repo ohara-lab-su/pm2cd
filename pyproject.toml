@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools>=71.0", "coloredlogs"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rmc_dft"
+version = "0.6.1"
+
+description = "rmc_dft is a Python package for performing Reverse Monte Carlo modeling and ab initio molecular dynamics / relaxation using VASP code."
+authors = [
+    { name = "Kengo NAKADA", email = "kengo.nakada@email.com" },
+    { name = "Kentaro Kobayashi", email = "kobayashi@mat.shimane-u.ac.jp" }
+]
+readme = "README.md"
+# requires-python = ">=3.8"
+requires-python = ">=3.10"
+dependencies = [
+    # my-modules
+    "x_logger",
+    "packmol_util",
+    # fnc
+    "pymatgen",
+    # basic
+    "dataclasses",
+    "coloredlogs",
+    "colorlog",
+    "pytest",
+    "pytest-asyncio",
+    "pyyaml",
+    "toml",
+    # "grpcio",
+    "nest_asyncio",
+    # pages
+    "sphinx",
+    "myst-parser",
+    "sphinx-autobuild",
+    "sphinx-rtd-theme",
+    "sphinxcontrib-napoleon",
+    "linkify-it-py"
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+
+# ここでpytestのiniと同じようにオプションが書ける
+# 例えばテストマーク、フィルタ、カバレッジなども追記可能
+
+[tool.black]
+line-length = 88
+
+[tool.isort]
+profile = "black"
