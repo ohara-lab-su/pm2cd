@@ -6,37 +6,38 @@ from .errors import CommunicationError
 
 
 class Communication:
-    """TCP/IPによる1行単位の通信を担当する通信層。
+    """PMシリーズ用のTCP通信層。
 
-    接続、切断、送信、受信をこのクラスだけで完結させる。
-    コマンドと応答の区切り文字は装置仕様に合わせてCR+LFを既定とする。
+    TCPソケットの生成、接続、CR+LF単位の送受信、切断までをこのクラス内で
+    完結させる。外部の通信オブジェクトや別バックエンドは使用しない。
     """
 
     def __init__(
         self,
         ip_address: str,
         port: int = 7777,
-        timeout: float = 3.0,
+        timeout_sec: float = 3.0,
         encoding: str = "ascii",
-        line_end: str = "\r\n",
     ):
+        if not isinstance(ip_address, str):
+            raise TypeError("ip_addressはstrで指定してください")
         if not ip_address:
             raise ValueError("ip_addressは空にできません")
-        if not 1 <= port <= 65535:
+        if not isinstance(port, int):
+            raise TypeError("portはintで指定してください")
+        if port < 1 or port > 65535:
             raise ValueError("portは1から65535の範囲で指定してください")
-        if timeout <= 0:
-            raise ValueError("timeoutは0より大きい値を指定してください")
-        if not line_end:
-            raise ValueError("line_endは空にできません")
+        if timeout_sec <= 0:
+            raise ValueError("timeout_secは0より大きい値を指定してください")
 
         self.ip_address = ip_address
         self.port = port
-        self.timeout = timeout
+        self.timeout_sec = timeout_sec
         self.encoding = encoding
-        self.line_end = line_end
 
         self._socket: Optional[socket.socket] = None
         self._receive_buffer = bytearray()
+        self._delimiter = b"\r\n"
         self._lock = threading.RLock()
 
     @property
@@ -44,97 +45,118 @@ class Communication:
         return self._socket is not None
 
     def connect(self) -> None:
-        """TCP接続を確立する。既に接続済みなら何もしない。"""
         with self._lock:
             if self._socket is not None:
                 return
+
             try:
                 sock = socket.create_connection(
                     (self.ip_address, self.port),
-                    timeout=self.timeout,
+                    timeout=self.timeout_sec,
                 )
-                sock.settimeout(self.timeout)
-                self._socket = sock
+                sock.settimeout(self.timeout_sec)
             except OSError as exc:
                 raise CommunicationError(
-                    f"TCP接続に失敗しました: {self.ip_address}:{self.port}: {exc}"
+                    f"TCP接続に失敗しました: {self.ip_address}:{self.port}"
                 ) from exc
 
+            self._socket = sock
+            self._receive_buffer.clear()
+
     def disconnect(self) -> None:
-        """TCP接続を切断する。"""
         with self._lock:
             sock = self._socket
             self._socket = None
             self._receive_buffer.clear()
+
             if sock is None:
                 return
+
             try:
                 sock.shutdown(socket.SHUT_RDWR)
             except OSError:
                 pass
-            finally:
-                sock.close()
 
-    close = disconnect
+            try:
+                sock.close()
+            except OSError as exc:
+                raise CommunicationError("TCP切断に失敗しました") from exc
 
     def send(self, command: str) -> None:
-        """コマンドをCR+LF付きで送信する。"""
         if not isinstance(command, str):
             raise TypeError("commandはstrで指定してください")
-        if self.line_end in command:
-            raise ValueError("commandに改行コードを含めないでください")
+        if "\r" in command or "\n" in command:
+            raise ValueError("commandに改行文字を含めることはできません")
 
         with self._lock:
-            self.connect()
-            data = (command + self.line_end).encode(self.encoding)
+            sock = self._require_socket()
+            data = command.encode(self.encoding) + self._delimiter
             try:
-                self._require_socket().sendall(data)
-            except (OSError, UnicodeError) as exc:
-                self._abort_connection()
+                sock.sendall(data)
+            except (OSError, socket.timeout) as exc:
+                self._close_after_error()
                 raise CommunicationError(
-                    f"コマンド送信に失敗しました: {command!r}: {exc}"
+                    f"コマンド送信に失敗しました: {command!r}"
                 ) from exc
 
     def receive(self) -> str:
-        """CR+LFまでを1応答として受信する。"""
         with self._lock:
-            self.connect()
-            delimiter = self.line_end.encode(self.encoding)
-            try:
-                raw = self._receive_until(delimiter)
-                return raw.decode(self.encoding)
-            except socket.timeout as exc:
-                raise CommunicationError("装置からの応答がタイムアウトしました") from exc
-            except (OSError, UnicodeError) as exc:
-                self._abort_connection()
-                raise CommunicationError(f"応答受信に失敗しました: {exc}") from exc
+            while True:
+                delimiter_index = self._receive_buffer.find(self._delimiter)
+                if delimiter_index >= 0:
+                    raw = bytes(self._receive_buffer[:delimiter_index])
+                    del self._receive_buffer[
+                        :delimiter_index + len(self._delimiter)
+                    ]
+                    try:
+                        return raw.decode(self.encoding)
+                    except UnicodeDecodeError as exc:
+                        raise CommunicationError(
+                            "装置応答のデコードに失敗しました"
+                        ) from exc
+
+                sock = self._require_socket()
+                try:
+                    chunk = sock.recv(4096)
+                except socket.timeout as exc:
+                    raise CommunicationError(
+                        "装置応答の受信がタイムアウトしました"
+                    ) from exc
+                except OSError as exc:
+                    self._close_after_error()
+                    raise CommunicationError(
+                        "装置応答の受信に失敗しました"
+                    ) from exc
+
+                if not chunk:
+                    self._close_after_error()
+                    raise CommunicationError(
+                        "装置側からTCP接続が切断されました"
+                    )
+
+                self._receive_buffer.extend(chunk)
 
     def query(self, command: str) -> str:
-        """コマンドを送信し、続けて1行の応答を受信する。"""
         with self._lock:
             self.send(command)
             return self.receive()
 
-    def _receive_until(self, delimiter: bytes) -> bytes:
-        while True:
-            index = self._receive_buffer.find(delimiter)
-            if index >= 0:
-                raw = bytes(self._receive_buffer[:index])
-                del self._receive_buffer[:index + len(delimiter)]
-                return raw
+    def close(self) -> None:
+        self.disconnect()
 
-            chunk = self._require_socket().recv(4096)
-            if not chunk:
-                self._abort_connection()
-                raise CommunicationError("装置側からTCP接続が切断されました")
-            self._receive_buffer.extend(chunk)
+    def __enter__(self) -> "Communication":
+        self.connect()
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback) -> None:
+        self.disconnect()
 
     def _require_socket(self) -> socket.socket:
         if self._socket is None:
-            raise CommunicationError("TCP接続が確立されていません")
+            raise CommunicationError("TCP接続されていません")
         return self._socket
 
-    def _abort_connection(self) -> None:
+    def _close_after_error(self) -> None:
         sock = self._socket
         self._socket = None
         self._receive_buffer.clear()
@@ -143,10 +165,3 @@ class Communication:
                 sock.close()
             except OSError:
                 pass
-
-    def __enter__(self):
-        self.connect()
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        self.disconnect()

@@ -33,9 +33,9 @@ class VersionInfo:
             self.date = ""
             self.model = " ".join(parts[1:])
 
-    @property
-    def normalized_model(self) -> str:
-        return re.sub(r"[^A-Z0-9]", "", self.model.upper())
+    # @property
+    # def normalized_model(self) -> str:
+    #     return re.sub(r"[^A-Z0-9]", "", self.model.upper())
 
     # @property
     # def is_pm16c16(self) -> bool:

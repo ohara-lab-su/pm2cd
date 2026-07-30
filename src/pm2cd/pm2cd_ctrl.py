@@ -15,45 +15,23 @@ class PM2CD:
         self,
         ip_address: str,
         port: int = 7777,
-        timeout: float = 3.0,
+        timeout_sec: float = 3.0,
         channel_count: int = 2,
-        auto_connect: bool = True,
         logger=None,
         log_level: str = "INFO",
     ):
         self.communication = Communication(
             ip_address=ip_address,
             port=port,
-            timeout=timeout,
+            timeout_sec=timeout_sec,
         )
+        self.communication.connect()
         self.device = PM2CDDevice(
             self.communication,
             channel_count=channel_count,
         )
         self.logger = logger
         self.log_level = log_level
-
-        if auto_connect:
-            self.connect()
-
-    @property
-    def is_connected(self) -> bool:
-        return self.communication.is_connected
-
-    def connect(self) -> None:
-        self.communication.connect()
-
-    def disconnect(self) -> None:
-        self.communication.disconnect()
-
-    close = disconnect
-
-    def __enter__(self):
-        self.connect()
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback) -> None:
-        self.disconnect()
 
     def remote(self) -> None:
         self.device.remote()
@@ -328,10 +306,3 @@ class PM2CD:
         rate: float,
     ) -> int:
         return self.device.rate_to_number(rate)
-
-    def __enter__(self):
-        self.connect()
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        self.disconnect()

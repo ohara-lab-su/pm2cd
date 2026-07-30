@@ -10,7 +10,11 @@ from .version_info import VersionInfo
 class PM2CDDevice:
     """PM2CD/PM2C-06A固有のコマンド生成と応答解析を担当する。"""
 
-    def __init__(self, communication: Communication, channel_count: int = 2):
+    def __init__(
+        self,
+        communication: Communication,
+        channel_count: int = 2,
+    ):
         if channel_count < 1 or channel_count > 4:
             raise ValueError("channel_countは1から4の範囲で指定してください")
         self.communication = communication
@@ -30,24 +34,40 @@ class PM2CDDevice:
     def hardware_version(self) -> str:
         return self.communication.query("VERH?")
 
-    def move(self, motor: int, pulse: int,
-             backlash: Union[str, bool] = True) -> None:
+    def move(
+        self,
+        motor: int,
+        pulse: int,
+        backlash: Union[str, bool] = True,
+    ) -> None:
         suffix = self._backlash_suffix(backlash)
         self._check_motor(motor)
         self.communication.send(f"ABS{motor:X}{suffix}{pulse:+d}")
 
-    def move_relative(self, motor: int, pulse: int,
-                      backlash: Union[str, bool] = True) -> None:
+    def move_relative(
+        self,
+        motor: int,
+        pulse: int,
+        backlash: Union[str, bool] = True,
+    ) -> None:
         suffix = self._backlash_suffix(backlash)
         self._check_motor(motor)
         self.communication.send(f"REL{motor:X}{suffix}{pulse:+d}")
 
-    def scan(self, motor: int, direction: str) -> None:
+    def scan(
+        self,
+        motor: int,
+        direction: str,
+    ) -> None:
         direction = self._normalize_direction(direction)
         command = "SCANP" if direction == "cw" else "SCANN"
         self._send_motor_command(command, motor)
 
-    def constant_speed_scan(self, motor: int, direction: str) -> None:
+    def constant_speed_scan(
+        self,
+        motor: int,
+        direction: str,
+    ) -> None:
         direction = self._normalize_direction(direction)
         command = "CSCANP" if direction == "cw" else "CSCANN"
         self._send_motor_command(command, motor)
@@ -165,17 +185,30 @@ class PM2CDDevice:
     def hold(self, motor: int) -> str:
         return self._query_motor_command("HOLD?", motor)
 
-    def set_hold(self, motor: int, enabled: bool) -> None:
+    def set_hold(
+        self,
+        motor: int,
+        enabled: bool,
+    ) -> None:
         self._check_motor(motor)
         self.communication.send(f"HOLD{motor:X}{'ON' if enabled else 'OFF'}")
 
-    def ttl_output_start(self, motor: int) -> None:
+    def ttl_output_start(
+        self,
+        motor: int,
+    ) -> None:
         self._send_motor_command("TMGR", motor)
 
-    def ttl_output_stop(self, motor: int) -> None:
+    def ttl_output_stop(
+        self,
+        motor: int,
+    ) -> None:
         self._send_motor_command("TMGC", motor)
 
-    def ttl_status(self, motor: int) -> int:
+    def ttl_status(
+        self,
+        motor: int,
+    ) -> int:
         raw = self._query_motor_command("TMGR?", motor)
         if raw == "YES":
             return 1
@@ -198,44 +231,65 @@ class PM2CDDevice:
                 return number
         raise ValueError("レートが範囲外です")
 
-    def _parse_status_all(self, raw: str) -> list[MotorStatus]:
+    def _parse_status_all(
+        self,
+        raw: str,
+    ) -> list[MotorStatus]:
         parts = raw.split("/")
         if len(parts) < 4 + self.channel_count:
             raise ProtocolError(f"STS?応答が不正です: {raw!r}")
         header = parts[0]
         directions = parts[1]
         limits = parts[2]
-        positions = parts[4:4 + self.channel_count]
+        positions = parts[4 : 4 + self.channel_count]
         result = []
         try:
             for motor in range(self.channel_count):
-                result.append(MotorStatus(
-                    motor=motor,
-                    raw=raw,
-                    remote_local=header[0],
-                    direction=directions[motor],
-                    ls_status=int(limits[motor], 16),
-                    position=int(positions[motor]),
-                ))
+                result.append(
+                    MotorStatus(
+                        motor=motor,
+                        raw=raw,
+                        remote_local=header[0],
+                        direction=directions[motor],
+                        ls_status=int(limits[motor], 16),
+                        position=int(positions[motor]),
+                    )
+                )
         except (IndexError, ValueError) as exc:
             raise ProtocolError(f"STS?応答を解析できません: {raw!r}") from exc
         return result
 
-    def _send_motor_command(self, command: str, motor: int) -> None:
+    def _send_motor_command(
+        self,
+        command: str,
+        motor: int,
+    ) -> None:
         self._check_motor(motor)
         self.communication.send(f"{command}{motor:X}")
 
-    def _send_motor_value(self, command: str, motor: int, value: int,
-                          signed: bool = False) -> None:
+    def _send_motor_value(
+        self,
+        command: str,
+        motor: int,
+        value: int,
+        signed: bool = False,
+    ) -> None:
         self._check_motor(motor)
         text = f"{value:+d}" if signed else str(value)
         self.communication.send(f"{command}{motor:X}{text}")
 
-    def _query_motor_command(self, command: str, motor: int) -> str:
+    def _query_motor_command(
+        self,
+        command: str,
+        motor: int,
+    ) -> str:
         self._check_motor(motor)
         return self.communication.query(f"{command}{motor:X}")
 
-    def _check_motor(self, motor: int) -> None:
+    def _check_motor(
+        self,
+        motor: int,
+    ) -> None:
         if motor < 0 or motor >= self.channel_count:
             raise ValueError(
                 f"motorは0から{self.channel_count - 1}の範囲で指定してください"
@@ -244,8 +298,14 @@ class PM2CDDevice:
     @staticmethod
     def _normalize_direction(direction: str) -> str:
         direction = direction.lower()
-        aliases = {"+": "cw", "p": "cw", "cw": "cw",
-                   "-": "ccw", "n": "ccw", "ccw": "ccw"}
+        aliases = {
+            "+": "cw",
+            "p": "cw",
+            "cw": "cw",
+            "-": "ccw",
+            "n": "ccw",
+            "ccw": "ccw",
+        }
         if direction not in aliases:
             raise ValueError("directionは'cw'または'ccw'で指定してください")
         return aliases[direction]
