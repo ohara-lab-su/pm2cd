@@ -10,7 +10,11 @@ from .version_info import VersionInfo
 class PM2CDDevice:
     """PM2CD/PM2C-06A固有のコマンド生成と応答解析を担当する。"""
 
-    def __init__(self, communication: Communication, channel_count: int = 2):
+    def __init__(
+        self,
+        communication: Communication,
+        channel_count: int = 2,
+    ):
         if channel_count < 1 or channel_count > 4:
             raise ValueError("channel_countは1から4の範囲で指定してください")
         self.communication = communication
