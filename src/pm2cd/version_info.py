@@ -33,18 +33,18 @@ class VersionInfo:
             self.date = ""
             self.model = " ".join(parts[1:])
 
-    # @property
-    # def normalized_model(self) -> str:
-    #     return re.sub(r"[^A-Z0-9]", "", self.model.upper())
+    @property
+    def normalized_model(self) -> str:
+        return re.sub(r"[^A-Z0-9]", "", self.model.upper())
 
-    # @property
-    # def is_pm16c16(self) -> bool:
-    #     return self.normalized_model == "PM16C16"
+    @property
+    def is_pm16c16(self) -> bool:
+        return self.normalized_model == "PM16C16"
 
-    # @property
-    # def is_pm2cd(self) -> bool:
-    #     model = self.normalized_model
-    #     return model in {"PM2CD", "PM2C06A", "PMCD06AX"}
+    @property
+    def is_pm2cd(self) -> bool:
+        model = self.normalized_model
+        return model in {"PM2CD", "PM2C06A", "PMCD06AX"}
 
     def __str__(self) -> str:
         return self.raw
