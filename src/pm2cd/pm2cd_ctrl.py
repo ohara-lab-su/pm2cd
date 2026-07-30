@@ -1,7 +1,7 @@
 import time
-from typing import Any, Union
+from typing import Union
 
-from .core.communication import Communication
+from .core.communication_tcp import Communication
 from .core.motor_status import MotorStatus
 
 from .pm2cd_device import PM2CDDevice
@@ -11,9 +11,27 @@ from .version_info import VersionInfo
 class PM2CD:
     """Python利用者向けI/F層。"""
 
-    def __init__(self, communication: Any, channel_count: int = 2):
-        self.communication = Communication(communication)
-        self.device = PM2CDDevice(self.communication, channel_count=channel_count)
+    def __init__(
+        self,
+        ip_address: str,
+        port: int = 7777,
+        timeout_sec: float = 3.0,
+        channel_count: int = 2,
+        logger=None,
+        log_level: str = "INFO",
+    ):
+        self.communication = Communication(
+            ip_address=ip_address,
+            port=port,
+            timeout_sec=timeout_sec,
+        )
+        self.communication.connect()
+        self.device = PM2CDDevice(
+            self.communication,
+            channel_count=channel_count,
+        )
+        self.logger = logger
+        self.log_level = log_level
 
     def remote(self) -> None:
         self.device.remote()

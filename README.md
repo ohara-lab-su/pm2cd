@@ -1,27 +1,12 @@
-# PM16C-16 Python package
+# pm2cd
 
-3層構成です。
+TCP/IP専用のPM2CD制御パッケージです。
 
-- `PM16C16Communication`: 外部から渡された通信オブジェクトと送受信する
-- `PM16C16Device`: PM16C-16コマンド、応答解析、装置状態を扱う
-- `PM16C16`: Python利用者向けI/F
+## 構成
 
-通信オブジェクトの生成、接続、切断はこのパッケージでは行いません。
+- `src/pm2cd/core/communication_tcp.py`: TCP通信層
+- `src/pm2cd/pm2cd_device.py`: 装置コマンド・応答解析層
+- `src/pm2cd/pm2cd_ctrl.py`: 利用者向けI/F層
+- `src/pm2cd/server_fastapi/`: ese774_frame用通信レイヤー
 
-```python
-from pm16c16 import PM16C16
-
-communication = ExistingCommunicationObject(...)
-pm = PM16C16(communication)
-
-pm.remote()
-print(pm.version())
-pm.set_speed(0, 1000)
-pm.move(0, 10000)
-print(pm.wait_stop(0))
-```
-
-通信オブジェクトは、次のいずれかを実装してください。
-
-- `send_line(str)` と `read_line()`
-- `write(bytes)` と `readline()`
+`core`は他機種パッケージと共有せず、このパッケージ内に保持します。

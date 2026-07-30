@@ -3,10 +3,10 @@ requires = ["setuptools>=71.0", "coloredlogs"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "rmc_dft"
-version = "0.6.1"
+name = "pm2cd"
+version = "0.0.0"
 
-description = "rmc_dft is a Python package for performing Reverse Monte Carlo modeling and ab initio molecular dynamics / relaxation using VASP code."
+description = "tuji pm2cd"
 authors = [
     { name = "Kengo NAKADA", email = "kengo.nakada@email.com" },
     { name = "Kentaro Kobayashi", email = "kobayashi@mat.shimane-u.ac.jp" }

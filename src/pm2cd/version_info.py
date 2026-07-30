@@ -1,29 +1,61 @@
-from .core.errors import ProtocolError
+import re
 
 
 class VersionInfo:
-    """PMXC/PM2C系のバージョン応答を保持する。"""
+    """装置の ``VER?`` 応答を解析して保持する。
+
+    想定形式は ``<version> <date> <model>``。日付の有無やモデル名中の
+    空白は許容するが、空応答とバージョン番号を含まない応答は拒否する。
+    """
+
+    _VERSION_PATTERN = re.compile(r"^\d+(?:\.\d+)+$")
+    _DATE_PATTERN = re.compile(r"^\d{2,4}[-/]\d{1,2}[-/]\d{1,2}$")
 
     def __init__(self, raw: str):
-        self.raw = raw
-        self.model = self._extract_model(raw)
+        if not isinstance(raw, str):
+            raise TypeError("rawはstrで指定してください")
 
-    @property
-    def max_motor(self) -> int:
-        if self.model.startswith("PM2"):
-            return 2
-        if self.model.startswith("PM3"):
-            return 3
-        if self.model.startswith("PM4") or self.model.startswith("PMXC"):
-            return 4
-        return 2
+        normalized = " ".join(raw.strip().split())
+        if not normalized:
+            raise ValueError("VER?応答が空です")
 
-    @staticmethod
-    def _extract_model(raw: str) -> str:
-        for part in raw.split():
-            if part.startswith(("PMXC", "PM2", "PM3", "PM4", "PMCD")):
-                return part
-        raise ProtocolError(f"バージョン応答を解析できません: {raw!r}")
+        parts = normalized.split(" ")
+        if not self._VERSION_PATTERN.fullmatch(parts[0]):
+            raise ValueError(f"VER?応答のバージョン形式が不正です: {raw!r}")
+
+        self.raw = normalized
+        self.version = parts[0]
+
+        if len(parts) >= 2 and self._DATE_PATTERN.fullmatch(parts[1]):
+            self.date = parts[1]
+            self.model = " ".join(parts[2:])
+        else:
+            self.date = ""
+            self.model = " ".join(parts[1:])
+
+    # @property
+    # def normalized_model(self) -> str:
+    #     return re.sub(r"[^A-Z0-9]", "", self.model.upper())
+
+    # @property
+    # def is_pm16c16(self) -> bool:
+    #     return self.normalized_model == "PM16C16"
+
+    # @property
+    # def is_pm2cd(self) -> bool:
+    #     model = self.normalized_model
+    #     return model in {"PM2CD", "PM2C06A", "PMCD06AX"}
+
+    def __str__(self) -> str:
+        return self.raw
 
     def __repr__(self) -> str:
-        return f"VersionInfo(model={self.model!r}, max_motor={self.max_motor}, raw={self.raw!r})"
+        return (
+            f"VersionInfo(version={self.version!r}, date={self.date!r}, "
+            f"model={self.model!r})"
+        )
+
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, VersionInfo):
+            return NotImplemented
+        return self.raw == other.raw
