@@ -1,4 +1,4 @@
-from pm2cd.errors import PM2CDProtocolError
+from .core.errors import ProtocolError
 
 
 class VersionInfo:
@@ -23,7 +23,7 @@ class VersionInfo:
         for part in raw.split():
             if part.startswith(("PMXC", "PM2", "PM3", "PM4", "PMCD")):
                 return part
-        raise PM2CDProtocolError(f"バージョン応答を解析できません: {raw!r}")
+        raise ProtocolError(f"バージョン応答を解析できません: {raw!r}")
 
     def __repr__(self) -> str:
         return f"VersionInfo(model={self.model!r}, max_motor={self.max_motor}, raw={self.raw!r})"

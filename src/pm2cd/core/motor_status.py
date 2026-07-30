@@ -1,8 +1,10 @@
-from pm2cd.errors import PM2CDProtocolError
+# from __future__ import annotations
+
+from .errors import ProtocolError
 
 
 class MotorStatus:
-    """1軸分の状態。STSx? 応答を基本にする。"""
+    """1軸分の状態を保持し、状態判定も担当する。"""
 
     def __init__(
         self,
@@ -23,19 +25,26 @@ class MotorStatus:
         self.position = position
 
     @classmethod
-    def from_single_response(cls, requested_motor: int, raw: str) -> "MotorStatus":
+    def from_single_response(
+        cls,
+        requested_motor: int,
+        raw: str,
+    ) -> "MotorStatus":
         if len(raw) < 7:
-            raise PM2CDProtocolError(f"STS応答が不正です: {raw!r}")
+            raise ProtocolError(f"STS応答が不正です: {raw!r}")
 
         try:
             motor = int(raw[1], 16)
             ls_status = int(raw[3], 16)
             position = int(raw[6:])
         except ValueError as exc:
-            raise PM2CDProtocolError(f"STS応答を解析できません: {raw!r}") from exc
+            raise ProtocolError(f"STS応答を解析できません: {raw!r}") from exc
+
+        if motor != requested_motor:
+            requested_motor = motor
 
         return cls(
-            motor=motor if motor != requested_motor else requested_motor,
+            motor=requested_motor,
             raw=raw,
             remote_local=raw[0],
             direction=raw[2],
