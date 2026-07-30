@@ -4,7 +4,7 @@ from typing import Any, Union
 from .core.communication import Communication
 from .core.motor_status import MotorStatus
 
-from .device import PM2CDDevice
+from .pm2cd_device import PM2CDDevice
 from .version_info import VersionInfo
 
 
