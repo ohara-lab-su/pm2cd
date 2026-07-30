@@ -10,11 +10,7 @@ from .version_info import VersionInfo
 class PM2CDDevice:
     """PM2CD/PM2C-06A固有のコマンド生成と応答解析を担当する。"""
 
-    def __init__(
-        self,
-        communication: Communication,
-        channel_count: int = 2,
-    ):
+    def __init__(self, communication: Communication, channel_count: int = 2):
         if channel_count < 1 or channel_count > 4:
             raise ValueError("channel_countは1から4の範囲で指定してください")
         self.communication = communication
@@ -60,7 +56,10 @@ class PM2CDDevice:
         direction: str,
     ) -> None:
         direction = self._normalize_direction(direction)
-        command = "SCANP" if direction == "cw" else "SCANN"
+        if direction == "cw":
+            command = "SCANP"
+        else:
+            command = "SCANN"
         self._send_motor_command(command, motor)
 
     def constant_speed_scan(
@@ -69,33 +68,58 @@ class PM2CDDevice:
         direction: str,
     ) -> None:
         direction = self._normalize_direction(direction)
-        command = "CSCANP" if direction == "cw" else "CSCANN"
+        if direction == "cw":
+            command = "CSCANP"
+        else:
+            command = "CSCANN"
         self._send_motor_command(command, motor)
 
-    def jog(self, motor: int, direction: str) -> None:
+    def jog(
+        self,
+        motor: int,
+        direction: str,
+    ) -> None:
         direction = self._normalize_direction(direction)
-        command = "JOGP" if direction == "cw" else "JOGN"
+        if direction == "cw":
+            command = "JOGP"
+        else:
+            command = "JOGN"
         self._send_motor_command(command, motor)
 
-    def home(self, motor: int) -> None:
+    def home(
+        self,
+        motor: int,
+    ) -> None:
         self._send_motor_command("GTHP", motor)
 
-    def find_home(self, motor: int) -> None:
+    def find_home(
+        self,
+        motor: int,
+    ) -> None:
         self._send_motor_command("FDHP", motor)
 
-    def stop(self, motor: int) -> None:
+    def stop(
+        self,
+        motor: int,
+    ) -> None:
         self._send_motor_command("SSTP", motor)
 
     def stop_all(self) -> None:
         self.communication.send("ASSTP")
 
-    def emergency_stop(self, motor: int) -> None:
+    def emergency_stop(
+        self,
+        motor: int,
+    ) -> None:
         self._send_motor_command("ESTP", motor)
 
     def emergency_stop_all(self) -> None:
         self.communication.send("AESTP")
 
-    def status(self, motor: int) -> MotorStatus:
+    def status(
+        self,
+        motor: int,
+    ) -> MotorStatus:
         self._check_motor(motor)
         raw = self.communication.query("STS?")
         statuses = self._parse_status_all(raw)
@@ -104,39 +128,78 @@ class PM2CDDevice:
     def status_all(self) -> list[MotorStatus]:
         return self._parse_status_all(self.communication.query("STS?"))
 
-    def position(self, motor: int) -> int:
+    def position(
+        self,
+        motor: int,
+    ) -> int:
         return int(self._query_motor_command("PS?", motor))
 
-    def set_position(self, motor: int, pulse: int) -> None:
+    def set_position(
+        self,
+        motor: int,
+        pulse: int,
+    ) -> None:
         self._send_motor_value("PS", motor, pulse, signed=True)
 
-    def set_speed(self, motor: int, speed: int) -> None:
+    def set_speed(
+        self,
+        motor: int,
+        speed: int,
+    ) -> None:
         self.set_high_speed(motor, speed)
         self.set_middle_speed(motor, max(speed // 3, 5))
         self.set_low_speed(motor, max(speed // 10, 5))
 
-    def high_speed(self, motor: int) -> int:
+    def high_speed(
+        self,
+        motor: int,
+    ) -> int:
         return int(self._query_motor_command("SPDH?", motor))
 
-    def set_high_speed(self, motor: int, speed: int) -> None:
+    def set_high_speed(
+        self,
+        motor: int,
+        speed: int,
+    ) -> None:
         self._send_motor_value("SPDH", motor, speed)
 
-    def middle_speed(self, motor: int) -> int:
+    def middle_speed(
+        self,
+        motor: int,
+    ) -> int:
         return int(self._query_motor_command("SPDM?", motor))
 
-    def set_middle_speed(self, motor: int, speed: int) -> None:
+    def set_middle_speed(
+        self,
+        motor: int,
+        speed: int,
+    ) -> None:
         self._send_motor_value("SPDM", motor, speed)
 
-    def low_speed(self, motor: int) -> int:
+    def low_speed(
+        self,
+        motor: int,
+    ) -> int:
         return int(self._query_motor_command("SPDL?", motor))
 
-    def set_low_speed(self, motor: int, speed: int) -> None:
+    def set_low_speed(
+        self,
+        motor: int,
+        speed: int,
+    ) -> None:
         self._send_motor_value("SPDL", motor, speed)
 
-    def speed_mode(self, motor: int) -> str:
+    def speed_mode(
+        self,
+        motor: int,
+    ) -> str:
         return self._query_motor_command("SPD?", motor)
 
-    def set_speed_mode(self, motor: int, mode: Union[int, str]) -> None:
+    def set_speed_mode(
+        self,
+        motor: int,
+        mode: Union[int, str],
+    ) -> None:
         self._check_motor(motor)
         if isinstance(mode, int):
             values = {1: "L", 2: "M", 3: "H"}
@@ -148,29 +211,58 @@ class PM2CDDevice:
             raise ValueError("modeは'L', 'M', 'H'で指定してください")
         self.communication.send(f"SPD{mode}{motor:X}")
 
-    def rate_number(self, motor: int) -> int:
+    def rate_number(
+        self,
+        motor: int,
+    ) -> int:
         return int(self._query_motor_command("RTE?", motor))
 
-    def set_rate_number(self, motor: int, number: int) -> None:
+    def set_rate_number(
+        self,
+        motor: int,
+        number: int,
+    ) -> None:
         self._send_motor_value("RTE", motor, number)
 
-    def backlash(self, motor: int) -> int:
+    def backlash(
+        self,
+        motor: int,
+    ) -> int:
         self._check_motor(motor)
         return int(self.communication.query(f"B?{motor:X}"))
 
-    def set_backlash(self, motor: int, backlash: int) -> None:
+    def set_backlash(
+        self,
+        motor: int,
+        backlash: int,
+    ) -> None:
         self._send_motor_value("B", motor, backlash, signed=True)
 
-    def limit(self, motor: int, side: str) -> int:
+    def limit(
+        self,
+        motor: int,
+        side: str,
+    ) -> int:
         self._check_motor(motor)
         side = self._normalize_side(side)
-        command = "FL?" if side == "cw" else "BL?"
+        if side == "cw":
+            command = "FL?"
+        else:
+            command = "BL?"
         return int(self.communication.query(f"{command}{motor:X}"))
 
-    def set_limit(self, motor: int, side: str, pulse: int) -> None:
+    def set_limit(
+        self,
+        motor: int,
+        side: str,
+        pulse: int,
+    ) -> None:
         self._check_motor(motor)
         side = self._normalize_side(side)
-        command = "FL" if side == "cw" else "BL"
+        if side == "cw":
+            command = "FL"
+        else:
+            command = "BL"
         self.communication.send(f"{command}{motor:X}{pulse:+d}")
 
     def pause(self) -> None:
@@ -182,7 +274,10 @@ class PM2CDDevice:
     def pause_status(self) -> str:
         return self.communication.query("PAUSE?")
 
-    def hold(self, motor: int) -> str:
+    def hold(
+        self,
+        motor: int,
+    ) -> str:
         return self._query_motor_command("HOLD?", motor)
 
     def set_hold(
@@ -191,7 +286,11 @@ class PM2CDDevice:
         enabled: bool,
     ) -> None:
         self._check_motor(motor)
-        self.communication.send(f"HOLD{motor:X}{'ON' if enabled else 'OFF'}")
+        if enabled:
+            mode = "ON"
+        else:
+            mode = "OFF"
+        self.communication.send(f"HOLD{motor:X}{mode}")
 
     def ttl_output_start(
         self,
@@ -275,7 +374,10 @@ class PM2CDDevice:
         signed: bool = False,
     ) -> None:
         self._check_motor(motor)
-        text = f"{value:+d}" if signed else str(value)
+        if signed:
+            text = f"{value:+d}"
+        else:
+            text = str(value)
         self.communication.send(f"{command}{motor:X}{text}")
 
     def _query_motor_command(
