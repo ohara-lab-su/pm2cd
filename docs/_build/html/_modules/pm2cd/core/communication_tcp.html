@@ -1,0 +1,368 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="ja" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pm2cd.core.communication_tcp &mdash; Project  ドキュメント</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=c033477b"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../../_static/translations.js?v=4755f45a"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="索引" href="../../../genindex.html" />
+    <link rel="search" title="検索" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Project
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/modules.html">pm2cd</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/pm2cd.html">pm2cd package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/pm2cd.html#pm2cd.PM2CD"><code class="docutils literal notranslate"><span class="pre">PM2CD</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/pm2cd.html#pm2cd.PM2CD.backlash"><code class="docutils literal notranslate"><span class="pre">PM2CD.backlash()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/pm2cd.html#pm2cd.PM2CD.constant_speed_scan"><code class="docutils literal notranslate"><span class="pre">PM2CD.constant_speed_scan()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/pm2cd.html#pm2cd.PM2CD.emergency_stop"><code class="docutils literal notranslate"><span class="pre">PM2CD.emergency_stop()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/pm2cd.html#pm2cd.PM2CD.emergency_stop_all"><code class="docutils literal notranslate"><span class="pre">PM2CD.emergency_stop_all()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/pm2cd.html#pm2cd.PM2CD.find_home"><code class="docutils literal notranslate"><span class="pre">PM2CD.find_home()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/pm2cd.html#pm2cd.PM2CD.hardware_version"><code class="docutils literal notranslate"><span class="pre">PM2CD.hardware_version()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/pm2cd.html#pm2cd.PM2CD.high_speed"><code class="docutils literal notranslate"><span class="pre">PM2CD.high_speed()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/pm2cd.html#pm2cd.PM2CD.hold"><code class="docutils literal notranslate"><span class="pre">PM2CD.hold()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/pm2cd.html#pm2cd.PM2CD.home"><code class="docutils literal notranslate"><span class="pre">PM2CD.home()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/pm2cd.html#pm2cd.PM2CD.is_busy"><code class="docutils literal notranslate"><span class="pre">PM2CD.is_busy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/pm2cd.html#pm2cd.PM2CD.jog"><code class="docutils literal notranslate"><span class="pre">PM2CD.jog()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/pm2cd.html#pm2cd.PM2CD.limit"><code class="docutils literal notranslate"><span class="pre">PM2CD.limit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/pm2cd.html#pm2cd.PM2CD.local"><code class="docutils literal notranslate"><span class="pre">PM2CD.local()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/pm2cd.html#pm2cd.PM2CD.low_speed"><code class="docutils literal notranslate"><span class="pre">PM2CD.low_speed()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/pm2cd.html#pm2cd.PM2CD.middle_speed"><code class="docutils literal notranslate"><span class="pre">PM2CD.middle_speed()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/pm2cd.html#pm2cd.PM2CD.move"><code class="docutils literal notranslate"><span class="pre">PM2CD.move()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/pm2cd.html#pm2cd.PM2CD.move_relative"><code class="docutils literal notranslate"><span class="pre">PM2CD.move_relative()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/pm2cd.html#pm2cd.PM2CD.number_to_rate"><code class="docutils literal notranslate"><span class="pre">PM2CD.number_to_rate()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/pm2cd.html#pm2cd.PM2CD.pause"><code class="docutils literal notranslate"><span class="pre">PM2CD.pause()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/pm2cd.html#pm2cd.PM2CD.pause_status"><code class="docutils literal notranslate"><span class="pre">PM2CD.pause_status()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/pm2cd.html#pm2cd.PM2CD.position"><code class="docutils literal notranslate"><span class="pre">PM2CD.position()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/pm2cd.html#pm2cd.PM2CD.rate_number"><code class="docutils literal notranslate"><span class="pre">PM2CD.rate_number()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/pm2cd.html#pm2cd.PM2CD.rate_to_number"><code class="docutils literal notranslate"><span class="pre">PM2CD.rate_to_number()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/pm2cd.html#pm2cd.PM2CD.remote"><code class="docutils literal notranslate"><span class="pre">PM2CD.remote()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/pm2cd.html#pm2cd.PM2CD.resume"><code class="docutils literal notranslate"><span class="pre">PM2CD.resume()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/pm2cd.html#pm2cd.PM2CD.scan"><code class="docutils literal notranslate"><span class="pre">PM2CD.scan()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/pm2cd.html#pm2cd.PM2CD.set_backlash"><code class="docutils literal notranslate"><span class="pre">PM2CD.set_backlash()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/pm2cd.html#pm2cd.PM2CD.set_high_speed"><code class="docutils literal notranslate"><span class="pre">PM2CD.set_high_speed()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/pm2cd.html#pm2cd.PM2CD.set_hold"><code class="docutils literal notranslate"><span class="pre">PM2CD.set_hold()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/pm2cd.html#pm2cd.PM2CD.set_limit"><code class="docutils literal notranslate"><span class="pre">PM2CD.set_limit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/pm2cd.html#pm2cd.PM2CD.set_low_speed"><code class="docutils literal notranslate"><span class="pre">PM2CD.set_low_speed()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/pm2cd.html#pm2cd.PM2CD.set_middle_speed"><code class="docutils literal notranslate"><span class="pre">PM2CD.set_middle_speed()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/pm2cd.html#pm2cd.PM2CD.set_position"><code class="docutils literal notranslate"><span class="pre">PM2CD.set_position()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/pm2cd.html#pm2cd.PM2CD.set_rate_number"><code class="docutils literal notranslate"><span class="pre">PM2CD.set_rate_number()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/pm2cd.html#pm2cd.PM2CD.set_speed"><code class="docutils literal notranslate"><span class="pre">PM2CD.set_speed()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/pm2cd.html#pm2cd.PM2CD.set_speed_mode"><code class="docutils literal notranslate"><span class="pre">PM2CD.set_speed_mode()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/pm2cd.html#pm2cd.PM2CD.speed_mode"><code class="docutils literal notranslate"><span class="pre">PM2CD.speed_mode()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/pm2cd.html#pm2cd.PM2CD.status"><code class="docutils literal notranslate"><span class="pre">PM2CD.status()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/pm2cd.html#pm2cd.PM2CD.status_all"><code class="docutils literal notranslate"><span class="pre">PM2CD.status_all()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/pm2cd.html#pm2cd.PM2CD.stop"><code class="docutils literal notranslate"><span class="pre">PM2CD.stop()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/pm2cd.html#pm2cd.PM2CD.stop_all"><code class="docutils literal notranslate"><span class="pre">PM2CD.stop_all()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/pm2cd.html#pm2cd.PM2CD.ttl_output_start"><code class="docutils literal notranslate"><span class="pre">PM2CD.ttl_output_start()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/pm2cd.html#pm2cd.PM2CD.ttl_output_stop"><code class="docutils literal notranslate"><span class="pre">PM2CD.ttl_output_stop()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/pm2cd.html#pm2cd.PM2CD.ttl_status"><code class="docutils literal notranslate"><span class="pre">PM2CD.ttl_status()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/pm2cd.html#pm2cd.PM2CD.version"><code class="docutils literal notranslate"><span class="pre">PM2CD.version()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/pm2cd.html#pm2cd.PM2CD.wait_stop"><code class="docutils literal notranslate"><span class="pre">PM2CD.wait_stop()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/pm2cd.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/pm2cd.core.html">pm2cd.core package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/pm2cd.server_fastapi.html">pm2cd.server_fastapi package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/pm2cd.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/pm2cd.html#module-pm2cd.pm2cd_ctrl">pm2cd.pm2cd_ctrl module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/pm2cd.html#pm2cd.pm2cd_ctrl.PM2CD"><code class="docutils literal notranslate"><span class="pre">PM2CD</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/pm2cd.html#module-pm2cd.pm2cd_device">pm2cd.pm2cd_device module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/pm2cd.html#pm2cd.pm2cd_device.PM2CDDevice"><code class="docutils literal notranslate"><span class="pre">PM2CDDevice</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/pm2cd.html#module-pm2cd.version_info">pm2cd.version_info module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../api/pm2cd.html#pm2cd.version_info.VersionInfo"><code class="docutils literal notranslate"><span class="pre">VersionInfo</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Project</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">モジュールコード</a></li>
+      <li class="breadcrumb-item active">pm2cd.core.communication_tcp</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>pm2cd.core.communication_tcp のソースコード</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">socket</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">threading</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.errors</span><span class="w"> </span><span class="kn">import</span> <span class="n">CommunicationError</span>
+
+
+<div class="viewcode-block" id="Communication">
+<a class="viewcode-back" href="../../../api/pm2cd.core.html#pm2cd.core.Communication">[ドキュメント]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Communication</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;PMシリーズ用のTCP通信層。</span>
+
+<span class="sd">    TCPソケットの生成、接続、CR+LF単位の送受信、切断までをこのクラス内で</span>
+<span class="sd">    完結させる。外部の通信オブジェクトや別バックエンドは使用しない。</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">ip_address</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">port</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">7777</span><span class="p">,</span>
+        <span class="n">timeout_sec</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">3.0</span><span class="p">,</span>
+        <span class="n">encoding</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;ascii&quot;</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ip_address</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;ip_addressはstrで指定してください&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">ip_address</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;ip_addressは空にできません&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">port</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;portはintで指定してください&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">port</span> <span class="o">&lt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">port</span> <span class="o">&gt;</span> <span class="mi">65535</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;portは1から65535の範囲で指定してください&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">timeout_sec</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;timeout_secは0より大きい値を指定してください&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">ip_address</span> <span class="o">=</span> <span class="n">ip_address</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">port</span> <span class="o">=</span> <span class="n">port</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">timeout_sec</span> <span class="o">=</span> <span class="n">timeout_sec</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">encoding</span> <span class="o">=</span> <span class="n">encoding</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_socket</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">socket</span><span class="o">.</span><span class="n">socket</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_receive_buffer</span> <span class="o">=</span> <span class="nb">bytearray</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_delimiter</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">&quot;</span><span class="se">\r\n</span><span class="s2">&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">RLock</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_connected</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_socket</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="Communication.connect">
+<a class="viewcode-back" href="../../../api/pm2cd.core.html#pm2cd.core.Communication.connect">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_socket</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">sock</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">create_connection</span><span class="p">(</span>
+                    <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ip_address</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">),</span>
+                    <span class="n">timeout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">timeout_sec</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">sock</span><span class="o">.</span><span class="n">settimeout</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">timeout_sec</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">CommunicationError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;TCP接続に失敗しました: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ip_address</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_socket</span> <span class="o">=</span> <span class="n">sock</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_receive_buffer</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="Communication.disconnect">
+<a class="viewcode-back" href="../../../api/pm2cd.core.html#pm2cd.core.Communication.disconnect">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">disconnect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+            <span class="n">sock</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_socket</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_socket</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_receive_buffer</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+
+            <span class="k">if</span> <span class="n">sock</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">sock</span><span class="o">.</span><span class="n">shutdown</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">SHUT_RDWR</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+                <span class="k">pass</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">sock</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">CommunicationError</span><span class="p">(</span><span class="s2">&quot;TCP切断に失敗しました&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span></div>
+
+
+<div class="viewcode-block" id="Communication.send">
+<a class="viewcode-back" href="../../../api/pm2cd.core.html#pm2cd.core.Communication.send">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">command</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;commandはstrで指定してください&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;</span><span class="se">\r</span><span class="s2">&quot;</span> <span class="ow">in</span> <span class="n">command</span> <span class="ow">or</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="ow">in</span> <span class="n">command</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;commandに改行文字を含めることはできません&quot;</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+            <span class="n">sock</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_require_socket</span><span class="p">()</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">command</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">encoding</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_delimiter</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">sock</span><span class="o">.</span><span class="n">sendall</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">OSError</span><span class="p">,</span> <span class="n">socket</span><span class="o">.</span><span class="n">timeout</span><span class="p">)</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_close_after_error</span><span class="p">()</span>
+                <span class="k">raise</span> <span class="n">CommunicationError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;コマンド送信に失敗しました: </span><span class="si">{</span><span class="n">command</span><span class="si">!r}</span><span class="s2">&quot;</span>
+                <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span></div>
+
+
+<div class="viewcode-block" id="Communication.receive">
+<a class="viewcode-back" href="../../../api/pm2cd.core.html#pm2cd.core.Communication.receive">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">receive</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+            <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">delimiter_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_receive_buffer</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_delimiter</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">delimiter_index</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">raw</span> <span class="o">=</span> <span class="nb">bytes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_receive_buffer</span><span class="p">[:</span><span class="n">delimiter_index</span><span class="p">])</span>
+                    <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_receive_buffer</span><span class="p">[</span>
+                        <span class="p">:</span><span class="n">delimiter_index</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_delimiter</span><span class="p">)</span>
+                    <span class="p">]</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="n">raw</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">encoding</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="ne">UnicodeDecodeError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="n">CommunicationError</span><span class="p">(</span>
+                            <span class="s2">&quot;装置応答のデコードに失敗しました&quot;</span>
+                        <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+
+                <span class="n">sock</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_require_socket</span><span class="p">()</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">chunk</span> <span class="o">=</span> <span class="n">sock</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="mi">4096</span><span class="p">)</span>
+                <span class="k">except</span> <span class="n">socket</span><span class="o">.</span><span class="n">timeout</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">CommunicationError</span><span class="p">(</span>
+                        <span class="s2">&quot;装置応答の受信がタイムアウトしました&quot;</span>
+                    <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+                <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_close_after_error</span><span class="p">()</span>
+                    <span class="k">raise</span> <span class="n">CommunicationError</span><span class="p">(</span>
+                        <span class="s2">&quot;装置応答の受信に失敗しました&quot;</span>
+                    <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">chunk</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_close_after_error</span><span class="p">()</span>
+                    <span class="k">raise</span> <span class="n">CommunicationError</span><span class="p">(</span>
+                        <span class="s2">&quot;装置側からTCP接続が切断されました&quot;</span>
+                    <span class="p">)</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">_receive_buffer</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Communication.query">
+<a class="viewcode-back" href="../../../api/pm2cd.core.html#pm2cd.core.Communication.query">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">command</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">receive</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="Communication.close">
+<a class="viewcode-back" href="../../../api/pm2cd.core.html#pm2cd.core.Communication.close">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">disconnect</span><span class="p">()</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Communication&quot;</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_value</span><span class="p">,</span> <span class="n">traceback</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">disconnect</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Communication._require_socket">
+<a class="viewcode-back" href="../../../api/pm2cd.core.html#pm2cd.core.Communication._require_socket">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_require_socket</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">socket</span><span class="o">.</span><span class="n">socket</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_socket</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">CommunicationError</span><span class="p">(</span><span class="s2">&quot;TCP接続されていません&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_socket</span></div>
+
+
+<div class="viewcode-block" id="Communication._close_after_error">
+<a class="viewcode-back" href="../../../api/pm2cd.core.html#pm2cd.core.Communication._close_after_error">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_close_after_error</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">sock</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_socket</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_socket</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_receive_buffer</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">sock</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">sock</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+                <span class="k">pass</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright .</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
