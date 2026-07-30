@@ -20,11 +20,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Disable Jekyll
-        working-directory: docs
-        run: |
-          touch _build/html/.nojekyll
-
       - name: Install dependencies
         run: |
           pip install sphinx myst-parser sphinx-rtd-theme linkify-it-py
@@ -38,8 +33,12 @@ jobs:
         run: |
           export LANG=C.UTF-8
           export LC_ALL=C.UTF-8
-          sphinx-build -b html . _build/html
+          bash build.sh
 
+      - name: Disable Jekyll
+        working-directory: docs
+        run: |
+          touch _build/html/.nojekyll
 
       - name: Upload
         uses: actions/upload-pages-artifact@v3
