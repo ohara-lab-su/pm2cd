@@ -165,7 +165,7 @@ class PM2CD:
             if not status.is_busy:
                 return status
             if time.monotonic() >= deadline:
-                raise TimeoutError("motor {} が停止しませんでした".format(motor))
+                raise TimeoutError(f"motor {motor} が停止しませんでした")
             time.sleep(interval_sec)
 
     def position(
