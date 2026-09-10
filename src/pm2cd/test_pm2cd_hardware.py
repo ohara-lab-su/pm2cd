@@ -474,7 +474,7 @@ def main() -> None:
         None。
     """
     # 実機の設定に合わせて変更する。
-    ip_address = "192.168.0.10"
+    ip_address = "10.170.10.62"
     port = 7777
     motor = 0
 

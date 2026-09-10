@@ -1195,7 +1195,7 @@ def main() -> None:
     Returns:
         None。
     """
-    ip_address = "192.168.0.10"
+    ip_address = "10.170.10.62"
     port = 7777
 
     ctrl = PM2CD(ip_address=ip_address, port=port)
