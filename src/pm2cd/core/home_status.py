@@ -8,18 +8,15 @@ class HomeStatus:
         self.raw = ""
         self.is_valid = False
 
-        if not isinstance(
-            raw,
-            str
-        ):
+        if not isinstance(raw, str):
             return
 
         text = raw.strip()
-        if len(text) != 4 or text[0] != "0":
+        if len(text) != 4 or text[0] != '0':
             return
 
         for value in text[1:]:
-            if value not in ("0", "1",):
+            if value not in ('0', '1'):
                 return
 
         self.raw = text
@@ -38,7 +35,7 @@ class HomeStatus:
         if not self.is_valid:
             return ""
 
-        if self.raw[2] == "0":
+        if self.raw[2] == '0':
             return "cw"
 
         return "ccw"
@@ -50,7 +47,7 @@ class HomeStatus:
         if not self.is_valid:
             return ""
 
-        if self.raw[3] == "0":
+        if self.raw[3] == '0':
             return "cw"
 
         return "ccw"
@@ -60,24 +57,21 @@ class HomeStatus:
     ) -> str:
         return f"HomeStatus(raw={self.raw!r}, is_valid={self.is_valid!r})"
 
-def main(
-) -> None:
+def main() -> None:
     """HomeStatus の解析例を実行する。
 
     Returns:
         None。
     """
     raw = "0101"
-    value = HomeStatus(
-        raw
-    )
+    value = HomeStatus(raw)
 
-    print(f"raw={value.raw!r}")
-    print(f"found={value.found}")
-    print(f"found_direction={value.found_direction!r}")
-    print(f"auto_start_direction={value.auto_start_direction!r}")
-    print(f"is_valid={value.is_valid}")
+    print(f'raw={value.raw!r}')
+    print(f'found={value.found}')
+    print(f'found_direction={value.found_direction!r}')
+    print(f'auto_start_direction={value.auto_start_direction!r}')
+    print(f'is_valid={value.is_valid}')
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

@@ -30,16 +30,11 @@ class MotorStatus:
         raw: str,
     ) -> Optional[List["MotorStatus"]]:
         """PM4C-06A互換の4枠 ``STS?`` 応答を解析する。"""
-        if not isinstance(
-            raw,
-            str
-        ):
+        if not isinstance(raw, str):
             return None
 
         text = raw.strip()
-        parts = text.split(
-            "/"
-        )
+        parts = text.split('/')
         if len(parts) != 8:
             return None
 
@@ -49,14 +44,14 @@ class MotorStatus:
         mcc = parts[3]
         positions = parts[4:]
 
-        if len(header) != 5 or header[0] not in ("R", "L",):
+        if len(header) != 5 or header[0] not in ('R', 'L'):
             return None
 
         if len(directions) != 4:
             return None
 
         for value in directions:
-            if value not in "PNS":
+            if value not in 'PNS':
                 return None
 
         if len(limits) != 4:
@@ -66,58 +61,37 @@ class MotorStatus:
             return None
 
         try:
-            channels = [
-                int(
-                    value,
-                    16
-                )
-                for value in header[1:]
-            ]
-            ls_values = [
-                int(
-                    value,
-                    16
-                )
-                for value in limits
-            ]
+            channels = []
+            for value in header[1:]:
+                channels.append(int(value, 16))
+
+            ls_values = []
+            for value in limits:
+                ls_values.append(int(value, 16))
+
             mcc_values = []
-            for index in range(
-                0,
-                8,
-                2
-            ):
-                mcc_values.append(
-                    int(
-                        mcc[index : index + 2],
-                        16
-                    )
-                )
-            position_values = [
-                int(
-                    value,
-                    10
-                )
-                for value in positions
-            ]
+            for index in range(0, 8, 2):
+                mcc_values.append(int(mcc[index:index + 2], 16))
+
+            position_values = []
+            for value in positions:
+                position_values.append(int(value, 10))
         except ValueError:
             return None
 
         statuses = []
-        for index in range(
-            4
-        ):
-            statuses.append(
-                cls(
-                    motor=index,
-                    channel=channels[index],
-                    raw=text,
-                    remote_local=header[0],
-                    direction=directions[index],
-                    ls_status=ls_values[index],
-                    mcc_status=mcc_values[index],
-                    position=position_values[index]
-                )
+        for index in range(4):
+            status = cls(
+                motor=index,
+                channel=channels[index],
+                raw=text,
+                remote_local=header[0],
+                direction=directions[index],
+                ls_status=ls_values[index],
+                mcc_status=mcc_values[index],
+                position=position_values[index]
             )
+            statuses.append(status)
 
         return statuses
 
@@ -131,71 +105,55 @@ class MotorStatus:
     def is_busy(
         self,
     ) -> bool:
-        return bool(
-            self.mcc_status & 0x01
-        )
+        return bool(self.mcc_status & 1)
 
     @property
     def is_driving(
         self,
     ) -> bool:
-        return bool(
-            self.mcc_status & 0x02
-        )
+        return bool(self.mcc_status & 2)
 
     @property
     def is_accelerating(
         self,
     ) -> bool:
-        return bool(
-            self.mcc_status & 0x04
-        )
+        return bool(self.mcc_status & 4)
 
     @property
     def is_decelerating(
         self,
     ) -> bool:
-        return bool(
-            self.mcc_status & 0x08
-        )
+        return bool(self.mcc_status & 8)
 
     @property
     def has_command_error(
         self,
     ) -> bool:
-        return bool(
-            self.mcc_status & 0x10
-        )
+        return bool(self.mcc_status & 16)
 
     @property
     def limit_stop_received(
         self,
     ) -> bool:
-        return bool(
-            self.mcc_status & 0x20
-        )
+        return bool(self.mcc_status & 32)
 
     @property
     def slow_stop_received(
         self,
     ) -> bool:
-        return bool(
-            self.mcc_status & 0x40
-        )
+        return bool(self.mcc_status & 64)
 
     @property
     def emergency_stop_received(
         self,
     ) -> bool:
-        return bool(
-            self.mcc_status & 0x80
-        )
+        return bool(self.mcc_status & 128)
 
     @property
     def rotation_state(
         self,
     ) -> int:
-        if self.direction in ("P", "N",):
+        if self.direction in ('P', 'N'):
             return 1
 
         return 0
@@ -204,33 +162,25 @@ class MotorStatus:
     def cw_ls(
         self,
     ) -> bool:
-        return bool(
-            self.ls_status & 0x01
-        )
+        return bool(self.ls_status & 1)
 
     @property
     def ccw_ls(
         self,
     ) -> bool:
-        return bool(
-            self.ls_status & 0x02
-        )
+        return bool(self.ls_status & 2)
 
     @property
     def hp_ls(
         self,
     ) -> bool:
-        return bool(
-            self.ls_status & 0x04
-        )
+        return bool(self.ls_status & 4)
 
     @property
     def hold_off(
         self,
     ) -> bool:
-        return bool(
-            self.ls_status & 0x08
-        )
+        return bool(self.ls_status & 8)
 
     @property
     def legacy_status_bits(
@@ -262,8 +212,7 @@ class MotorStatus:
             f"position={self.position!r})"
         )
 
-def main(
-) -> None:
+def main() -> None:
     """MotorStatus の STS? 解析例を実行する。
 
     Returns:
@@ -271,25 +220,21 @@ def main(
     """
     # STS? の4枠応答形式を確認するための解析用サンプル。
     raw = "R0123/PNSN/0000/01020000/100/200/300/400"
-    values = MotorStatus.parse_all(
-        raw
-    )
+    values = MotorStatus.parse_all(raw)
 
     if values is None:
-        print(f"parse failed: {raw!r}")
+        print(f'parse failed: {raw!r}')
         return
 
     for value in values:
         print(value)
-        print(
-            f"  motor={value.motor}, "
-            f"channel={value.channel}, "
-            f"busy={value.is_busy}, "
-            f"driving={value.is_driving}, "
-            f"direction={value.direction!r}, "
-            f"position={value.position}"
-        )
+        print(f"  motor={value.motor}")
+        print(f"  channel={value.channel}")
+        print(f"  busy={value.is_busy}")
+        print(f"  driving={value.is_driving}")
+        print(f"  direction={value.direction!r}")
+        print(f"  position={value.position}")
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

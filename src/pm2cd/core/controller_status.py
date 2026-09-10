@@ -17,7 +17,7 @@ class ControllerStatus:
             return
 
         text = raw.strip().upper()
-        if len(text) != 2 or text[0] not in ("R", "L") or not text[1].isdigit():
+        if len(text) != 2 or text[0] not in ('R', 'L') or (not text[1].isdigit()):
             return
 
         count = int(text[1])
@@ -50,7 +50,6 @@ class ControllerStatus:
             f"is_valid={self.is_valid!r})"
         )
 
-
 def main() -> None:
     """ControllerStatus の解析例を実行する。
 
@@ -60,13 +59,13 @@ def main() -> None:
     raw = "R2"
     value = ControllerStatus(raw)
 
-    print(f"raw={value.raw!r}")
-    print(f"remote_local={value.remote_local!r}")
-    print(f"stopped_motor_count={value.stopped_motor_count}")
-    print(f"is_remote={value.is_remote}")
-    print(f"can_start={value.can_start}")
-    print(f"is_valid={value.is_valid}")
+    print(f'raw={value.raw!r}')
+    print(f'remote_local={value.remote_local!r}')
+    print(f'stopped_motor_count={value.stopped_motor_count}')
+    print(f'is_remote={value.is_remote}')
+    print(f'can_start={value.can_start}')
+    print(f'is_valid={value.is_valid}')
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

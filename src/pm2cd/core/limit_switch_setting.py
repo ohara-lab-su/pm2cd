@@ -11,21 +11,18 @@ class LimitSwitchSetting:
         self.raw = ""
         self.is_valid = False
 
-        if not isinstance(
-            raw,
-            str
-        ):
+        if not isinstance(raw, str):
             return
 
         text = raw.strip()
         if len(text) != 8:
             return
 
-        if text[4] != "0":
+        if text[4] != '0':
             return
 
         for value in text:
-            if value not in ("0", "1",):
+            if value not in ('0', '1'):
                 return
 
         self.raw = text
@@ -77,10 +74,7 @@ class LimitSwitchSetting:
         self,
         enabled: bool,
     ) -> Optional[str]:
-        if not isinstance(
-            enabled,
-            bool
-        ):
+        if not isinstance(enabled, bool):
             return None
 
         if not self.is_valid:
@@ -96,32 +90,28 @@ class LimitSwitchSetting:
         self,
     ) -> str:
         return (
-            f"LimitSwitchSetting(raw={self.raw!r}, "
-            f"is_valid={self.is_valid!r})"
+            f'LimitSwitchSetting(raw={self.raw!r}, is_valid={self.is_valid!r})'
         )
 
-def main(
-) -> None:
+def main() -> None:
     """LimitSwitchSetting の解析例を実行する。
 
     Returns:
         None。
     """
     raw = "11110111"
-    value = LimitSwitchSetting(
-        raw
-    )
+    value = LimitSwitchSetting(raw)
 
-    print(f"raw={value.raw!r}")
-    print(f"digital_limit_enabled={value.digital_limit_enabled}")
-    print(f"hp_enabled={value.hp_enabled}")
-    print(f"ccw_enabled={value.ccw_enabled}")
-    print(f"cw_enabled={value.cw_enabled}")
-    print(f"hp_nc={value.hp_nc}")
-    print(f"ccw_nc={value.ccw_nc}")
-    print(f"cw_nc={value.cw_nc}")
-    print(f"is_valid={value.is_valid}")
+    print(f'raw={value.raw!r}')
+    print(f'digital_limit_enabled={value.digital_limit_enabled}')
+    print(f'hp_enabled={value.hp_enabled}')
+    print(f'ccw_enabled={value.ccw_enabled}')
+    print(f'cw_enabled={value.cw_enabled}')
+    print(f'hp_nc={value.hp_nc}')
+    print(f'ccw_nc={value.ccw_nc}')
+    print(f'cw_nc={value.cw_nc}')
+    print(f'is_valid={value.is_valid}')
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

@@ -19,11 +19,11 @@ class PM2CD:
     def __init__(
         self,
         ip_address: str,
-        port: int = 7777,
-        timeout_sec: float = 3.0,
-        channel_count: int = 2,
+        port: int=7777,
+        timeout_sec: float=3.0,
+        channel_count: int=2,
         logger=None,
-        log_level: str = "INFO",
+        log_level: str="INFO",
     ):
         """インスタンスを初期化する。
 
@@ -39,19 +39,13 @@ class PM2CD:
             ValueError: PM2CD 固有の固定条件に反する設定が指定された場合。
         """
         if not logger:
-            logging.basicConfig(
-                level=(log_level or "INFO").upper()
-            )
-            logger = logging.getLogger(
-                __name__
-            )
+            logging.basicConfig(level=(log_level or 'INFO').upper())
+            logger = logging.getLogger(__name__)
 
         self._logger = logger
 
         if channel_count != 2:
-            raise ValueError(
-                f"PM2CDのchannel_countは2です: {channel_count}"
-            )
+            raise ValueError(f'PM2CDのchannel_countは2です: {channel_count}')
 
         self._communication = Communication(
             ip_address=ip_address,
@@ -109,7 +103,9 @@ class PM2CD:
         """
         return self._communication.close()
 
-    def remote(self,) -> bool:
+    def remote(
+        self,
+    ) -> bool:
         """装置をリモート操作モードへ切り替える。
 
         Returns:
@@ -117,7 +113,9 @@ class PM2CD:
         """
         return self._device.remote()
 
-    def local(self,) -> bool:
+    def local(
+        self,
+    ) -> bool:
         """装置をローカル操作モードへ切り替える。
 
         Returns:
@@ -125,7 +123,9 @@ class PM2CD:
         """
         return self._device.local()
 
-    def version(self,) -> Optional[VersionInfo]:
+    def version(
+        self,
+    ) -> Optional[VersionInfo]:
         """装置のソフトウェアバージョン情報を取得する。
 
         Returns:
@@ -133,7 +133,9 @@ class PM2CD:
         """
         return self._device.version()
 
-    def hardware_version(self,) -> Optional[str]:
+    def hardware_version(
+        self,
+    ) -> Optional[str]:
         """装置のハードウェアバージョン情報を取得する。
 
         Returns:
@@ -141,7 +143,9 @@ class PM2CD:
         """
         return self._device.hardware_version()
 
-    def controller_status(self,) -> Optional[ControllerStatus]:
+    def controller_status(
+        self,
+    ) -> Optional[ControllerStatus]:
         """コントローラー全体の状態を取得する。
 
         Returns:
@@ -153,7 +157,7 @@ class PM2CD:
         self,
         motor: int,
         pulse: int,
-        backlash: Union[str, bool, None] = True,
+        backlash: Union[str, bool, None]=True,
     ) -> bool:
         """指定モーターを絶対位置へ移動する。
 
@@ -171,7 +175,7 @@ class PM2CD:
         self,
         motor: int,
         pulse: int,
-        backlash: Union[str, bool, None] = True,
+        backlash: Union[str, bool, None]=True,
     ) -> bool:
         """指定モーターを現在位置から相対移動する。
 
@@ -185,7 +189,11 @@ class PM2CD:
         """
         return self._device.move_relative(motor, pulse, backlash)
 
-    def scan(self, motor: int, direction: str,) -> bool:
+    def scan(
+        self,
+        motor: int,
+        direction: str,
+    ) -> bool:
         """指定方向へ連続スキャン動作を開始する。
 
         Args:
@@ -287,7 +295,9 @@ class PM2CD:
         """
         return self._device.stop(motor)
 
-    def stop_all(self,) -> bool:
+    def stop_all(
+        self,
+    ) -> bool:
         """全モーターを停止する。
 
         Returns:
@@ -309,7 +319,9 @@ class PM2CD:
         """
         return self._device.emergency_stop(motor)
 
-    def emergency_stop_all(self,) -> bool:
+    def emergency_stop_all(
+        self,
+    ) -> bool:
         """全モーターを非常停止する。
 
         Returns:
@@ -331,7 +343,9 @@ class PM2CD:
         """
         return self._device.status(motor)
 
-    def status_all(self,) -> Optional[List[MotorStatus]]:
+    def status_all(
+        self,
+    ) -> Optional[List[MotorStatus]]:
         """全モーターの状態を取得する。
 
         Returns:
@@ -365,9 +379,7 @@ class PM2CD:
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        status = self.status(
-            motor
-        )
+        status = self.status(motor)
         if status is None:
             return None
 
@@ -376,8 +388,8 @@ class PM2CD:
     def wait_stop(
         self,
         motor: int,
-        timeout_sec: float = 30.0,
-        interval_sec: float = 0.1,
+        timeout_sec: float=30.0,
+        interval_sec: float=0.1,
     ) -> Optional[MotorStatus]:
         """指定モーターが停止するまで状態を監視する。
 
@@ -393,9 +405,7 @@ class PM2CD:
         deadline = time.monotonic() + timeout_sec
 
         while True:
-            status = self.status(
-                motor
-            )
+            status = self.status(motor)
             if status is None:
                 return None
 
@@ -403,14 +413,10 @@ class PM2CD:
                 return status
 
             if time.monotonic() >= deadline:
-                self._logger.error(
-                    f"wait_stop(): motor {motor} が停止しませんでした"
-                )
+                self._logger.error(f'wait_stop(): motor {motor} が停止しませんでした')
                 return None
 
-            time.sleep(
-                interval_sec
-            )
+            time.sleep(interval_sec)
 
     def position(
         self,
@@ -490,7 +496,12 @@ class PM2CD:
         Returns:
             処理に成功した場合は True、失敗した場合は False。
         """
-        return self._device.set_speed_profile(motor, low_speed, middle_speed, high_speed)
+        return self._device.set_speed_profile(
+            motor,
+            low_speed,
+            middle_speed,
+            high_speed
+        )
 
     def high_speed(
         self,
@@ -706,7 +717,9 @@ class PM2CD:
         """
         return self._device.set_limit(motor, side, pulse)
 
-    def pause(self,) -> bool:
+    def pause(
+        self,
+    ) -> bool:
         """動作を一時停止する。
 
         Returns:
@@ -714,7 +727,9 @@ class PM2CD:
         """
         return self._device.pause()
 
-    def resume(self,) -> bool:
+    def resume(
+        self,
+    ) -> bool:
         """一時停止を解除する。
 
         Returns:
@@ -722,7 +737,9 @@ class PM2CD:
         """
         return self._device.resume()
 
-    def pause_status(self,) -> Optional[str]:
+    def pause_status(
+        self,
+    ) -> Optional[str]:
         """一時停止状態を取得する。
 
         Returns:
@@ -730,7 +747,10 @@ class PM2CD:
         """
         return self._device.pause_status()
 
-    def hold(self, motor: int,) -> Optional[str]:
+    def hold(
+        self,
+        motor: int,
+    ) -> Optional[str]:
         """指定モーターの HOLD 状態を取得する。
 
         Args:
@@ -817,7 +837,10 @@ class PM2CD:
         """
         return self._device.set_hold_off_time(motor, msec)
 
-    def home_status(self, motor: int,) -> Optional[HomeStatus]:
+    def home_status(
+        self,
+        motor: int,
+    ) -> Optional[HomeStatus]:
         """原点検出設定状態を取得する。
 
         Args:
@@ -1110,7 +1133,9 @@ class PM2CD:
         """
         return self._device.rate_to_number(rate)
 
-    def __enter__(self,) -> "PM2CD":
+    def __enter__(
+        self,
+    ) -> "PM2CD":
         """context manager 開始時に接続を確立する。
 
         Returns:
@@ -1118,7 +1143,12 @@ class PM2CD:
         """
         return self
 
-    def __exit__(self, exc_type, exc_value, traceback,) -> None:
+    def __exit__(
+        self,
+        exc_type,
+        exc_value,
+        traceback,
+    ) -> None:
         """context manager 終了時に接続を切断する。
 
         Args:
@@ -1131,8 +1161,7 @@ class PM2CD:
         """
         self.close()
 
-def main(
-) -> None:
+def main() -> None:
     """PM2CD 公開 I/F の基本的な使用例を実行する。
 
     実機の IP アドレスに変更してから、パッケージのモジュールとして実行する。
@@ -1144,31 +1173,28 @@ def main(
     ip_address = "192.168.0.10"
     port = 7777
 
-    ctrl = PM2CD(
-        ip_address=ip_address,
-        port=port
-    )
+    ctrl = PM2CD(ip_address=ip_address, port=port)
 
     try:
         if not ctrl.is_connected:
-            print("PM2CD へ接続できませんでした")
+            print('PM2CD へ接続できませんでした')
             return
 
         version = ctrl.version()
         if version is None:
-            print("VER? の取得に失敗しました")
+            print('VER? の取得に失敗しました')
         else:
-            print(f"version: {version}")
+            print(f'version: {version}')
 
         controller_status = ctrl.controller_status()
         if controller_status is None:
-            print("STQ? の取得に失敗しました")
+            print('STQ? の取得に失敗しました')
         else:
-            print(f"controller_status: {controller_status}")
+            print(f'controller_status: {controller_status}')
 
         motor_status = ctrl.status_all()
         if motor_status is None:
-            print("STS? の取得に失敗しました")
+            print('STS? の取得に失敗しました')
         else:
             for status in motor_status:
                 print(status)
@@ -1176,5 +1202,5 @@ def main(
         ctrl.close()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
