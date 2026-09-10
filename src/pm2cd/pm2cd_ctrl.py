@@ -27,39 +27,33 @@ class PM2CD:
     ):
         if not logger:
             logging.basicConfig(
-                level=(log_level or "INFO").upper(),
+                level=(log_level or "INFO").upper()
             )
             logger = logging.getLogger(
-                __name__,
+                __name__
             )
 
         self._logger = logger
 
         if channel_count != 2:
-            self._logger.error(
-                f"PM2CDのchannel_countは2です: {channel_count}",
+            raise ValueError(
+                f"PM2CDのchannel_countは2です: {channel_count}"
             )
-            channel_count = 2
 
         self._communication = Communication(
             ip_address=ip_address,
             port=port,
             timeout_sec=timeout_sec,
             logger=self._logger,
-            log_level=log_level,
+            log_level=log_level
         )
         self._device = PM2CDDevice(
             communication=self._communication,
             channel_count=channel_count,
             logger=self._logger,
-            log_level=log_level,
+            log_level=log_level
         )
-
-        connected = self.connect()
-        if not connected:
-            self._logger.warning(
-                f"PM2CDは未接続状態で初期化されました",
-            )
+        self._communication.connect()
 
     @property
     def is_connected(
@@ -70,17 +64,16 @@ class PM2CD:
     def connect(
         self,
     ) -> bool:
-        self._logger.info(
-            f"== connect()",
-        )
         return self._communication.connect()
+
+    def disconnect(
+        self,
+    ) -> bool:
+        return self._communication.disconnect()
 
     def close(
         self,
     ) -> bool:
-        self._logger.info(
-            f"== close()",
-        )
         return self._communication.close()
 
     def remote(self,) -> bool:
@@ -104,7 +97,7 @@ class PM2CD:
         pulse: int,
         backlash: Union[str, bool, None] = True,
     ) -> bool:
-        return self._device.move(motor, pulse, backlash,)
+        return self._device.move(motor, pulse, backlash)
 
     def move_relative(
         self,
@@ -112,49 +105,49 @@ class PM2CD:
         pulse: int,
         backlash: Union[str, bool, None] = True,
     ) -> bool:
-        return self._device.move_relative(motor, pulse, backlash,)
+        return self._device.move_relative(motor, pulse, backlash)
 
     def scan(self, motor: int, direction: str,) -> bool:
-        return self._device.scan(motor, direction,)
+        return self._device.scan(motor, direction)
 
     def constant_speed_scan(
         self,
         motor: int,
         direction: str,
     ) -> bool:
-        return self._device.constant_speed_scan(motor, direction,)
+        return self._device.constant_speed_scan(motor, direction)
 
     def jog(
         self,
         motor: int,
         direction: str,
     ) -> bool:
-        return self._device.jog(motor, direction,)
+        return self._device.jog(motor, direction)
 
     def scan_home(
         self,
         motor: int,
         direction: str,
     ) -> bool:
-        return self._device.scan_home(motor, direction,)
+        return self._device.scan_home(motor, direction)
 
     def home(
         self,
         motor: int,
     ) -> bool:
-        return self._device.home(motor,)
+        return self._device.home(motor)
 
     def find_home(
         self,
         motor: int,
     ) -> bool:
-        return self._device.find_home(motor,)
+        return self._device.find_home(motor)
 
     def stop(
         self,
         motor: int,
     ) -> bool:
-        return self._device.stop(motor,)
+        return self._device.stop(motor)
 
     def stop_all(self,) -> bool:
         return self._device.stop_all()
@@ -163,7 +156,7 @@ class PM2CD:
         self,
         motor: int,
     ) -> bool:
-        return self._device.emergency_stop(motor,)
+        return self._device.emergency_stop(motor)
 
     def emergency_stop_all(self,) -> bool:
         return self._device.emergency_stop_all()
@@ -172,7 +165,7 @@ class PM2CD:
         self,
         motor: int,
     ) -> Optional[MotorStatus]:
-        return self._device.status(motor,)
+        return self._device.status(motor)
 
     def status_all(self,) -> Optional[List[MotorStatus]]:
         return self._device.status_all()
@@ -181,14 +174,14 @@ class PM2CD:
         self,
         motor: int,
     ) -> Optional[bool]:
-        return self._device.check_rotate(motor,)
+        return self._device.check_rotate(motor)
 
     def is_busy(
         self,
         motor: int,
     ) -> Optional[bool]:
         status = self.status(
-            motor,
+            motor
         )
         if status is None:
             return None
@@ -205,7 +198,7 @@ class PM2CD:
 
         while True:
             status = self.status(
-                motor,
+                motor
             )
             if status is None:
                 return None
@@ -215,39 +208,39 @@ class PM2CD:
 
             if time.monotonic() >= deadline:
                 self._logger.error(
-                    f"wait_stop(): motor {motor} が停止しませんでした",
+                    f"wait_stop(): motor {motor} が停止しませんでした"
                 )
                 return None
 
             time.sleep(
-                interval_sec,
+                interval_sec
             )
 
     def position(
         self,
         motor: int,
     ) -> Optional[int]:
-        return self._device.position(motor,)
+        return self._device.position(motor)
 
     def set_position(
         self,
         motor: int,
         pulse: int,
     ) -> bool:
-        return self._device.set_position(motor, pulse,)
+        return self._device.set_position(motor, pulse)
 
     def zero_position(
         self,
         motor: int,
     ) -> bool:
-        return self.set_position(motor, 0,)
+        return self.set_position(motor, 0)
 
     def set_speed(
         self,
         motor: int,
         speed: int,
     ) -> bool:
-        return self._device.set_speed(motor, speed,)
+        return self._device.set_speed(motor, speed)
 
     def set_speed_profile(
         self,
@@ -256,92 +249,92 @@ class PM2CD:
         middle_speed: int,
         high_speed: int,
     ) -> bool:
-        return self._device.set_speed_profile(motor, low_speed, middle_speed, high_speed,)
+        return self._device.set_speed_profile(motor, low_speed, middle_speed, high_speed)
 
     def high_speed(
         self,
         motor: int,
     ) -> Optional[int]:
-        return self._device.high_speed(motor,)
+        return self._device.high_speed(motor)
 
     def set_high_speed(
         self,
         motor: int,
         speed: int,
     ) -> bool:
-        return self._device.set_high_speed(motor, speed,)
+        return self._device.set_high_speed(motor, speed)
 
     def middle_speed(
         self,
         motor: int,
     ) -> Optional[int]:
-        return self._device.middle_speed(motor,)
+        return self._device.middle_speed(motor)
 
     def set_middle_speed(
         self,
         motor: int,
         speed: int,
     ) -> bool:
-        return self._device.set_middle_speed(motor, speed,)
+        return self._device.set_middle_speed(motor, speed)
 
     def low_speed(
         self,
         motor: int,
     ) -> Optional[int]:
-        return self._device.low_speed(motor,)
+        return self._device.low_speed(motor)
 
     def set_low_speed(
         self,
         motor: int,
         speed: int,
     ) -> bool:
-        return self._device.set_low_speed(motor, speed,)
+        return self._device.set_low_speed(motor, speed)
 
     def speed_mode(
         self,
         motor: int,
     ) -> Optional[str]:
-        return self._device.speed_mode(motor,)
+        return self._device.speed_mode(motor)
 
     def set_speed_mode(
         self,
         motor: int,
         mode: Union[int, str],
     ) -> bool:
-        return self._device.set_speed_mode(motor, mode,)
+        return self._device.set_speed_mode(motor, mode)
 
     def rate_number(
         self,
         motor: int,
     ) -> Optional[int]:
-        return self._device.rate_number(motor,)
+        return self._device.rate_number(motor)
 
     def set_rate_number(
         self,
         motor: int,
         number: int,
     ) -> bool:
-        return self._device.set_rate_number(motor, number,)
+        return self._device.set_rate_number(motor, number)
 
     def backlash(
         self,
         motor: int,
     ) -> Optional[int]:
-        return self._device.backlash(motor,)
+        return self._device.backlash(motor)
 
     def set_backlash(
         self,
         motor: int,
         backlash: int,
     ) -> bool:
-        return self._device.set_backlash(motor, backlash,)
+        return self._device.set_backlash(motor, backlash)
 
     def limit(
         self,
         motor: int,
         side: str,
     ) -> Optional[int]:
-        return self._device.limit(motor, side,)
+        return self._device.limit(motor, side)
 
     def set_limit(
         self,
@@ -349,7 +342,7 @@ class PM2CD:
         side: str,
         pulse: int,
     ) -> bool:
-        return self._device.set_limit(motor, side, pulse,)
+        return self._device.set_limit(motor, side, pulse)
 
     def pause(self,) -> bool:
         return self._device.pause()
@@ -361,43 +354,43 @@ class PM2CD:
         return self._device.pause_status()
 
     def hold(self, motor: int,) -> Optional[str]:
-        return self._device.hold(motor,)
+        return self._device.hold(motor)
 
     def set_hold(
         self,
         motor: int,
         enabled: bool,
     ) -> bool:
-        return self._device.set_hold(motor, enabled,)
+        return self._device.set_hold(motor, enabled)
 
     def hold_on_time(
         self,
         motor: int,
     ) -> Optional[int]:
-        return self._device.hold_on_time(motor,)
+        return self._device.hold_on_time(motor)
 
     def set_hold_on_time(
         self,
         motor: int,
         msec: int,
     ) -> bool:
-        return self._device.set_hold_on_time(motor, msec,)
+        return self._device.set_hold_on_time(motor, msec)
 
     def hold_off_time(
         self,
         motor: int,
     ) -> Optional[int]:
-        return self._device.hold_off_time(motor,)
+        return self._device.hold_off_time(motor)
 
     def set_hold_off_time(
         self,
         motor: int,
         msec: int,
     ) -> bool:
-        return self._device.set_hold_off_time(motor, msec,)
+        return self._device.set_hold_off_time(motor, msec)
 
     def home_status(self, motor: int,) -> Optional[HomeStatus]:
-        return self._device.home_status(motor,)
+        return self._device.home_status(motor)
 
     def set_home_status(
         self,
@@ -410,79 +403,79 @@ class PM2CD:
             motor,
             found,
             found_direction,
-            auto_start_direction,
+            auto_start_direction
         )
 
     def home_position(
         self,
         motor: int,
     ) -> Optional[int]:
-        return self._device.home_position(motor,)
+        return self._device.home_position(motor)
 
     def set_home_position(
         self,
         motor: int,
         pulse: int,
     ) -> bool:
-        return self._device.set_home_position(motor, pulse,)
+        return self._device.set_home_position(motor, pulse)
 
     def home_offset(
         self,
         motor: int,
     ) -> Optional[int]:
-        return self._device.home_offset(motor,)
+        return self._device.home_offset(motor)
 
     def set_home_offset(
         self,
         motor: int,
         pulse: int,
     ) -> bool:
-        return self._device.set_home_offset(motor, pulse,)
+        return self._device.set_home_offset(motor, pulse)
 
     def preset_position(
         self,
         motor: int,
     ) -> Optional[int]:
-        return self._device.preset_position(motor,)
+        return self._device.preset_position(motor)
 
     def set_preset_position(
         self,
         motor: int,
         pulse: int,
     ) -> bool:
-        return self._device.set_preset_position(motor, pulse,)
+        return self._device.set_preset_position(motor, pulse)
 
     def jog_pulse(
         self,
         motor: int,
     ) -> Optional[int]:
-        return self._device.jog_pulse(motor,)
+        return self._device.jog_pulse(motor)
 
     def set_jog_pulse(
         self,
         motor: int,
         pulse: int,
     ) -> bool:
-        return self._device.set_jog_pulse(motor, pulse,)
+        return self._device.set_jog_pulse(motor, pulse)
 
     def limit_switch_setting(
         self,
         motor: int,
     ) -> Optional[LimitSwitchSetting]:
-        return self._device.limit_switch_setting(motor,)
+        return self._device.limit_switch_setting(motor)
 
     def set_limit_switch_setting_raw(
         self,
         motor: int,
         setting: str,
     ) -> bool:
-        return self._device.set_limit_switch_setting_raw(motor, setting,)
+        return self._device.set_limit_switch_setting_raw(motor, setting)
 
     def motor_setting(
         self,
         motor: int,
     ) -> Optional[MotorSetting]:
-        return self._device.motor_setting(motor,)
+        return self._device.motor_setting(motor)
 
     def set_motor_setting(
         self,
@@ -495,14 +488,14 @@ class PM2CD:
             motor,
             drive_enabled,
             hold_mode,
-            output_mode,
+            output_mode
         )
 
     def stop_mode(
         self,
         motor: int,
     ) -> Optional[StopMode]:
-        return self._device.stop_mode(motor,)
+        return self._device.stop_mode(motor)
 
     def set_stop_mode(
         self,
@@ -510,19 +503,19 @@ class PM2CD:
         panel_fast: bool,
         limit_fast: bool,
     ) -> bool:
-        return self._device.set_stop_mode(motor, panel_fast, limit_fast,)
+        return self._device.set_stop_mode(motor, panel_fast, limit_fast)
 
     def number_to_rate(
         self,
         index: int,
     ) -> Optional[float]:
-        return self._device.number_to_rate(index,)
+        return self._device.number_to_rate(index)
 
     def rate_to_number(
         self,
         rate: float,
     ) -> Optional[int]:
-        return self._device.rate_to_number(rate,)
+        return self._device.rate_to_number(rate)
 
     def __enter__(self,) -> "PM2CD":
         return self
