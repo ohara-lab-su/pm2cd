@@ -5,7 +5,7 @@ from .core.communication_tcp import Communication
 from .core.motor_status import MotorStatus
 
 from .pm2cd_device import PM2CDDevice
-from .version_info import VersionInfo
+from .core.version_info import VersionInfo
 
 
 class PM2CD:

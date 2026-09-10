@@ -1,23 +1,24 @@
+"""PM16C16 の FastAPI クライアント公開入口。"""
+
+from ese774_frame import DeviceProxy
 from ese774_frame.clients import register_device_proxy
 
-from pm2cd.server_fastapi.clients.async_pm2cd_client import AsyncPM2CDClient
-from pm2cd.server_fastapi.clients.sync_pm2cd_client import SyncPM2CDClient
-from pm2cd.server_fastapi.routers.pm2cd_router_ctrl import PM2CDRouterCtrl
-from pm2cd.server_fastapi.spec_ctrl import pm2cd_ctrl_api_spec
-
+from .client_async import AsyncPM2CDClient
+from .client_sync import SyncPM2CDClient
 
 register_device_proxy(
-    "PM2CDCtrl",
+    "PM16C16",
     async_client_cls=AsyncPM2CDClient,
     sync_client_cls=SyncPM2CDClient,
-    api_spec=pm2cd_ctrl_api_spec,
+    api_spec=None,
+    object_name="pm16c16",
     default_async_mode=True,
-    aliases=["pm2cd"],
+    aliases=["pm16c16"],
 )
 
+
 __all__ = [
-    "pm2cd_ctrl_api_spec",
-    "PM2CDRouterCtrl",
-    "SyncPM2CDClient",
-    "AsyncPM2CDClient",
+    "AsyncPM16C16Client",
+    "SyncPM16C16Client",
+    "DeviceProxy",
 ]

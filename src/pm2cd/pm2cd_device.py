@@ -4,7 +4,7 @@ from .core.communication_tcp import Communication
 from .core.data import RATE_TABLE
 from .core.errors import ProtocolError
 from .core.motor_status import MotorStatus
-from .version_info import VersionInfo
+from .core.version_info import VersionInfo
 
 
 class PM2CDDevice:
