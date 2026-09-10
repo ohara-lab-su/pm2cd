@@ -1,6 +1,8 @@
 from typing import Optional
 
 
+# SETLS?x 応答を解析し、各リミットスイッチの有効/無効と接点種別を保持する。
+
 class LimitSwitchSetting:
     """``SETLS?x`` の ``DYYY0yyy`` 応答を保持する。"""
 
@@ -14,10 +16,12 @@ class LimitSwitchSetting:
         if not isinstance(raw, str):
             return
 
+        # DYYY0yyy の8文字固定形式として応答を検証する。
         text = raw.strip()
         if len(text) != 8:
             return
 
+        # 5文字目は仕様上の固定値0であることを確認する。
         if text[4] != '0':
             return
 
@@ -121,6 +125,7 @@ class LimitSwitchSetting:
         if not self._is_valid:
             return None
 
+        # 先頭ビットだけを書き換え、残りのLS設定は元の応答値を保持する。
         prefix = "0"
         if enabled:
             prefix = "1"

@@ -6,6 +6,9 @@ from typing import Optional
 from .errors import CommunicationError
 
 
+# TCP通信層。PM2CD 固有のコマンド解釈は行わず、送受信だけを担当する。
+# 通信異常時は接続状態と受信バッファを破棄し、次回通信へ異常応答を持ち越さない。
+
 class Communication:
     """PMシリーズ用のTCP通信層。
 
@@ -129,6 +132,7 @@ class Communication:
         """
         self._logger.info(f'== connect()')
 
+        # 接続状態の変更を送受信と同じロックで直列化する。
         with self._lock:
             if self._socket is not None:
                 return True
@@ -303,6 +307,7 @@ class Communication:
     ) -> Optional[str]:
         """ロック取得済みの状態で応答を1件受信する。"""
         while True:
+            # 受信済みバッファからCR+LF終端の1応答だけを切り出す。
             delimiter_index = self._receive_buffer.find(self._delimiter)
 
             if delimiter_index >= 0:
@@ -358,6 +363,7 @@ class Communication:
         self,
     ) -> None:
         """通信異常後にソケットと受信バッファを破棄する。"""
+        # エラー発生後はソケット参照を先に無効化し、再利用を防止する。
         sock = self._socket
         self._socket = None
         self._receive_buffer.clear()

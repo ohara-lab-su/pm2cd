@@ -1,3 +1,5 @@
+# STOPMD?x 応答を解析し、パネル停止とリミット停止の停止モードを保持する。
+
 class StopMode:
     """``STOPMD?x`` の ``AB`` 応答を保持する。"""
 
@@ -13,6 +15,7 @@ class StopMode:
         if not isinstance(raw, str):
             return
 
+        # AB の2文字をパネル停止・リミット停止のモードとして解釈する。
         text = raw.strip()
         if len(text) != 2:
             return

@@ -13,9 +13,14 @@ from .core.version_info import VersionInfo
 from .pm2cd_device import PM2CDDevice
 
 
+# PM2CD の公開制御API。
+# 通信層と装置コマンド層を委譲で束ね、上位コードへ装置操作を提供する。
+
 class PM2CD:
     """PM2CD を Python から制御するための公開 I/F。"""
 
+
+    # --- 初期化・接続管理 ------------------------------------------------------
     def __init__(
         self,
         ip_address: str,
@@ -103,6 +108,8 @@ class PM2CD:
         """
         return self._communication.close()
 
+
+    # --- コントローラ基本状態 --------------------------------------------------
     def remote(
         self,
     ) -> bool:
@@ -153,6 +160,8 @@ class PM2CD:
         """
         return self._device.controller_status()
 
+
+    # --- モータ動作 ------------------------------------------------------------
     def move(
         self,
         motor: int,
@@ -281,6 +290,8 @@ class PM2CD:
         """
         return self._device.find_home(motor)
 
+
+    # --- 停止・状態監視 --------------------------------------------------------
     def stop(
         self,
         motor: int,
@@ -418,6 +429,8 @@ class PM2CD:
 
             time.sleep(interval_sec)
 
+
+    # --- 位置・速度設定 --------------------------------------------------------
     def position(
         self,
         motor: int,
@@ -623,6 +636,8 @@ class PM2CD:
         """
         return self._device.set_speed_mode(motor, mode)
 
+
+    # --- 加減速・バックラッシュ・リミット ------------------------------------
     def rate_number(
         self,
         motor: int,
@@ -717,6 +732,8 @@ class PM2CD:
         """
         return self._device.set_limit(motor, side, pulse)
 
+
+    # --- 一時停止・励磁保持 ----------------------------------------------------
     def pause(
         self,
     ) -> bool:
@@ -837,6 +854,8 @@ class PM2CD:
         """
         return self._device.set_hold_off_time(motor, msec)
 
+
+    # --- 原点関連設定 ----------------------------------------------------------
     def home_status(
         self,
         motor: int,
@@ -936,6 +955,8 @@ class PM2CD:
         """
         return self._device.set_home_offset(motor, pulse)
 
+
+    # --- プリセット・JOG・装置設定 --------------------------------------------
     def preset_position(
         self,
         motor: int,
@@ -1097,6 +1118,8 @@ class PM2CD:
         """
         return self._device.set_stop_mode(motor, panel_fast, limit_fast)
 
+
+    # --- RATE変換 --------------------------------------------------------------
     def number_to_rate(
         self,
         index: int,
@@ -1133,6 +1156,8 @@ class PM2CD:
         """
         return self._device.rate_to_number(rate)
 
+
+    # --- context manager -------------------------------------------------------
     def __enter__(
         self,
     ) -> "PM2CD":

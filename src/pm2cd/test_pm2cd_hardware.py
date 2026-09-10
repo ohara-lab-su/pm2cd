@@ -3,9 +3,14 @@ import time
 from .pm2cd_ctrl import PM2CD
 
 
+# PM2CD 実機確認用テスト。
+# このファイルだけは実際にモータを動かす試験を含むため、通常のライブラリ実行とは分離する。
+
 class PM2CDHardwareTest:
     """PM2CD の公開 I/F を実機で確認する。"""
 
+
+    # --- テスト初期化・共通処理 ------------------------------------------------
     def __init__(
         self,
         ip_address: str,
@@ -50,6 +55,8 @@ class PM2CDHardwareTest:
     ) -> None:
         self.ctrl.wait_stop(self.motor, timeout_sec=self.motion_timeout_sec)
 
+
+    # --- 通信・基本情報 --------------------------------------------------------
     def test_connection(
         self,
     ) -> None:
@@ -104,6 +111,8 @@ class PM2CDHardwareTest:
         self._show('check_rotate', self.ctrl.check_rotate(self.motor))
         self._show('is_busy', self.ctrl.is_busy(self.motor))
 
+
+    # --- 位置・速度・加減速設定 ------------------------------------------------
     def test_position(
         self,
     ) -> None:
@@ -212,6 +221,8 @@ class PM2CDHardwareTest:
             raise AssertionError('CCW digital limit read-back不一致')
         self._show('limit', (cw, ccw))
 
+
+    # --- 一時停止・励磁保持 ----------------------------------------------------
     def test_pause(
         self,
     ) -> None:
@@ -251,6 +262,8 @@ class PM2CDHardwareTest:
             raise AssertionError('HOLD OFF time read-back不一致')
         self._show('hold_time', (on_time, off_time))
 
+
+    # --- 原点・JOG・ローカル設定 ----------------------------------------------
     def test_home_parameters(
         self,
     ) -> None:
@@ -281,6 +294,8 @@ class PM2CDHardwareTest:
             raise AssertionError('SETJG read-back不一致')
         self._show('local_parameters', (preset, jog_pulse))
 
+
+    # --- 装置設定 --------------------------------------------------------------
     def test_limit_switch_setting(
         self,
     ) -> None:
@@ -316,6 +331,8 @@ class PM2CDHardwareTest:
             raise AssertionError('STOPMD read-back不一致')
         self._show('stop_mode', actual)
 
+
+    # --- 実動作試験 ------------------------------------------------------------
     def test_jog(
         self,
     ) -> None:
@@ -402,6 +419,8 @@ class PM2CDHardwareTest:
         self._wait()
         self._show('scan_home/find_home/home', 'OK')
 
+
+    # --- 一括実行 --------------------------------------------------------------
     def run_all(
         self,
     ) -> None:

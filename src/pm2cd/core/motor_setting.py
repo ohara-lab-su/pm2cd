@@ -1,3 +1,5 @@
+# SETMT?x 応答を解析し、モータ駆動・ホールド・出力設定を保持する。
+
 class MotorSetting:
     """``SETMT?x`` の ``ABCD`` 応答を保持する。"""
 
@@ -15,6 +17,7 @@ class MotorSetting:
         if not isinstance(raw, str):
             return
 
+        # SETMT?x のABCD 4文字応答を各設定値へ分解する。
         text = raw.strip()
         if len(text) != 4:
             return
@@ -25,6 +28,7 @@ class MotorSetting:
         if text[1] not in ('0', '1', '2', '3'):
             return
 
+        # 3文字目の駆動方式はPM2CDでは固定値1として扱う。
         if text[2] != '1':
             return
 

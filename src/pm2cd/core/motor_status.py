@@ -1,6 +1,9 @@
 from typing import List, Optional
 
 
+# STS? 応答を4枠へ分解し、各モータの位置・方向・LS・MCC状態を保持する。
+# MCC と LS のビット解釈は property に分離し、呼び出し側で生値を解読させない。
+
 class MotorStatus:
     """``STS?`` 応答中の1軸分の状態を保持する。"""
 
@@ -90,6 +93,7 @@ class MotorStatus:
             return None
 
         text = raw.strip()
+        # STS? 応答は "/" 区切りでヘッダ、方向、LS、MCC、4位置を返す。
         parts = text.split('/')
         if len(parts) != 8:
             return None
@@ -116,6 +120,7 @@ class MotorStatus:
         if len(mcc) != 8:
             return None
 
+        # 16進表現のチャンネル・LS・MCCと、10進表現の位置を数値化する。
         try:
             channels = []
             for value in header[1:]:
@@ -135,6 +140,7 @@ class MotorStatus:
         except ValueError:
             return None
 
+        # PM2CDは2軸だがSTS?応答はPM4C互換の4枠なので、4枠すべて解析する。
         statuses = []
         for index in range(4):
             status = cls(
@@ -242,6 +248,7 @@ class MotorStatus:
     def legacy_status_bits(
         self,
     ) -> int:
+        # 現行LSビットを旧API互換のSVOC形式へ詰め直す。
         status = 0
 
         if self.cw_ls:

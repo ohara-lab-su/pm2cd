@@ -12,6 +12,9 @@ from .core.stop_mode import StopMode
 from .core.version_info import VersionInfo
 
 
+# PM2CD の装置コマンド層。
+# ASCII コマンド生成、応答解析、引数検証を担当し、TCP処理は Communication へ委譲する。
+
 class PM2CDDevice:
     """PM2CD / PM2C-06A 固有のコマンド生成・応答処理を担当する。"""
 
@@ -32,6 +35,8 @@ class PM2CDDevice:
     HOLD_TIME_MAX = 3_000
     HOLD_TIME_STEP = 10
 
+
+    # --- 初期化 ----------------------------------------------------------------
     def __init__(
         self,
         communication: Communication,
@@ -61,6 +66,8 @@ class PM2CDDevice:
 
         self._version_info = None  # type: Optional[VersionInfo]
 
+
+    # --- コントローラ基本コマンド --------------------------------------------
     def remote(
         self,
     ) -> bool:
@@ -146,6 +153,8 @@ class PM2CDDevice:
 
         return value
 
+
+    # --- モータ動作コマンド ----------------------------------------------------
     def move(
         self,
         motor: int,
@@ -346,6 +355,8 @@ class PM2CDDevice:
         self._logger.info(f'== find_home()')
         return self._send_motor_command('FDHP', motor)
 
+
+    # --- 停止・状態取得 --------------------------------------------------------
     def stop(
         self,
         motor: int,
@@ -466,6 +477,8 @@ class PM2CDDevice:
 
         return True
 
+
+    # --- 位置・速度設定 --------------------------------------------------------
     def position(
         self,
         motor: int,
@@ -741,6 +754,8 @@ class PM2CDDevice:
 
         return self._communication.send(f'SPD{normalized}{motor_text}')
 
+
+    # --- 加減速・バックラッシュ・リミット ------------------------------------
     def rate_number(
         self,
         motor: int,
@@ -921,6 +936,8 @@ class PM2CDDevice:
 
         return self._communication.send(f'{command}{motor_text}{pulse:d}')
 
+
+    # --- 一時停止・励磁保持 ----------------------------------------------------
     def pause(
         self,
     ) -> bool:
@@ -1068,6 +1085,8 @@ class PM2CDDevice:
         self._logger.info(f'== set_hold_off_time()')
         return self._set_hold_time('H_OFTM', motor, msec)
 
+
+    # --- 原点関連設定 ----------------------------------------------------------
     def home_status(
         self,
         motor: int,
@@ -1234,6 +1253,8 @@ class PM2CDDevice:
 
         return self._communication.send(f'SHPF{motor_text}{pulse:d}')
 
+
+    # --- プリセット・JOG・装置設定 --------------------------------------------
     def preset_position(
         self,
         motor: int,
@@ -1509,6 +1530,8 @@ class PM2CDDevice:
 
         return self._communication.send(f'STOPMD{motor_text}{panel}{limit_value}')
 
+
+    # --- RATE変換 --------------------------------------------------------------
     @staticmethod
     def number_to_rate(
         index: int,
@@ -1559,6 +1582,8 @@ class PM2CDDevice:
 
         raise ValueError('rateがRATE TABLEの範囲外です')
 
+
+    # --- 内部コマンド生成・応答変換 ------------------------------------------
     def _send_motor_command(
         self,
         command: str,
@@ -1780,6 +1805,8 @@ class PM2CDDevice:
 
         return raw
 
+
+    # --- 引数検証・正規化 ------------------------------------------------------
     def _motor_text(
         self,
         motor: int,
@@ -1973,6 +2000,8 @@ class PM2CDDevice:
 
         return mapping[normalized]
 
+
+    # --- コマンド用値変換 ------------------------------------------------------
     def _backlash_suffix(
         self,
         backlash: Union[str, bool, None],

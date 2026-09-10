@@ -1,3 +1,5 @@
+# SETHP?x 応答を解析し、原点検出状態と検索方向を保持する。
+
 class HomeStatus:
     """``SETHP?x`` の ``0XYZ`` 応答を保持する。"""
 
@@ -11,10 +13,12 @@ class HomeStatus:
         if not isinstance(raw, str):
             return
 
+        # 0XYZ の4文字固定形式として応答を検証する。
         text = raw.strip()
         if len(text) != 4 or text[0] != '0':
             return
 
+        # X/Y/Z はそれぞれ0または1のみを許可する。
         for value in text[1:]:
             if value not in ('0', '1'):
                 return

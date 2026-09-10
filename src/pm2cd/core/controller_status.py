@@ -1,6 +1,8 @@
 from typing import Optional
 
 
+# STQ? 応答を解析し、コントローラ全体の REMOTE/LOCAL 状態を保持する。
+
 class ControllerStatus:
     """``STQ?`` の REMOTE/LOCAL と停止可能数を保持する。"""
 
@@ -16,10 +18,12 @@ class ControllerStatus:
         if not isinstance(raw, str):
             return
 
+        # STQ? は REMOTE/LOCAL 1文字と停止可能モータ数1桁で返る。
         text = raw.strip().upper()
         if len(text) != 2 or text[0] not in ('R', 'L') or (not text[1].isdigit()):
             return
 
+        # 2文字目を停止可能モータ数として数値化する。
         count = int(text[1])
         if count < 0 or count > 4:
             return

@@ -1,6 +1,8 @@
 import re
 
 
+# VER? 応答を解析し、ファームウェア版・日付・装置型式を保持する。
+
 class VersionInfo:
     """``VER?`` 応答を解析して保持する。"""
 
@@ -20,6 +22,7 @@ class VersionInfo:
         if not isinstance(raw, str):
             return
 
+        # 空白数の揺れを吸収してから、version/date/model の順に解析する。
         normalized = ' '.join(raw.strip().split())
         if not normalized:
             return
@@ -31,6 +34,7 @@ class VersionInfo:
         self._raw = normalized
         self._version = parts[0]
 
+        # 日付が存在する形式と、日付を省略した形式の両方を受け入れる。
         if len(parts) >= 2 and self._DATE_PATTERN.fullmatch(parts[1]):
             self._date = parts[1]
             self._model = ' '.join(parts[2:])
