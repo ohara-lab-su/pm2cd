@@ -40,62 +40,40 @@ class PM2CDDevice:
         log_level: str = "INFO",
     ):
         if not logger:
-            logging.basicConfig(
-                level=(log_level or "INFO").upper()
-            )
-            logger = logging.getLogger(
-                __name__
-            )
+            logging.basicConfig(level=(log_level or "INFO").upper())
+            logger = logging.getLogger(__name__)
 
         self._logger = logger
         self._communication = communication
         if channel_count != self.CHANNEL_COUNT:
-            raise ValueError(
-                f"PM2CDのchannel_countは2です: {channel_count}"
-            )
+            raise ValueError(f"PM2CDのchannel_countは2です: {channel_count}")
 
         self._version_info = None  # type: Optional[VersionInfo]
 
     def remote(
         self,
     ) -> bool:
-        self._logger.info(
-            f"== remote()"
-        )
-        return self._communication.send(
-            "REM"
-        )
+        self._logger.info(f"== remote()")
+        return self._communication.send("REM")
 
     def local(
         self,
     ) -> bool:
-        self._logger.info(
-            f"== local()"
-        )
-        return self._communication.send(
-            "LOC"
-        )
+        self._logger.info(f"== local()")
+        return self._communication.send("LOC")
 
     def version(
         self,
     ) -> Optional[VersionInfo]:
-        self._logger.info(
-            f"== version()"
-        )
+        self._logger.info(f"== version()")
 
-        raw = self._communication.query(
-            "VER?"
-        )
+        raw = self._communication.query("VER?")
         if raw is None:
             return None
 
-        value = VersionInfo(
-            raw
-        )
+        value = VersionInfo(raw)
         if not value.is_valid:
-            self._logger.error(
-                f"VER?応答を解釈できません: {raw!r}"
-            )
+            self._logger.error(f"VER?応答を解釈できません: {raw!r}")
             return None
 
         self._version_info = value
@@ -104,22 +82,14 @@ class PM2CDDevice:
     def hardware_version(
         self,
     ) -> Optional[str]:
-        self._logger.info(
-            f"== hardware_version()"
-        )
+        self._logger.info(f"== hardware_version()")
 
-        raw = self._query_text(
-            "VERH?"
-        )
+        raw = self._query_text("VERH?")
         if raw is None:
             return None
 
-        if not raw.startswith(
-            "HD-VER"
-        ):
-            self._logger.error(
-                f"VERH?応答を解釈できません: {raw!r}"
-            )
+        if not raw.startswith("HD-VER"):
+            self._logger.error(f"VERH?応答を解釈できません: {raw!r}")
             return None
 
         return raw
@@ -127,23 +97,15 @@ class PM2CDDevice:
     def controller_status(
         self,
     ) -> Optional[ControllerStatus]:
-        self._logger.info(
-            f"== controller_status()"
-        )
+        self._logger.info(f"== controller_status()")
 
-        raw = self._communication.query(
-            "STQ?"
-        )
+        raw = self._communication.query("STQ?")
         if raw is None:
             return None
 
-        value = ControllerStatus(
-            raw
-        )
+        value = ControllerStatus(raw)
         if not value.is_valid:
-            self._logger.error(
-                f"STQ?応答を解釈できません: {raw!r}"
-            )
+            self._logger.error(f"STQ?応答を解釈できません: {raw!r}")
             return None
 
         return value
@@ -154,34 +116,20 @@ class PM2CDDevice:
         pulse: int,
         backlash: Union[str, bool, None] = True,
     ) -> bool:
-        self._logger.info(
-            f"== move()"
-        )
+        self._logger.info(f"== move()")
 
-        if not self._check_motor(
-            motor
-        ):
+        if not self._check_motor(motor):
             return False
 
-        if not self._check_position(
-            pulse,
-            "pulse"
-        ):
+        if not self._check_position(pulse, "pulse"):
             return False
 
-        suffix = self._backlash_suffix(
-            backlash
-        )
+        suffix = self._backlash_suffix(backlash)
         if suffix is None:
             return False
 
-        command = (
-            f"ABS{self._motor_text(motor)}"
-            f"{suffix}{pulse:d}"
-        )
-        return self._communication.send(
-            command
-        )
+        command = f"ABS{self._motor_text(motor)}" f"{suffix}{pulse:d}"
+        return self._communication.send(command)
 
     def move_relative(
         self,
@@ -189,47 +137,29 @@ class PM2CDDevice:
         pulse: int,
         backlash: Union[str, bool, None] = True,
     ) -> bool:
-        self._logger.info(
-            f"== move_relative()"
-        )
+        self._logger.info(f"== move_relative()")
 
-        if not self._check_motor(
-            motor
-        ):
+        if not self._check_motor(motor):
             return False
 
-        if not self._check_position(
-            pulse,
-            "pulse"
-        ):
+        if not self._check_position(pulse, "pulse"):
             return False
 
-        suffix = self._backlash_suffix(
-            backlash
-        )
+        suffix = self._backlash_suffix(backlash)
         if suffix is None:
             return False
 
-        command = (
-            f"REL{self._motor_text(motor)}"
-            f"{suffix}{pulse:d}"
-        )
-        return self._communication.send(
-            command
-        )
+        command = f"REL{self._motor_text(motor)}" f"{suffix}{pulse:d}"
+        return self._communication.send(command)
 
     def scan(
         self,
         motor: int,
         direction: str,
     ) -> bool:
-        self._logger.info(
-            f"== scan()"
-        )
+        self._logger.info(f"== scan()")
 
-        normalized = self._normalize_direction(
-            direction
-        )
+        normalized = self._normalize_direction(direction)
         if normalized is None:
             return False
 
@@ -237,23 +167,16 @@ class PM2CDDevice:
         if normalized == "cw":
             command = "SCANP"
 
-        return self._send_motor_command(
-            command,
-            motor
-        )
+        return self._send_motor_command(command, motor)
 
     def constant_speed_scan(
         self,
         motor: int,
         direction: str,
     ) -> bool:
-        self._logger.info(
-            f"== constant_speed_scan()"
-        )
+        self._logger.info(f"== constant_speed_scan()")
 
-        normalized = self._normalize_direction(
-            direction
-        )
+        normalized = self._normalize_direction(direction)
         if normalized is None:
             return False
 
@@ -261,23 +184,16 @@ class PM2CDDevice:
         if normalized == "cw":
             command = "CSCANP"
 
-        return self._send_motor_command(
-            command,
-            motor
-        )
+        return self._send_motor_command(command, motor)
 
     def jog(
         self,
         motor: int,
         direction: str,
     ) -> bool:
-        self._logger.info(
-            f"== jog()"
-        )
+        self._logger.info(f"== jog()")
 
-        normalized = self._normalize_direction(
-            direction
-        )
+        normalized = self._normalize_direction(direction)
         if normalized is None:
             return False
 
@@ -285,23 +201,16 @@ class PM2CDDevice:
         if normalized == "cw":
             command = "JOGP"
 
-        return self._send_motor_command(
-            command,
-            motor
-        )
+        return self._send_motor_command(command, motor)
 
     def scan_home(
         self,
         motor: int,
         direction: str,
     ) -> bool:
-        self._logger.info(
-            f"== scan_home()"
-        )
+        self._logger.info(f"== scan_home()")
 
-        normalized = self._normalize_direction(
-            direction
-        )
+        normalized = self._normalize_direction(direction)
         if normalized is None:
             return False
 
@@ -309,90 +218,55 @@ class PM2CDDevice:
         if normalized == "cw":
             command = "SCANHP"
 
-        return self._send_motor_command(
-            command,
-            motor
-        )
+        return self._send_motor_command(command, motor)
 
     def home(
         self,
         motor: int,
     ) -> bool:
-        self._logger.info(
-            f"== home()"
-        )
-        return self._send_motor_command(
-            "GTHP",
-            motor
-        )
+        self._logger.info(f"== home()")
+        return self._send_motor_command("GTHP", motor)
 
     def find_home(
         self,
         motor: int,
     ) -> bool:
-        self._logger.info(
-            f"== find_home()"
-        )
-        return self._send_motor_command(
-            "FDHP",
-            motor
-        )
+        self._logger.info(f"== find_home()")
+        return self._send_motor_command("FDHP", motor)
 
     def stop(
         self,
         motor: int,
     ) -> bool:
-        self._logger.info(
-            f"== stop()"
-        )
-        return self._send_motor_command(
-            "SSTP",
-            motor
-        )
+        self._logger.info(f"== stop()")
+        return self._send_motor_command("SSTP", motor)
 
     def stop_all(
         self,
     ) -> bool:
-        self._logger.info(
-            f"== stop_all()"
-        )
-        return self._communication.send(
-            "ASSTP"
-        )
+        self._logger.info(f"== stop_all()")
+        return self._communication.send("ASSTP")
 
     def emergency_stop(
         self,
         motor: int,
     ) -> bool:
-        self._logger.info(
-            f"== emergency_stop()"
-        )
-        return self._send_motor_command(
-            "ESTP",
-            motor
-        )
+        self._logger.info(f"== emergency_stop()")
+        return self._send_motor_command("ESTP", motor)
 
     def emergency_stop_all(
         self,
     ) -> bool:
-        self._logger.info(
-            f"== emergency_stop_all()"
-        )
-        return self._communication.send(
-            "AESTP"
-        )
+        self._logger.info(f"== emergency_stop_all()")
+        return self._communication.send("AESTP")
 
     def status(
         self,
         motor: int,
     ) -> Optional[MotorStatus]:
-        self._logger.info(
-            f"== status()"
-        )
+        self._logger.info(f"== status()")
 
-        if not self._check_motor(
-            motor
-        ):
+        if not self._check_motor(motor):
             return None
 
         values = self.status_all()
@@ -404,23 +278,15 @@ class PM2CDDevice:
     def status_all(
         self,
     ) -> Optional[List[MotorStatus]]:
-        self._logger.info(
-            f"== status_all()"
-        )
+        self._logger.info(f"== status_all()")
 
-        raw = self._communication.query(
-            "STS?"
-        )
+        raw = self._communication.query("STS?")
         if raw is None:
             return None
 
-        values = MotorStatus.parse_all(
-            raw
-        )
+        values = MotorStatus.parse_all(raw)
         if values is None:
-            self._logger.error(
-                f"STS?応答を解釈できません: {raw!r}"
-            )
+            self._logger.error(f"STS?応答を解釈できません: {raw!r}")
             return None
 
         return values[: self.CHANNEL_COUNT]
@@ -429,13 +295,9 @@ class PM2CDDevice:
         self,
         motor: int,
     ) -> Optional[bool]:
-        self._logger.info(
-            f"== check_rotate()"
-        )
+        self._logger.info(f"== check_rotate()")
 
-        status = self.status(
-            motor
-        )
+        status = self.status(motor)
         if status is None:
             return None
 
@@ -445,63 +307,41 @@ class PM2CDDevice:
         self,
         motor: int,
     ) -> Optional[int]:
-        self._logger.info(
-            f"== position()"
-        )
+        self._logger.info(f"== position()")
 
-        motor_text = self._motor_text(
-            motor
-        )
+        motor_text = self._motor_text(motor)
         if motor_text is None:
             return None
 
-        return self._query_int(
-            f"PS?{motor_text}",
-            "PS?"
-        )
+        return self._query_int(f"PS?{motor_text}", "PS?")
 
     def set_position(
         self,
         motor: int,
         pulse: int,
     ) -> bool:
-        self._logger.info(
-            f"== set_position()"
-        )
+        self._logger.info(f"== set_position()")
 
-        motor_text = self._motor_text(
-            motor
-        )
+        motor_text = self._motor_text(motor)
         if motor_text is None:
             return False
 
-        if not self._check_position(
-            pulse,
-            "pulse"
-        ):
+        if not self._check_position(pulse, "pulse"):
             return False
 
-        return self._communication.send(
-            f"PS{motor_text}{pulse:d}"
-        )
+        return self._communication.send(f"PS{motor_text}{pulse:d}")
 
     def set_speed(
         self,
         motor: int,
         speed: int,
     ) -> bool:
-        self._logger.info(
-            f"== set_speed()"
-        )
+        self._logger.info(f"== set_speed()")
 
-        if not self._check_motor(
-            motor
-        ):
+        if not self._check_motor(motor):
             return False
 
-        if not self._check_speed(
-            speed
-        ):
+        if not self._check_speed(speed):
             return False
 
         middle = speed // 3
@@ -512,22 +352,13 @@ class PM2CDDevice:
         if low < self.SPEED_MIN:
             low = self.SPEED_MIN
 
-        if not self.set_high_speed(
-            motor,
-            speed
-        ):
+        if not self.set_high_speed(motor, speed):
             return False
 
-        if not self.set_middle_speed(
-            motor,
-            middle
-        ):
+        if not self.set_middle_speed(motor, middle):
             return False
 
-        return self.set_low_speed(
-            motor,
-            low
-        )
+        return self.set_low_speed(motor, low)
 
     def set_speed_profile(
         self,
@@ -536,149 +367,93 @@ class PM2CDDevice:
         middle_speed: int,
         high_speed: int,
     ) -> bool:
-        self._logger.info(
-            f"== set_speed_profile()"
-        )
+        self._logger.info(f"== set_speed_profile()")
 
-        if not self._check_motor(
-            motor
-        ):
+        if not self._check_motor(motor):
             return False
 
-        if not self._check_speed(
-            low_speed
-        ):
+        if not self._check_speed(low_speed):
             return False
 
-        if not self._check_speed(
-            middle_speed
-        ):
+        if not self._check_speed(middle_speed):
             return False
 
-        if not self._check_speed(
-            high_speed
-        ):
+        if not self._check_speed(high_speed):
             return False
 
-        if not self.set_low_speed(
-            motor,
-            low_speed
-        ):
+        if not self.set_low_speed(motor, low_speed):
             return False
 
-        if not self.set_middle_speed(
-            motor,
-            middle_speed
-        ):
+        if not self.set_middle_speed(motor, middle_speed):
             return False
 
-        return self.set_high_speed(
-            motor,
-            high_speed
-        )
+        return self.set_high_speed(motor, high_speed)
 
     def high_speed(
         self,
         motor: int,
     ) -> Optional[int]:
-        self._logger.info(
-            f"== high_speed()"
-        )
-        return self._query_motor_int(
-            "SPDH?",
-            motor
-        )
+        self._logger.info(f"== high_speed()")
+        return self._query_motor_int("SPDH?", motor)
 
     def set_high_speed(
         self,
         motor: int,
         speed: int,
     ) -> bool:
-        self._logger.info(
-            f"== set_high_speed()"
-        )
-        return self._set_speed_value(
-            "SPDH",
-            motor,
-            speed
-        )
+        self._logger.info(f"== set_high_speed()")
+        return self._set_speed_value("SPDH", motor, speed)
 
     def middle_speed(
         self,
         motor: int,
     ) -> Optional[int]:
-        self._logger.info(
-            f"== middle_speed()"
-        )
-        return self._query_motor_int(
-            "SPDM?",
-            motor
-        )
+        self._logger.info(f"== middle_speed()")
+        return self._query_motor_int("SPDM?", motor)
 
     def set_middle_speed(
         self,
         motor: int,
         speed: int,
     ) -> bool:
-        self._logger.info(
-            f"== set_middle_speed()"
-        )
-        return self._set_speed_value(
-            "SPDM",
-            motor,
-            speed
-        )
+        self._logger.info(f"== set_middle_speed()")
+        return self._set_speed_value("SPDM", motor, speed)
 
     def low_speed(
         self,
         motor: int,
     ) -> Optional[int]:
-        self._logger.info(
-            f"== low_speed()"
-        )
-        return self._query_motor_int(
-            "SPDL?",
-            motor
-        )
+        self._logger.info(f"== low_speed()")
+        return self._query_motor_int("SPDL?", motor)
 
     def set_low_speed(
         self,
         motor: int,
         speed: int,
     ) -> bool:
-        self._logger.info(
-            f"== set_low_speed()"
-        )
-        return self._set_speed_value(
-            "SPDL",
-            motor,
-            speed
-        )
+        self._logger.info(f"== set_low_speed()")
+        return self._set_speed_value("SPDL", motor, speed)
 
     def speed_mode(
         self,
         motor: int,
     ) -> Optional[str]:
-        self._logger.info(
-            f"== speed_mode()"
-        )
+        self._logger.info(f"== speed_mode()")
 
-        motor_text = self._motor_text(
-            motor
-        )
+        motor_text = self._motor_text(motor)
         if motor_text is None:
             return None
 
-        raw = self._query_text(
-            f"SPD?{motor_text}"
-        )
+        raw = self._query_text(f"SPD?{motor_text}")
         if raw is None:
             return None
 
-        if raw not in ("HSPD", "MSPD", "LSPD",):
-            self._logger.error(
-                f"SPD?応答を解釈できません: {raw!r}"
-            )
+        if raw not in (
+            "HSPD",
+            "MSPD",
+            "LSPD",
+        ):
+            self._logger.error(f"SPD?応答を解釈できません: {raw!r}")
             return None
 
         return raw
@@ -688,51 +463,34 @@ class PM2CDDevice:
         motor: int,
         mode: Union[int, str],
     ) -> bool:
-        self._logger.info(
-            f"== set_speed_mode()"
-        )
+        self._logger.info(f"== set_speed_mode()")
 
-        motor_text = self._motor_text(
-            motor
-        )
+        motor_text = self._motor_text(motor)
         if motor_text is None:
             return False
 
-        normalized = self._normalize_speed_mode(
-            mode
-        )
+        normalized = self._normalize_speed_mode(mode)
         if normalized is None:
             return False
 
-        return self._communication.send(
-            f"SPD{normalized}{motor_text}"
-        )
+        return self._communication.send(f"SPD{normalized}{motor_text}")
 
     def rate_number(
         self,
         motor: int,
     ) -> Optional[int]:
-        self._logger.info(
-            f"== rate_number()"
-        )
+        self._logger.info(f"== rate_number()")
 
-        motor_text = self._motor_text(
-            motor
-        )
+        motor_text = self._motor_text(motor)
         if motor_text is None:
             return None
 
-        value = self._query_int(
-            f"RTE?{motor_text}",
-            "RTE?"
-        )
+        value = self._query_int(f"RTE?{motor_text}", "RTE?")
         if value is None:
             return None
 
         if value < self.RATE_MIN or value > self.RATE_MAX:
-            self._logger.error(
-                f"RTE?応答が範囲外です: {value}"
-            )
+            self._logger.error(f"RTE?応答が範囲外です: {value}")
             return None
 
         return value
@@ -742,93 +500,60 @@ class PM2CDDevice:
         motor: int,
         number: int,
     ) -> bool:
-        self._logger.info(
-            f"== set_rate_number()"
-        )
+        self._logger.info(f"== set_rate_number()")
 
-        motor_text = self._motor_text(
-            motor
-        )
+        motor_text = self._motor_text(motor)
         if motor_text is None:
             return False
 
-        if not self._check_int(
-            number,
-            "number"
-        ):
+        if not self._check_int(number, "number"):
             return False
 
         if number < self.RATE_MIN or number > self.RATE_MAX:
-            self._logger.error(
-                f"numberは0から25の範囲で指定してください"
-            )
+            self._logger.error(f"numberは0から25の範囲で指定してください")
             return False
 
-        return self._communication.send(
-            f"RTE{motor_text}{number:03d}"
-        )
+        return self._communication.send(f"RTE{motor_text}{number:03d}")
 
     def backlash(
         self,
         motor: int,
     ) -> Optional[int]:
-        self._logger.info(
-            f"== backlash()"
-        )
-        return self._query_motor_int(
-            "B?",
-            motor
-        )
+        self._logger.info(f"== backlash()")
+        return self._query_motor_int("B?", motor)
 
     def set_backlash(
         self,
         motor: int,
         backlash: int,
     ) -> bool:
-        self._logger.info(
-            f"== set_backlash()"
-        )
+        self._logger.info(f"== set_backlash()")
 
-        motor_text = self._motor_text(
-            motor
-        )
+        motor_text = self._motor_text(motor)
         if motor_text is None:
             return False
 
-        if not self._check_int(
-            backlash,
-            "backlash"
-        ):
+        if not self._check_int(backlash, "backlash"):
             return False
 
         if backlash < self.BACKLASH_MIN or backlash > self.BACKLASH_MAX:
-            self._logger.error(
-                f"backlashは-9999から9999の範囲で指定してください"
-            )
+            self._logger.error(f"backlashは-9999から9999の範囲で指定してください")
             return False
 
-        return self._communication.send(
-            f"B{motor_text}{backlash:d}"
-        )
+        return self._communication.send(f"B{motor_text}{backlash:d}")
 
     def limit(
         self,
         motor: int,
         side: str,
     ) -> Optional[int]:
-        self._logger.info(
-            f"== limit()"
-        )
+        self._logger.info(f"== limit()")
 
-        motor_text = self._motor_text(
-            motor
-        )
+        motor_text = self._motor_text(motor)
         if motor_text is None:
             return None
 
-        normalized = self._normalize_side(
-            side
-        )
+        normalized = self._normalize_side(side)
         if normalized is None:
             return None
 
@@ -836,10 +561,7 @@ class PM2CDDevice:
         if normalized == "cw":
             command = "FL?"
 
-        return self._query_int(
-            f"{command}{motor_text}",
-            command
-        )
+        return self._query_int(f"{command}{motor_text}", command)
 
     def set_limit(
         self,
@@ -847,214 +569,135 @@ class PM2CDDevice:
         side: str,
         pulse: int,
     ) -> bool:
-        self._logger.info(
-            f"== set_limit()"
-        )
+        self._logger.info(f"== set_limit()")
 
-        motor_text = self._motor_text(
-            motor
-        )
+        motor_text = self._motor_text(motor)
         if motor_text is None:
             return False
 
-        if not self._check_position(
-            pulse,
-            "pulse"
-        ):
+        if not self._check_position(pulse, "pulse"):
             return False
 
-        normalized = self._normalize_side(
-            side
-        )
+        normalized = self._normalize_side(side)
         if normalized is None:
             return False
 
-        setting = self.limit_switch_setting(
-            motor
-        )
+        setting = self.limit_switch_setting(motor)
         if setting is None:
             return False
 
         if not setting.digital_limit_enabled:
-            changed = setting.with_digital_limit(
-                True
-            )
+            changed = setting.with_digital_limit(True)
             if changed is None:
                 return False
 
-            if not self.set_limit_switch_setting_raw(
-                motor,
-                changed
-            ):
+            if not self.set_limit_switch_setting_raw(motor, changed):
                 return False
 
         command = "BL"
         if normalized == "cw":
             command = "FL"
 
-        return self._communication.send(
-            f"{command}{motor_text}{pulse:d}"
-        )
+        return self._communication.send(f"{command}{motor_text}{pulse:d}")
 
     def pause(
         self,
     ) -> bool:
-        self._logger.info(
-            f"== pause()"
-        )
-        return self._communication.send(
-            "PAUSE ON"
-        )
+        self._logger.info(f"== pause()")
+        return self._communication.send("PAUSE ON")
 
     def resume(
         self,
     ) -> bool:
-        self._logger.info(
-            f"== resume()"
-        )
-        return self._communication.send(
-            "PAUSE OFF"
-        )
+        self._logger.info(f"== resume()")
+        return self._communication.send("PAUSE OFF")
 
     def pause_status(
         self,
     ) -> Optional[str]:
-        self._logger.info(
-            f"== pause_status()"
-        )
-        return self._query_on_off(
-            "PAUSE?"
-        )
+        self._logger.info(f"== pause_status()")
+        return self._query_on_off("PAUSE?")
 
     def hold(
         self,
         motor: int,
     ) -> Optional[str]:
-        self._logger.info(
-            f"== hold()"
-        )
+        self._logger.info(f"== hold()")
 
-        motor_text = self._motor_text(
-            motor
-        )
+        motor_text = self._motor_text(motor)
         if motor_text is None:
             return None
 
-        return self._query_on_off(
-            f"HOLD?{motor_text}"
-        )
+        return self._query_on_off(f"HOLD?{motor_text}")
 
     def set_hold(
         self,
         motor: int,
         enabled: bool,
     ) -> bool:
-        self._logger.info(
-            f"== set_hold()"
-        )
+        self._logger.info(f"== set_hold()")
 
-        motor_text = self._motor_text(
-            motor
-        )
+        motor_text = self._motor_text(motor)
         if motor_text is None:
             return False
 
-        if not isinstance(
-            enabled,
-            bool
-        ):
-            self._logger.error(
-                f"enabledはboolで指定してください"
-            )
+        if not isinstance(enabled, bool):
+            self._logger.error(f"enabledはboolで指定してください")
             return False
 
         mode = "OFF"
         if enabled:
             mode = "ON"
 
-        return self._communication.send(
-            f"HOLD{motor_text}{mode}"
-        )
+        return self._communication.send(f"HOLD{motor_text}{mode}")
 
     def hold_on_time(
         self,
         motor: int,
     ) -> Optional[int]:
-        self._logger.info(
-            f"== hold_on_time()"
-        )
-        return self._query_motor_msec(
-            "H_ONTM?",
-            motor
-        )
+        self._logger.info(f"== hold_on_time()")
+        return self._query_motor_msec("H_ONTM?", motor)
 
     def set_hold_on_time(
         self,
         motor: int,
         msec: int,
     ) -> bool:
-        self._logger.info(
-            f"== set_hold_on_time()"
-        )
-        return self._set_hold_time(
-            "H_ONTM",
-            motor,
-            msec
-        )
+        self._logger.info(f"== set_hold_on_time()")
+        return self._set_hold_time("H_ONTM", motor, msec)
 
     def hold_off_time(
         self,
         motor: int,
     ) -> Optional[int]:
-        self._logger.info(
-            f"== hold_off_time()"
-        )
-        return self._query_motor_msec(
-            "H_OFTM?",
-            motor
-        )
+        self._logger.info(f"== hold_off_time()")
+        return self._query_motor_msec("H_OFTM?", motor)
 
     def set_hold_off_time(
         self,
         motor: int,
         msec: int,
     ) -> bool:
-        self._logger.info(
-            f"== set_hold_off_time()"
-        )
-        return self._set_hold_time(
-            "H_OFTM",
-            motor,
-            msec
-        )
+        self._logger.info(f"== set_hold_off_time()")
+        return self._set_hold_time("H_OFTM", motor, msec)
 
     def home_status(
         self,
         motor: int,
     ) -> Optional[HomeStatus]:
-        self._logger.info(
-            f"== home_status()"
-        )
+        self._logger.info(f"== home_status()")
 
-        motor_text = self._motor_text(
-            motor
-        )
+        motor_text = self._motor_text(motor)
         if motor_text is None:
             return None
 
-        raw = self._communication.query(
-            f"SETHP?{motor_text}"
-        )
+        raw = self._communication.query(f"SETHP?{motor_text}")
         if raw is None:
             return None
 
-        value = HomeStatus(
-            raw
-        )
+        value = HomeStatus(raw)
         if not value.is_valid:
-            self._logger.error(
-                f"SETHP?応答を解釈できません: {raw!r}"
-            )
+            self._logger.error(f"SETHP?応答を解釈できません: {raw!r}")
             return None
 
         return value
@@ -1066,246 +709,156 @@ class PM2CDDevice:
         found_direction: str,
         auto_start_direction: str,
     ) -> bool:
-        self._logger.info(
-            f"== set_home_status()"
-        )
+        self._logger.info(f"== set_home_status()")
 
-        motor_text = self._motor_text(
-            motor
-        )
+        motor_text = self._motor_text(motor)
         if motor_text is None:
             return False
 
-        found_value = self._bool_digit(
-            found,
-            "found"
-        )
+        found_value = self._bool_digit(found, "found")
         if found_value is None:
             return False
 
-        found_dir = self._direction_digit(
-            found_direction
-        )
+        found_dir = self._direction_digit(found_direction)
         if found_dir is None:
             return False
 
-        auto_dir = self._direction_digit(
-            auto_start_direction
-        )
+        auto_dir = self._direction_digit(auto_start_direction)
         if auto_dir is None:
             return False
 
-        command = (
-            f"SETHP{motor_text}0"
-            f"{found_value}{found_dir}{auto_dir}"
-        )
-        return self._communication.send(
-            command
-        )
+        command = f"SETHP{motor_text}0" f"{found_value}{found_dir}{auto_dir}"
+        return self._communication.send(command)
 
     def home_position(
         self,
         motor: int,
     ) -> Optional[int]:
-        self._logger.info(
-            f"== home_position()"
-        )
+        self._logger.info(f"== home_position()")
 
-        motor_text = self._motor_text(
-            motor
-        )
+        motor_text = self._motor_text(motor)
         if motor_text is None:
             return None
 
-        raw = self._query_text(
-            f"SHP?{motor_text}"
-        )
+        raw = self._query_text(f"SHP?{motor_text}")
         if raw is None:
             return None
 
         if raw == "NO H.P":
             return None
 
-        return self._parse_int(
-            raw,
-            "SHP?"
-        )
+        return self._parse_int(raw, "SHP?")
 
     def set_home_position(
         self,
         motor: int,
         pulse: int,
     ) -> bool:
-        self._logger.info(
-            f"== set_home_position()"
-        )
+        self._logger.info(f"== set_home_position()")
 
-        motor_text = self._motor_text(
-            motor
-        )
+        motor_text = self._motor_text(motor)
         if motor_text is None:
             return False
 
-        if not self._check_position(
-            pulse,
-            "pulse"
-        ):
+        if not self._check_position(pulse, "pulse"):
             return False
 
-        return self._communication.send(
-            f"SHP{motor_text}{pulse:d}"
-        )
+        return self._communication.send(f"SHP{motor_text}{pulse:d}")
 
     def home_offset(
         self,
         motor: int,
     ) -> Optional[int]:
-        self._logger.info(
-            f"== home_offset()"
-        )
-        return self._query_motor_int(
-            "SHPF?",
-            motor
-        )
+        self._logger.info(f"== home_offset()")
+        return self._query_motor_int("SHPF?", motor)
 
     def set_home_offset(
         self,
         motor: int,
         pulse: int,
     ) -> bool:
-        self._logger.info(
-            f"== set_home_offset()"
-        )
+        self._logger.info(f"== set_home_offset()")
 
-        motor_text = self._motor_text(
-            motor
-        )
+        motor_text = self._motor_text(motor)
         if motor_text is None:
             return False
 
-        if not self._check_int(
-            pulse,
-            "pulse"
-        ):
+        if not self._check_int(pulse, "pulse"):
             return False
 
         if pulse < self.HOME_OFFSET_MIN or pulse > self.HOME_OFFSET_MAX:
-            self._logger.error(
-                f"pulseは0から9999の範囲で指定してください"
-            )
+            self._logger.error(f"pulseは0から9999の範囲で指定してください")
             return False
 
-        return self._communication.send(
-            f"SHPF{motor_text}{pulse:d}"
-        )
+        return self._communication.send(f"SHPF{motor_text}{pulse:d}")
 
     def preset_position(
         self,
         motor: int,
     ) -> Optional[int]:
-        self._logger.info(
-            f"== preset_position()"
-        )
-        return self._query_motor_int(
-            "SPRS?",
-            motor
-        )
+        self._logger.info(f"== preset_position()")
+        return self._query_motor_int("SPRS?", motor)
 
     def set_preset_position(
         self,
         motor: int,
         pulse: int,
     ) -> bool:
-        self._logger.info(
-            f"== set_preset_position()"
-        )
+        self._logger.info(f"== set_preset_position()")
 
-        motor_text = self._motor_text(
-            motor
-        )
+        motor_text = self._motor_text(motor)
         if motor_text is None:
             return False
 
-        if not self._check_position(
-            pulse,
-            "pulse"
-        ):
+        if not self._check_position(pulse, "pulse"):
             return False
 
-        return self._communication.send(
-            f"SPRS{motor_text}{pulse:d}"
-        )
+        return self._communication.send(f"SPRS{motor_text}{pulse:d}")
 
     def jog_pulse(
         self,
         motor: int,
     ) -> Optional[int]:
-        self._logger.info(
-            f"== jog_pulse()"
-        )
-        return self._query_motor_int(
-            "SETJG?",
-            motor
-        )
+        self._logger.info(f"== jog_pulse()")
+        return self._query_motor_int("SETJG?", motor)
 
     def set_jog_pulse(
         self,
         motor: int,
         pulse: int,
     ) -> bool:
-        self._logger.info(
-            f"== set_jog_pulse()"
-        )
+        self._logger.info(f"== set_jog_pulse()")
 
-        motor_text = self._motor_text(
-            motor
-        )
+        motor_text = self._motor_text(motor)
         if motor_text is None:
             return False
 
-        if not self._check_int(
-            pulse,
-            "pulse"
-        ):
+        if not self._check_int(pulse, "pulse"):
             return False
 
         if pulse < self.JOG_PULSE_MIN or pulse > self.JOG_PULSE_MAX:
-            self._logger.error(
-                f"pulseは0から9999の範囲で指定してください"
-            )
+            self._logger.error(f"pulseは0から9999の範囲で指定してください")
             return False
 
-        return self._communication.send(
-            f"SETJG{motor_text}{pulse:04d}"
-        )
+        return self._communication.send(f"SETJG{motor_text}{pulse:04d}")
 
     def limit_switch_setting(
         self,
         motor: int,
     ) -> Optional[LimitSwitchSetting]:
-        self._logger.info(
-            f"== limit_switch_setting()"
-        )
+        self._logger.info(f"== limit_switch_setting()")
 
-        motor_text = self._motor_text(
-            motor
-        )
+        motor_text = self._motor_text(motor)
         if motor_text is None:
             return None
 
-        raw = self._communication.query(
-            f"SETLS?{motor_text}"
-        )
+        raw = self._communication.query(f"SETLS?{motor_text}")
         if raw is None:
             return None
 
-        value = LimitSwitchSetting(
-            raw
-        )
+        value = LimitSwitchSetting(raw)
         if not value.is_valid:
-            self._logger.error(
-                f"SETLS?応答を解釈できません: {raw!r}"
-            )
+            self._logger.error(f"SETLS?応答を解釈できません: {raw!r}")
             return None
 
         return value
@@ -1315,56 +868,36 @@ class PM2CDDevice:
         motor: int,
         setting: str,
     ) -> bool:
-        self._logger.info(
-            f"== set_limit_switch_setting_raw()"
-        )
+        self._logger.info(f"== set_limit_switch_setting_raw()")
 
-        motor_text = self._motor_text(
-            motor
-        )
+        motor_text = self._motor_text(motor)
         if motor_text is None:
             return False
 
-        parsed = LimitSwitchSetting(
-            setting
-        )
+        parsed = LimitSwitchSetting(setting)
         if not parsed.is_valid:
-            self._logger.error(
-                f"SETLS設定値を解釈できません: {setting!r}"
-            )
+            self._logger.error(f"SETLS設定値を解釈できません: {setting!r}")
             return False
 
-        return self._communication.send(
-            f"SETLS{motor_text}{parsed.raw}"
-        )
+        return self._communication.send(f"SETLS{motor_text}{parsed.raw}")
 
     def motor_setting(
         self,
         motor: int,
     ) -> Optional[MotorSetting]:
-        self._logger.info(
-            f"== motor_setting()"
-        )
+        self._logger.info(f"== motor_setting()")
 
-        motor_text = self._motor_text(
-            motor
-        )
+        motor_text = self._motor_text(motor)
         if motor_text is None:
             return None
 
-        raw = self._communication.query(
-            f"SETMT?{motor_text}"
-        )
+        raw = self._communication.query(f"SETMT?{motor_text}")
         if raw is None:
             return None
 
-        value = MotorSetting(
-            raw
-        )
+        value = MotorSetting(raw)
         if not value.is_valid:
-            self._logger.error(
-                f"SETMT?応答を解釈できません: {raw!r}"
-            )
+            self._logger.error(f"SETMT?応答を解釈できません: {raw!r}")
             return None
 
         return value
@@ -1376,45 +909,28 @@ class PM2CDDevice:
         hold_mode: int,
         output_mode: int,
     ) -> bool:
-        self._logger.info(
-            f"== set_motor_setting()"
-        )
+        self._logger.info(f"== set_motor_setting()")
 
-        motor_text = self._motor_text(
-            motor
-        )
+        motor_text = self._motor_text(motor)
         if motor_text is None:
             return False
 
-        drive = self._bool_digit(
-            drive_enabled,
-            "drive_enabled"
-        )
+        drive = self._bool_digit(drive_enabled, "drive_enabled")
         if drive is None:
             return False
 
-        if not self._check_int(
-            hold_mode,
-            "hold_mode"
-        ):
+        if not self._check_int(hold_mode, "hold_mode"):
             return False
 
-        if not self._check_int(
-            output_mode,
-            "output_mode"
-        ):
+        if not self._check_int(output_mode, "output_mode"):
             return False
 
         if hold_mode < 0 or hold_mode > 3:
-            self._logger.error(
-                f"hold_modeは0から3の範囲で指定してください"
-            )
+            self._logger.error(f"hold_modeは0から3の範囲で指定してください")
             return False
 
         if output_mode < 0 or output_mode > 2:
-            self._logger.error(
-                f"output_modeは0から2の範囲で指定してください"
-            )
+            self._logger.error(f"output_modeは0から2の範囲で指定してください")
             return False
 
         return self._communication.send(
@@ -1425,29 +941,19 @@ class PM2CDDevice:
         self,
         motor: int,
     ) -> Optional[StopMode]:
-        self._logger.info(
-            f"== stop_mode()"
-        )
+        self._logger.info(f"== stop_mode()")
 
-        motor_text = self._motor_text(
-            motor
-        )
+        motor_text = self._motor_text(motor)
         if motor_text is None:
             return None
 
-        raw = self._communication.query(
-            f"STOPMD?{motor_text}"
-        )
+        raw = self._communication.query(f"STOPMD?{motor_text}")
         if raw is None:
             return None
 
-        value = StopMode(
-            raw
-        )
+        value = StopMode(raw)
         if not value.is_valid:
-            self._logger.error(
-                f"STOPMD?応答を解釈できません: {raw!r}"
-            )
+            self._logger.error(f"STOPMD?応答を解釈できません: {raw!r}")
             return None
 
         return value
@@ -1458,55 +964,31 @@ class PM2CDDevice:
         panel_fast: bool,
         limit_fast: bool,
     ) -> bool:
-        self._logger.info(
-            f"== set_stop_mode()"
-        )
+        self._logger.info(f"== set_stop_mode()")
 
-        motor_text = self._motor_text(
-            motor
-        )
+        motor_text = self._motor_text(motor)
         if motor_text is None:
             return False
 
-        panel = self._bool_digit(
-            panel_fast,
-            "panel_fast"
-        )
+        panel = self._bool_digit(panel_fast, "panel_fast")
         if panel is None:
             return False
 
-        limit_value = self._bool_digit(
-            limit_fast,
-            "limit_fast"
-        )
+        limit_value = self._bool_digit(limit_fast, "limit_fast")
         if limit_value is None:
             return False
 
-        return self._communication.send(
-            f"STOPMD{motor_text}{panel}{limit_value}"
-        )
+        return self._communication.send(f"STOPMD{motor_text}{panel}{limit_value}")
 
     @staticmethod
     def number_to_rate(
         index: int,
     ) -> float:
-        if not isinstance(
-            index,
-            int
-        ) or isinstance(
-            index,
-            bool
-        ):
-            raise TypeError(
-                "indexはintで指定してください"
-            )
+        if not isinstance(index, int) or isinstance(index, bool):
+            raise TypeError("indexはintで指定してください")
 
-        if index < 0 or index >= len(
-            RATE_TABLE
-        ):
-            raise ValueError(
-                "レート番号は0から25の範囲で指定してください"
-            )
+        if index < 0 or index >= len(RATE_TABLE):
+            raise ValueError("レート番号は0から25の範囲で指定してください")
 
         return RATE_TABLE[index]
 
@@ -1516,44 +998,30 @@ class PM2CDDevice:
     ) -> int:
         if not isinstance(
             rate,
-            (int, float,)
-        ) or isinstance(
-            rate,
-            bool
-        ):
-            raise TypeError(
-                "rateは数値で指定してください"
-            )
+            (
+                int,
+                float,
+            ),
+        ) or isinstance(rate, bool):
+            raise TypeError("rateは数値で指定してください")
 
-        target = abs(
-            float(
-                rate
-            )
-        )
-        for number, table_rate in enumerate(
-            RATE_TABLE
-        ):
+        target = abs(float(rate))
+        for number, table_rate in enumerate(RATE_TABLE):
             if target >= table_rate:
                 return number
 
-        raise ValueError(
-            "rateがRATE TABLEの範囲外です"
-        )
+        raise ValueError("rateがRATE TABLEの範囲外です")
 
     def _send_motor_command(
         self,
         command: str,
         motor: int,
     ) -> bool:
-        motor_text = self._motor_text(
-            motor
-        )
+        motor_text = self._motor_text(motor)
         if motor_text is None:
             return False
 
-        return self._communication.send(
-            f"{command}{motor_text}"
-        )
+        return self._communication.send(f"{command}{motor_text}")
 
     def _set_speed_value(
         self,
@@ -1561,20 +1029,14 @@ class PM2CDDevice:
         motor: int,
         speed: int,
     ) -> bool:
-        motor_text = self._motor_text(
-            motor
-        )
+        motor_text = self._motor_text(motor)
         if motor_text is None:
             return False
 
-        if not self._check_speed(
-            speed
-        ):
+        if not self._check_speed(speed):
             return False
 
-        return self._communication.send(
-            f"{command}{motor_text}{speed:d}"
-        )
+        return self._communication.send(f"{command}{motor_text}{speed:d}")
 
     def _set_hold_time(
         self,
@@ -1582,107 +1044,66 @@ class PM2CDDevice:
         motor: int,
         msec: int,
     ) -> bool:
-        motor_text = self._motor_text(
-            motor
-        )
+        motor_text = self._motor_text(motor)
         if motor_text is None:
             return False
 
-        if not self._check_int(
-            msec,
-            "msec"
-        ):
+        if not self._check_int(msec, "msec"):
             return False
 
         if msec < self.HOLD_TIME_MIN or msec > self.HOLD_TIME_MAX:
-            self._logger.error(
-                f"msecは50から3000の範囲で指定してください"
-            )
+            self._logger.error(f"msecは50から3000の範囲で指定してください")
             return False
 
         if msec % self.HOLD_TIME_STEP != 0:
-            self._logger.error(
-                f"msecは10刻みで指定してください"
-            )
+            self._logger.error(f"msecは10刻みで指定してください")
             return False
 
-        return self._communication.send(
-            f"{command}{motor_text}{msec:d}"
-        )
+        return self._communication.send(f"{command}{motor_text}{msec:d}")
 
     def _query_motor_int(
         self,
         command: str,
         motor: int,
     ) -> Optional[int]:
-        motor_text = self._motor_text(
-            motor
-        )
+        motor_text = self._motor_text(motor)
         if motor_text is None:
             return None
 
-        return self._query_int(
-            f"{command}{motor_text}",
-            command
-        )
+        return self._query_int(f"{command}{motor_text}", command)
 
     def _query_motor_msec(
         self,
         command: str,
         motor: int,
     ) -> Optional[int]:
-        motor_text = self._motor_text(
-            motor
-        )
+        motor_text = self._motor_text(motor)
         if motor_text is None:
             return None
 
-        return self._query_msec(
-            f"{command}{motor_text}"
-        )
+        return self._query_msec(f"{command}{motor_text}")
 
     def _query_msec(
         self,
         command: str,
     ) -> Optional[int]:
-        raw = self._query_text(
-            command
-        )
+        raw = self._query_text(command)
         if raw is None:
             return None
 
-        normalized = (
-            raw.lower()
-            .replace(
-                "msec.",
-                ""
-            )
-            .replace(
-                "ms",
-                ""
-            )
-            .strip()
-        )
-        return self._parse_int(
-            normalized,
-            command
-        )
+        normalized = raw.lower().replace("msec.", "").replace("ms", "").strip()
+        return self._parse_int(normalized, command)
 
     def _query_int(
         self,
         command: str,
         name: str,
     ) -> Optional[int]:
-        raw = self._query_text(
-            command
-        )
+        raw = self._query_text(command)
         if raw is None:
             return None
 
-        return self._parse_int(
-            raw,
-            name
-        )
+        return self._parse_int(raw, name)
 
     def _parse_int(
         self,
@@ -1690,24 +1111,16 @@ class PM2CDDevice:
         name: str,
     ) -> Optional[int]:
         try:
-            return int(
-                raw,
-                10
-            )
+            return int(raw, 10)
         except (TypeError, ValueError) as exc:
-            self._logger.error(
-                f"{name}応答を整数へ変換できません: "
-                f"{raw!r}: {exc}"
-            )
+            self._logger.error(f"{name}応答を整数へ変換できません: " f"{raw!r}: {exc}")
             return None
 
     def _query_text(
         self,
         command: str,
     ) -> Optional[str]:
-        raw = self._communication.query(
-            command
-        )
+        raw = self._communication.query(command)
         if raw is None:
             return None
 
@@ -1717,17 +1130,16 @@ class PM2CDDevice:
         self,
         command: str,
     ) -> Optional[str]:
-        raw = self._query_text(
-            command
-        )
+        raw = self._query_text(command)
         if raw is None:
             return None
 
         raw = raw.upper()
-        if raw not in ("ON", "OFF",):
-            self._logger.error(
-                f"{command}応答を解釈できません: {raw!r}"
-            )
+        if raw not in (
+            "ON",
+            "OFF",
+        ):
+            self._logger.error(f"{command}応答を解釈できません: {raw!r}")
             return None
 
         return raw
@@ -1736,9 +1148,7 @@ class PM2CDDevice:
         self,
         motor: int,
     ) -> Optional[str]:
-        if not self._check_motor(
-            motor
-        ):
+        if not self._check_motor(motor):
             return None
 
         return f"{motor:X}"
@@ -1747,16 +1157,11 @@ class PM2CDDevice:
         self,
         motor: int,
     ) -> bool:
-        if not self._check_int(
-            motor,
-            "motor"
-        ):
+        if not self._check_int(motor, "motor"):
             return False
 
         if motor < 0 or motor >= self.CHANNEL_COUNT:
-            self._logger.error(
-                f"motorは0または1で指定してください"
-            )
+            self._logger.error(f"motorは0または1で指定してください")
             return False
 
         return True
@@ -1766,10 +1171,7 @@ class PM2CDDevice:
         value: int,
         name: str,
     ) -> bool:
-        if not self._check_int(
-            value,
-            name
-        ):
+        if not self._check_int(value, name):
             return False
 
         if value < self.POSITION_MIN or value > self.POSITION_MAX:
@@ -1785,16 +1187,11 @@ class PM2CDDevice:
         self,
         speed: int,
     ) -> bool:
-        if not self._check_int(
-            speed,
-            "speed"
-        ):
+        if not self._check_int(speed, "speed"):
             return False
 
         if speed < self.SPEED_MIN or speed > self.SPEED_MAX:
-            self._logger.error(
-                f"speedは5から100000の範囲で指定してください"
-            )
+            self._logger.error(f"speedは5から100000の範囲で指定してください")
             return False
 
         return True
@@ -1804,16 +1201,8 @@ class PM2CDDevice:
         value,
         name: str,
     ) -> bool:
-        if not isinstance(
-            value,
-            int
-        ) or isinstance(
-            value,
-            bool
-        ):
-            self._logger.error(
-                f"{name}はintで指定してください"
-            )
+        if not isinstance(value, int) or isinstance(value, bool):
+            self._logger.error(f"{name}はintで指定してください")
             return False
 
         return True
@@ -1822,72 +1211,58 @@ class PM2CDDevice:
         self,
         direction: str,
     ) -> Optional[str]:
-        if not isinstance(
-            direction,
-            str
-        ):
-            self._logger.error(
-                f"directionはstrで指定してください"
-            )
+        if not isinstance(direction, str):
+            self._logger.error(f"directionはstrで指定してください")
             return None
 
         normalized = direction.strip().lower()
-        if normalized in ("cw", "+", "p", "positive",):
+        if normalized in (
+            "cw",
+            "+",
+            "p",
+            "positive",
+        ):
             return "cw"
 
-        if normalized in ("ccw", "-", "n", "negative",):
+        if normalized in (
+            "ccw",
+            "-",
+            "n",
+            "negative",
+        ):
             return "ccw"
 
-        self._logger.error(
-            f"directionはcwまたはccwで指定してください"
-        )
+        self._logger.error(f"directionはcwまたはccwで指定してください")
         return None
 
     def _normalize_side(
         self,
         side: str,
     ) -> Optional[str]:
-        return self._normalize_direction(
-            side
-        )
+        return self._normalize_direction(side)
 
     def _normalize_speed_mode(
         self,
         mode: Union[int, str],
     ) -> Optional[str]:
-        if isinstance(
-            mode,
-            bool
-        ):
-            self._logger.error(
-                f"modeはintまたはstrで指定してください"
-            )
+        if isinstance(mode, bool):
+            self._logger.error(f"modeはintまたはstrで指定してください")
             return None
 
-        if isinstance(
-            mode,
-            int
-        ):
+        if isinstance(mode, int):
             mapping = {
                 1: "L",
                 2: "M",
                 3: "H",
             }
             if mode not in mapping:
-                self._logger.error(
-                    f"modeは1, 2, 3またはL/M/Hで指定してください"
-                )
+                self._logger.error(f"modeは1, 2, 3またはL/M/Hで指定してください")
                 return None
 
             return mapping[mode]
 
-        if not isinstance(
-            mode,
-            str
-        ):
-            self._logger.error(
-                f"modeはintまたはstrで指定してください"
-            )
+        if not isinstance(mode, str):
+            self._logger.error(f"modeはintまたはstrで指定してください")
             return None
 
         normalized = mode.strip().upper()
@@ -1904,9 +1279,7 @@ class PM2CDDevice:
         }
 
         if normalized not in mapping:
-            self._logger.error(
-                f"modeはL/M/Hで指定してください"
-            )
+            self._logger.error(f"modeはL/M/Hで指定してください")
             return None
 
         return mapping[normalized]
@@ -1921,34 +1294,32 @@ class PM2CDDevice:
         if backlash is False or backlash is None:
             return ""
 
-        if not isinstance(
-            backlash,
-            str
-        ):
-            self._logger.error(
-                f"backlashはbool, str, Noneで指定してください"
-            )
+        if not isinstance(backlash, str):
+            self._logger.error(f"backlashはbool, str, Noneで指定してください")
             return None
 
         normalized = backlash.strip().upper()
-        if normalized in ("", "NONE", "OFF",):
+        if normalized in (
+            "",
+            "NONE",
+            "OFF",
+        ):
             return ""
 
-        if normalized in ("B", "S",):
+        if normalized in (
+            "B",
+            "S",
+        ):
             return normalized
 
-        self._logger.error(
-            f"backlashはTrue/FalseまたはB/Sで指定してください"
-        )
+        self._logger.error(f"backlashはTrue/FalseまたはB/Sで指定してください")
         return None
 
     def _direction_digit(
         self,
         direction: str,
     ) -> Optional[str]:
-        normalized = self._normalize_direction(
-            direction
-        )
+        normalized = self._normalize_direction(direction)
         if normalized is None:
             return None
 
@@ -1962,13 +1333,8 @@ class PM2CDDevice:
         value: bool,
         name: str,
     ) -> Optional[str]:
-        if not isinstance(
-            value,
-            bool
-        ):
-            self._logger.error(
-                f"{name}はboolで指定してください"
-            )
+        if not isinstance(value, bool):
+            self._logger.error(f"{name}はboolで指定してください")
             return None
 
         if value:
