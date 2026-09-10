@@ -90,7 +90,7 @@ class PM2CDDevice:
         self._logger.info(f'== local()')
         return self._communication.send('LOC')
 
-    def version(
+    def get_version(
         self,
     ) -> Optional[VersionInfo]:
         """装置のソフトウェアバージョン情報を取得する。
@@ -98,7 +98,7 @@ class PM2CDDevice:
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        self._logger.info(f'== version()')
+        self._logger.info(f'== get_version()')
 
         raw = self._communication.query('VER?')
         if raw is None:
@@ -112,7 +112,7 @@ class PM2CDDevice:
         self._version_info = value
         return value
 
-    def hardware_version(
+    def get_hardware_version(
         self,
     ) -> Optional[str]:
         """装置のハードウェアバージョン情報を取得する。
@@ -120,7 +120,7 @@ class PM2CDDevice:
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        self._logger.info(f'== hardware_version()')
+        self._logger.info(f'== get_hardware_version()')
 
         raw = self._query_text('VERH?')
         if raw is None:
@@ -132,7 +132,7 @@ class PM2CDDevice:
 
         return raw
 
-    def controller_status(
+    def get_controller_status(
         self,
     ) -> Optional[ControllerStatus]:
         """コントローラー全体の状態を取得する。
@@ -140,7 +140,7 @@ class PM2CDDevice:
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        self._logger.info(f'== controller_status()')
+        self._logger.info(f'== get_controller_status()')
 
         raw = self._communication.query('STQ?')
         if raw is None:
@@ -409,7 +409,7 @@ class PM2CDDevice:
         self._logger.info(f'== emergency_stop_all()')
         return self._communication.send('AESTP')
 
-    def status(
+    def get_status(
         self,
         motor: int,
     ) -> Optional[MotorStatus]:
@@ -421,19 +421,19 @@ class PM2CDDevice:
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        self._logger.info(f'== status()')
+        self._logger.info(f'== get_status()')
 
         if not self._check_motor(motor):
             return None
 
         # STS? は全モーター分をまとめて返すため、一度だけ取得して対象 motor を選ぶ。
-        values = self.status_all()
+        values = self.get_status_all()
         if values is None:
             return None
 
         return values[motor]
 
-    def status_all(
+    def get_status_all(
         self,
     ) -> Optional[List[MotorStatus]]:
         """全モーターの状態を取得する。
@@ -441,7 +441,7 @@ class PM2CDDevice:
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        self._logger.info(f'== status_all()')
+        self._logger.info(f'== get_status_all()')
 
         raw = self._communication.query('STS?')
         if raw is None:
@@ -454,7 +454,7 @@ class PM2CDDevice:
 
         return values[: self.CHANNEL_COUNT]
 
-    def check_rotate(
+    def get_rotate(
         self,
         motor: int,
     ) -> Optional[bool]:
@@ -466,9 +466,9 @@ class PM2CDDevice:
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        self._logger.info(f'== check_rotate()')
+        self._logger.info(f'== get_rotate()')
 
-        status = self.status(motor)
+        status = self.get_status(motor)
         if status is None:
             return None
 
@@ -479,7 +479,7 @@ class PM2CDDevice:
 
 
     # --- 位置・速度設定 --------------------------------------------------------
-    def position(
+    def get_position(
         self,
         motor: int,
     ) -> Optional[int]:
@@ -491,7 +491,7 @@ class PM2CDDevice:
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        self._logger.info(f'== position()')
+        self._logger.info(f'== get_position()')
 
         motor_text = self._motor_text(motor)
         if motor_text is None:
@@ -523,6 +523,21 @@ class PM2CDDevice:
             return False
 
         return self._communication.send(f'PS{motor_text}{pulse:d}')
+
+    def get_speed(
+        self,
+        motor: int,
+    ) -> Optional[int]:
+        """set_speed() の基準となる高速設定値を取得する。
+
+        Args:
+            motor: モーター番号。0 または 1。
+
+        Returns:
+            取得または変換に成功した値。失敗した場合は None。
+        """
+        self._logger.info(f'== get_speed()')
+        return self.get_high_speed(motor)
 
     def set_speed(
         self,
@@ -564,6 +579,34 @@ class PM2CDDevice:
 
         return self.set_low_speed(motor, low)
 
+    def get_speed_profile(
+        self,
+        motor: int,
+    ) -> Optional[List[int]]:
+        """低速・中速・高速の設定値を取得する。
+
+        Args:
+            motor: モーター番号。0 または 1。
+
+        Returns:
+            低速・中速・高速の順の設定値。取得に失敗した場合は None。
+        """
+        self._logger.info(f'== get_speed_profile()')
+
+        low_speed = self.get_low_speed(motor)
+        if low_speed is None:
+            return None
+
+        middle_speed = self.get_middle_speed(motor)
+        if middle_speed is None:
+            return None
+
+        high_speed = self.get_high_speed(motor)
+        if high_speed is None:
+            return None
+
+        return [low_speed, middle_speed, high_speed]
+
     def set_speed_profile(
         self,
         motor: int,
@@ -604,7 +647,7 @@ class PM2CDDevice:
 
         return self.set_high_speed(motor, high_speed)
 
-    def high_speed(
+    def get_high_speed(
         self,
         motor: int,
     ) -> Optional[int]:
@@ -616,7 +659,7 @@ class PM2CDDevice:
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        self._logger.info(f'== high_speed()')
+        self._logger.info(f'== get_high_speed()')
         return self._query_motor_int('SPDH?', motor)
 
     def set_high_speed(
@@ -636,7 +679,7 @@ class PM2CDDevice:
         self._logger.info(f'== set_high_speed()')
         return self._set_speed_value('SPDH', motor, speed)
 
-    def middle_speed(
+    def get_middle_speed(
         self,
         motor: int,
     ) -> Optional[int]:
@@ -648,7 +691,7 @@ class PM2CDDevice:
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        self._logger.info(f'== middle_speed()')
+        self._logger.info(f'== get_middle_speed()')
         return self._query_motor_int('SPDM?', motor)
 
     def set_middle_speed(
@@ -668,7 +711,7 @@ class PM2CDDevice:
         self._logger.info(f'== set_middle_speed()')
         return self._set_speed_value('SPDM', motor, speed)
 
-    def low_speed(
+    def get_low_speed(
         self,
         motor: int,
     ) -> Optional[int]:
@@ -680,7 +723,7 @@ class PM2CDDevice:
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        self._logger.info(f'== low_speed()')
+        self._logger.info(f'== get_low_speed()')
         return self._query_motor_int('SPDL?', motor)
 
     def set_low_speed(
@@ -700,7 +743,7 @@ class PM2CDDevice:
         self._logger.info(f'== set_low_speed()')
         return self._set_speed_value('SPDL', motor, speed)
 
-    def speed_mode(
+    def get_speed_mode(
         self,
         motor: int,
     ) -> Optional[str]:
@@ -712,7 +755,7 @@ class PM2CDDevice:
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        self._logger.info(f'== speed_mode()')
+        self._logger.info(f'== get_speed_mode()')
 
         motor_text = self._motor_text(motor)
         if motor_text is None:
@@ -756,7 +799,7 @@ class PM2CDDevice:
 
 
     # --- 加減速・バックラッシュ・リミット ------------------------------------
-    def rate_number(
+    def get_rate_number(
         self,
         motor: int,
     ) -> Optional[int]:
@@ -768,7 +811,7 @@ class PM2CDDevice:
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        self._logger.info(f'== rate_number()')
+        self._logger.info(f'== get_rate_number()')
 
         motor_text = self._motor_text(motor)
         if motor_text is None:
@@ -813,7 +856,7 @@ class PM2CDDevice:
 
         return self._communication.send(f'RTE{motor_text}{number:03d}')
 
-    def backlash(
+    def get_backlash(
         self,
         motor: int,
     ) -> Optional[int]:
@@ -825,7 +868,7 @@ class PM2CDDevice:
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        self._logger.info(f'== backlash()')
+        self._logger.info(f'== get_backlash()')
         return self._query_motor_int('B?', motor)
 
     def set_backlash(
@@ -857,7 +900,7 @@ class PM2CDDevice:
 
         return self._communication.send(f'B{motor_text}{backlash:d}')
 
-    def limit(
+    def get_limit(
         self,
         motor: int,
         side: str,
@@ -871,7 +914,7 @@ class PM2CDDevice:
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        self._logger.info(f'== limit()')
+        self._logger.info(f'== get_limit()')
 
         motor_text = self._motor_text(motor)
         if motor_text is None:
@@ -918,7 +961,7 @@ class PM2CDDevice:
 
         # ソフトウェアリミットを設定する前に SETLS を読み、デジタルリミットが
         # 無効なら既存設定を保持したまま有効化する。
-        setting = self.limit_switch_setting(motor)
+        setting = self.get_limit_switch_setting(motor)
         if setting is None:
             return False
 
@@ -960,7 +1003,7 @@ class PM2CDDevice:
         self._logger.info(f'== resume()')
         return self._communication.send('PAUSE OFF')
 
-    def pause_status(
+    def get_pause_status(
         self,
     ) -> Optional[str]:
         """一時停止状態を取得する。
@@ -968,10 +1011,10 @@ class PM2CDDevice:
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        self._logger.info(f'== pause_status()')
+        self._logger.info(f'== get_pause_status()')
         return self._query_on_off('PAUSE?')
 
-    def hold(
+    def get_hold(
         self,
         motor: int,
     ) -> Optional[str]:
@@ -983,7 +1026,7 @@ class PM2CDDevice:
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        self._logger.info(f'== hold()')
+        self._logger.info(f'== get_hold()')
 
         motor_text = self._motor_text(motor)
         if motor_text is None:
@@ -1021,7 +1064,7 @@ class PM2CDDevice:
 
         return self._communication.send(f'HOLD{motor_text}{mode}')
 
-    def hold_on_time(
+    def get_hold_on_time(
         self,
         motor: int,
     ) -> Optional[int]:
@@ -1033,7 +1076,7 @@ class PM2CDDevice:
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        self._logger.info(f'== hold_on_time()')
+        self._logger.info(f'== get_hold_on_time()')
         return self._query_motor_msec('H_ONTM?', motor)
 
     def set_hold_on_time(
@@ -1053,7 +1096,7 @@ class PM2CDDevice:
         self._logger.info(f'== set_hold_on_time()')
         return self._set_hold_time('H_ONTM', motor, msec)
 
-    def hold_off_time(
+    def get_hold_off_time(
         self,
         motor: int,
     ) -> Optional[int]:
@@ -1065,7 +1108,7 @@ class PM2CDDevice:
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        self._logger.info(f'== hold_off_time()')
+        self._logger.info(f'== get_hold_off_time()')
         return self._query_motor_msec('H_OFTM?', motor)
 
     def set_hold_off_time(
@@ -1087,7 +1130,7 @@ class PM2CDDevice:
 
 
     # --- 原点関連設定 ----------------------------------------------------------
-    def home_status(
+    def get_home_status(
         self,
         motor: int,
     ) -> Optional[HomeStatus]:
@@ -1099,7 +1142,7 @@ class PM2CDDevice:
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        self._logger.info(f'== home_status()')
+        self._logger.info(f'== get_home_status()')
 
         motor_text = self._motor_text(motor)
         if motor_text is None:
@@ -1157,7 +1200,7 @@ class PM2CDDevice:
         )
         return self._communication.send(command)
 
-    def home_position(
+    def get_home_position(
         self,
         motor: int,
     ) -> Optional[int]:
@@ -1169,7 +1212,7 @@ class PM2CDDevice:
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        self._logger.info(f'== home_position()')
+        self._logger.info(f'== get_home_position()')
 
         motor_text = self._motor_text(motor)
         if motor_text is None:
@@ -1209,7 +1252,7 @@ class PM2CDDevice:
 
         return self._communication.send(f'SHP{motor_text}{pulse:d}')
 
-    def home_offset(
+    def get_home_offset(
         self,
         motor: int,
     ) -> Optional[int]:
@@ -1221,7 +1264,7 @@ class PM2CDDevice:
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        self._logger.info(f'== home_offset()')
+        self._logger.info(f'== get_home_offset()')
         return self._query_motor_int('SHPF?', motor)
 
     def set_home_offset(
@@ -1255,7 +1298,7 @@ class PM2CDDevice:
 
 
     # --- プリセット・JOG・装置設定 --------------------------------------------
-    def preset_position(
+    def get_preset_position(
         self,
         motor: int,
     ) -> Optional[int]:
@@ -1267,7 +1310,7 @@ class PM2CDDevice:
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        self._logger.info(f'== preset_position()')
+        self._logger.info(f'== get_preset_position()')
         return self._query_motor_int('SPRS?', motor)
 
     def set_preset_position(
@@ -1295,7 +1338,7 @@ class PM2CDDevice:
 
         return self._communication.send(f'SPRS{motor_text}{pulse:d}')
 
-    def jog_pulse(
+    def get_jog_pulse(
         self,
         motor: int,
     ) -> Optional[int]:
@@ -1307,7 +1350,7 @@ class PM2CDDevice:
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        self._logger.info(f'== jog_pulse()')
+        self._logger.info(f'== get_jog_pulse()')
         return self._query_motor_int('SETJG?', motor)
 
     def set_jog_pulse(
@@ -1339,7 +1382,7 @@ class PM2CDDevice:
 
         return self._communication.send(f'SETJG{motor_text}{pulse:04d}')
 
-    def limit_switch_setting(
+    def get_limit_switch_setting(
         self,
         motor: int,
     ) -> Optional[LimitSwitchSetting]:
@@ -1351,7 +1394,7 @@ class PM2CDDevice:
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        self._logger.info(f'== limit_switch_setting()')
+        self._logger.info(f'== get_limit_switch_setting()')
 
         motor_text = self._motor_text(motor)
         if motor_text is None:
@@ -1367,6 +1410,24 @@ class PM2CDDevice:
             return None
 
         return value
+
+    def get_limit_switch_setting_raw(
+        self,
+        motor: int,
+    ) -> Optional[str]:
+        """リミットスイッチ設定を生の設定文字列で取得する。
+
+        Args:
+            motor: モーター番号。0 または 1。
+
+        Returns:
+            取得した生の設定文字列。失敗した場合は None。
+        """
+        setting = self.get_limit_switch_setting(motor)
+        if setting is None:
+            return None
+
+        return setting.raw
 
     def set_limit_switch_setting_raw(
         self,
@@ -1395,7 +1456,7 @@ class PM2CDDevice:
 
         return self._communication.send(f'SETLS{motor_text}{parsed.raw}')
 
-    def motor_setting(
+    def get_motor_setting(
         self,
         motor: int,
     ) -> Optional[MotorSetting]:
@@ -1407,7 +1468,7 @@ class PM2CDDevice:
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        self._logger.info(f'== motor_setting()')
+        self._logger.info(f'== get_motor_setting()')
 
         motor_text = self._motor_text(motor)
         if motor_text is None:
@@ -1469,7 +1530,7 @@ class PM2CDDevice:
         command = f"SETMT{motor_text}{drive}{hold_mode}1{output_mode}"
         return self._communication.send(command)
 
-    def stop_mode(
+    def get_stop_mode(
         self,
         motor: int,
     ) -> Optional[StopMode]:
@@ -1481,7 +1542,7 @@ class PM2CDDevice:
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        self._logger.info(f'== stop_mode()')
+        self._logger.info(f'== get_stop_mode()')
 
         motor_text = self._motor_text(motor)
         if motor_text is None:
