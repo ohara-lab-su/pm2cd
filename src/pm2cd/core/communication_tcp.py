@@ -26,6 +26,20 @@ class Communication:
         logger=None,
         log_level: str = "INFO",
     ):
+        """インスタンスを初期化する。
+
+        Args:
+            ip_address: PM2CD の IP アドレス。
+            port: PM2CD の TCP ポート番号。
+            timeout_sec: TCP 通信および待機処理のタイムアウト秒数。
+            encoding: encoding。
+            logger: 使用する logger。None の場合はこのモジュールで生成する。
+            log_level: logger を生成する場合のログレベル。
+
+        Raises:
+            TypeError: 引数の型が不正な場合。
+            ValueError: 引数の値が不正な場合。
+        """
         if not logger:
             logging.basicConfig(level=(log_level or "INFO").upper())
             logger = logging.getLogger(__name__)
@@ -73,6 +87,11 @@ class Communication:
     def is_connected(
         self,
     ) -> bool:
+        """TCP 接続状態を取得する。
+
+        Returns:
+            接続中の場合は True、それ以外は False。
+        """
         return self._socket is not None
 
     def connect(
@@ -116,6 +135,7 @@ class Communication:
                 )
                 return False
 
+            # 新しい TCP セッションへ以前の受信断片を持ち越さない。
             self._socket = sock
             self._receive_buffer.clear()
 
@@ -129,6 +149,7 @@ class Communication:
         self._logger.info(f"== disconnect()")
 
         with self._lock:
+            # 切断処理中に別経路から古いソケットを使用しないよう、先に内部状態を切り離す。
             sock = self._socket
             self._socket = None
             self._receive_buffer.clear()
@@ -189,6 +210,8 @@ class Communication:
             raise ValueError("commandに改行文字を含めることはできません")
 
         with self._lock:
+            # query は同一ロック内で send -> receive を完結させ、別コマンドの応答が
+            # 間へ入り込まないようにする。
             if not self._send(command):
                 return None
 
@@ -203,6 +226,14 @@ class Communication:
     def __enter__(
         self,
     ) -> "Communication":
+        """context manager 開始時に接続を確立する。
+
+        Returns:
+            'Communication' 型の結果。
+
+        Raises:
+            CommunicationError: PM2CD への接続を確立できない場合。
+        """
         if not self.connect():
             raise CommunicationError(
                 f"TCP接続を開始できません: " f"{self.ip_address}:{self.port}"
@@ -216,6 +247,16 @@ class Communication:
         exc_value,
         traceback,
     ) -> None:
+        """context manager 終了時に接続を切断する。
+
+        Args:
+            exc_type: with ブロック内で発生した例外の型。
+            exc_value: with ブロック内で発生した例外。
+            traceback: with ブロック内で発生した例外の traceback。
+
+        Returns:
+            None。
+        """
         self.disconnect()
 
     def _send(
