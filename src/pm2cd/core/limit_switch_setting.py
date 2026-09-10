@@ -29,7 +29,6 @@ class LimitSwitchSetting:
         self._is_valid = True
 
     @property
-    @property
     def raw(
         self,
     ):
@@ -46,43 +45,71 @@ class LimitSwitchSetting:
     def digital_limit_enabled(
         self,
     ) -> bool:
-        return self._is_valid and self._raw[0] == "1"
+        if not self._is_valid:
+            return False
+        if self._raw[0] != '1':
+            return False
+        return True
 
     @property
     def hp_enabled(
         self,
     ) -> bool:
-        return self._is_valid and self._raw[1] == "1"
+        if not self._is_valid:
+            return False
+        if self._raw[1] != '1':
+            return False
+        return True
 
     @property
     def ccw_enabled(
         self,
     ) -> bool:
-        return self._is_valid and self._raw[2] == "1"
+        if not self._is_valid:
+            return False
+        if self._raw[2] != '1':
+            return False
+        return True
 
     @property
     def cw_enabled(
         self,
     ) -> bool:
-        return self._is_valid and self._raw[3] == "1"
+        if not self._is_valid:
+            return False
+        if self._raw[3] != '1':
+            return False
+        return True
 
     @property
     def hp_nc(
         self,
     ) -> bool:
-        return self._is_valid and self._raw[5] == "1"
+        if not self._is_valid:
+            return False
+        if self._raw[5] != '1':
+            return False
+        return True
 
     @property
     def ccw_nc(
         self,
     ) -> bool:
-        return self._is_valid and self._raw[6] == "1"
+        if not self._is_valid:
+            return False
+        if self._raw[6] != '1':
+            return False
+        return True
 
     @property
     def cw_nc(
         self,
     ) -> bool:
-        return self._is_valid and self._raw[7] == "1"
+        if not self._is_valid:
+            return False
+        if self._raw[7] != '1':
+            return False
+        return True
 
     def with_digital_limit(
         self,

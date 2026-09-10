@@ -40,7 +40,6 @@ class VersionInfo:
         self._is_valid = True
 
     @property
-    @property
     def raw(
         self,
     ):
@@ -84,9 +83,11 @@ class VersionInfo:
     def is_pm2cd(
         self,
     ) -> bool:
-        return (
-            self._is_valid and self.normalized_model in {'PMXC06A', 'PM2C06A', 'PM2CD'}
-        )
+        if not self._is_valid:
+            return False
+        if self.normalized_model not in {'PMXC06A', 'PM2C06A', 'PM2CD'}:
+            return False
+        return True
 
     def __str__(
         self,

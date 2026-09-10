@@ -461,7 +461,10 @@ class PM2CDDevice:
         if status is None:
             return None
 
-        return status.rotation_state == 1
+        if status.rotation_state != 1:
+            return False
+
+        return True
 
     def position(
         self,

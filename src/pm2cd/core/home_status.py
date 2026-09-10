@@ -23,7 +23,6 @@ class HomeStatus:
         self._is_valid = True
 
     @property
-    @property
     def raw(
         self,
     ):
@@ -40,7 +39,11 @@ class HomeStatus:
     def found(
         self,
     ) -> bool:
-        return self._is_valid and self._raw[1] == "1"
+        if not self._is_valid:
+            return False
+        if self._raw[1] != '1':
+            return False
+        return True
 
     @property
     def found_direction(

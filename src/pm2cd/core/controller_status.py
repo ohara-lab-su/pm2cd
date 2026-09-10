@@ -30,7 +30,6 @@ class ControllerStatus:
         self._is_valid = True
 
     @property
-    @property
     def raw(
         self,
     ):
@@ -61,13 +60,21 @@ class ControllerStatus:
     def is_remote(
         self,
     ) -> bool:
-        return self._is_valid and self._remote_local == "R"
+        if not self._is_valid:
+            return False
+        if self._remote_local != 'R':
+            return False
+        return True
 
     @property
     def can_start(
         self,
     ) -> bool:
-        return self._is_valid and self._stopped_motor_count > 0
+        if not self._is_valid:
+            return False
+        if self._stopped_motor_count <= 0:
+            return False
+        return True
 
     def __repr__(
         self,
