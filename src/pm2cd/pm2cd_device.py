@@ -50,25 +50,31 @@ class PM2CDDevice:
 
         self._logger = logger
         self._communication = communication
-        self._version_info = None  # type: Optional[VersionInfo]
+        # self._version_info = None  # type: Optional[VersionInfo]
+        self._version_info: Optional[VersionInfo] = None
 
     def remote(self) -> None:
+        self._logger.info("== remote()")
         self._communication.send("REM")
 
     def local(self) -> None:
+        self._logger.info("== local()")
         self._communication.send("LOC")
 
-    def version(self) -> VersionInfo:
+    def version(self) -> Optional[VersionInfo]:
+        self._logger.info("== version()")
         self._version_info = VersionInfo(self._communication.query("VER?"))
         return self._version_info
 
     def hardware_version(self) -> str:
+        self._logger.info("== hardware_version()")
         raw = self._communication.query("VERH?").strip()
         if not raw.startswith("HD-VER"):
             raise ProtocolError("VERH?応答を解釈できません: {!r}".format(raw))
         return raw
 
     def controller_status(self) -> ControllerStatus:
+        self._logger.info("== controller_status()")
         return ControllerStatus(self._communication.query("STQ?"))
 
     def move(
@@ -77,6 +83,7 @@ class PM2CDDevice:
         pulse: int,
         backlash: Union[str, bool, None] = True,
     ) -> None:
+        self._logger.info("== move()")
         self._check_motor(motor)
         self._check_position(pulse, "pulse")
         suffix = self._backlash_suffix(backlash)
@@ -485,7 +492,9 @@ class PM2CDDevice:
         try:
             return int(raw, 10)
         except ValueError as exc:
-            raise ProtocolError("{}応答を整数へ変換できません: {!r}".format(name, raw)) from exc
+            raise ProtocolError(
+                "{}応答を整数へ変換できません: {!r}".format(name, raw)
+            ) from exc
 
     def _query_text(self, command: str) -> str:
         return self._communication.query(command).strip()
