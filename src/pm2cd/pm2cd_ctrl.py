@@ -1130,3 +1130,51 @@ class PM2CD:
             None。
         """
         self.close()
+
+def main(
+) -> None:
+    """PM2CD 公開 I/F の基本的な使用例を実行する。
+
+    実機の IP アドレスに変更してから、パッケージのモジュールとして実行する。
+    この例では装置を動かすコマンドは送信せず、接続と状態取得だけを確認する。
+
+    Returns:
+        None。
+    """
+    ip_address = "192.168.0.10"
+    port = 7777
+
+    ctrl = PM2CD(
+        ip_address=ip_address,
+        port=port
+    )
+
+    try:
+        if not ctrl.is_connected:
+            print("PM2CD へ接続できませんでした")
+            return
+
+        version = ctrl.version()
+        if version is None:
+            print("VER? の取得に失敗しました")
+        else:
+            print(f"version: {version}")
+
+        controller_status = ctrl.controller_status()
+        if controller_status is None:
+            print("STQ? の取得に失敗しました")
+        else:
+            print(f"controller_status: {controller_status}")
+
+        motor_status = ctrl.status_all()
+        if motor_status is None:
+            print("STS? の取得に失敗しました")
+        else:
+            for status in motor_status:
+                print(status)
+    finally:
+        ctrl.close()
+
+
+if __name__ == "__main__":
+    main()

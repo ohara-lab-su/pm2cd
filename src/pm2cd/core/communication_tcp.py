@@ -58,13 +58,7 @@ class Communication:
         if port < 1 or port > 65535:
             raise ValueError("portは1から65535の範囲で指定してください")
 
-        if not isinstance(
-            timeout_sec,
-            (
-                int,
-                float,
-            ),
-        ) or isinstance(timeout_sec, bool):
+        if not isinstance(timeout_sec, (int, float)) or isinstance(timeout_sec, bool):
             raise TypeError("timeout_secは数値で指定してください")
 
         if timeout_sec <= 0:
@@ -356,3 +350,35 @@ class Communication:
             sock.close()
         except OSError as exc:
             self._logger.error(f"通信異常後のTCPソケット破棄に失敗しました: {exc}")
+
+
+def main() -> None:
+    """Communication の基本的な送受信例を実行する。
+
+    実機の IP アドレスに変更してから、パッケージのモジュールとして実行する。
+    ``VER?`` を送信し、CR+LF で区切られた装置応答を 1 件受信する。
+
+    Returns:
+        None。
+    """
+    ip_address = "192.168.0.10"
+    port = 7777
+
+    communication = Communication(ip_address=ip_address, port=port)
+
+    if not communication.connect():
+        print("PM2CD へ接続できませんでした")
+        return
+
+    try:
+        response = communication.query("VER?")
+        if response is None:
+            print("VER? の取得に失敗しました")
+        else:
+            print(f"VER?: {response}")
+    finally:
+        communication.disconnect()
+
+
+if __name__ == "__main__":
+    main()

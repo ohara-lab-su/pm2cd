@@ -1,6 +1,4 @@
-from typing import List
-
-from .errors import ProtocolError
+from typing import List, Optional
 
 
 class MotorStatus:
@@ -27,15 +25,23 @@ class MotorStatus:
         self.position = position
 
     @classmethod
-    def parse_all(cls, raw: str) -> List["MotorStatus"]:
+    def parse_all(
+        cls,
+        raw: str,
+    ) -> Optional[List["MotorStatus"]]:
         """PM4C-06A互換の4枠 ``STS?`` 応答を解析する。"""
-        if not isinstance(raw, str):
-            raise TypeError("rawはstrで指定してください")
+        if not isinstance(
+            raw,
+            str
+        ):
+            return None
 
         text = raw.strip()
-        parts = text.split("/")
+        parts = text.split(
+            "/"
+        )
         if len(parts) != 8:
-            raise ProtocolError("STS?応答の区切り数が不正です: {!r}".format(raw))
+            return None
 
         header = parts[0]
         directions = parts[1]
@@ -43,30 +49,63 @@ class MotorStatus:
         mcc = parts[3]
         positions = parts[4:]
 
-        if len(header) != 5 or header[0] not in ("R", "L"):
-            raise ProtocolError("STS?応答のREM/LOC・CH部が不正です: {!r}".format(raw))
+        if len(header) != 5 or header[0] not in ("R", "L",):
+            return None
+
         if len(directions) != 4:
-            raise ProtocolError("STS?応答の方向部が不正です: {!r}".format(raw))
+            return None
+
         for value in directions:
             if value not in "PNS":
-                raise ProtocolError("STS?応答の方向部が不正です: {!r}".format(raw))
+                return None
+
         if len(limits) != 4:
-            raise ProtocolError("STS?応答のLS状態部が不正です: {!r}".format(raw))
+            return None
+
         if len(mcc) != 8:
-            raise ProtocolError("STS?応答のMCC状態部が不正です: {!r}".format(raw))
+            return None
 
         try:
-            channels = [int(value, 16) for value in header[1:]]
-            ls_values = [int(value, 16) for value in limits]
+            channels = [
+                int(
+                    value,
+                    16
+                )
+                for value in header[1:]
+            ]
+            ls_values = [
+                int(
+                    value,
+                    16
+                )
+                for value in limits
+            ]
             mcc_values = []
-            for index in range(0, 8, 2):
-                mcc_values.append(int(mcc[index : index + 2], 16))
-            position_values = [int(value, 10) for value in positions]
-        except ValueError as exc:
-            raise ProtocolError("STS?応答を数値へ変換できません: {!r}".format(raw)) from exc
+            for index in range(
+                0,
+                8,
+                2
+            ):
+                mcc_values.append(
+                    int(
+                        mcc[index : index + 2],
+                        16
+                    )
+                )
+            position_values = [
+                int(
+                    value,
+                    10
+                )
+                for value in positions
+            ]
+        except ValueError:
+            return None
 
         statuses = []
-        for index in range(4):
+        for index in range(
+            4
+        ):
             statuses.append(
                 cls(
                     motor=index,
@@ -76,90 +115,181 @@ class MotorStatus:
                     direction=directions[index],
                     ls_status=ls_values[index],
                     mcc_status=mcc_values[index],
-                    position=position_values[index],
+                    position=position_values[index]
                 )
             )
+
         return statuses
 
     @property
-    def motor_status(self) -> str:
-        return "{:02X}".format(self.mcc_status)
+    def motor_status(
+        self,
+    ) -> str:
+        return f"{self.mcc_status:02X}"
 
     @property
-    def is_busy(self) -> bool:
-        return bool(self.mcc_status & 0x01)
+    def is_busy(
+        self,
+    ) -> bool:
+        return bool(
+            self.mcc_status & 0x01
+        )
 
     @property
-    def is_driving(self) -> bool:
-        return bool(self.mcc_status & 0x02)
+    def is_driving(
+        self,
+    ) -> bool:
+        return bool(
+            self.mcc_status & 0x02
+        )
 
     @property
-    def is_accelerating(self) -> bool:
-        return bool(self.mcc_status & 0x04)
+    def is_accelerating(
+        self,
+    ) -> bool:
+        return bool(
+            self.mcc_status & 0x04
+        )
 
     @property
-    def is_decelerating(self) -> bool:
-        return bool(self.mcc_status & 0x08)
+    def is_decelerating(
+        self,
+    ) -> bool:
+        return bool(
+            self.mcc_status & 0x08
+        )
 
     @property
-    def has_command_error(self) -> bool:
-        return bool(self.mcc_status & 0x10)
+    def has_command_error(
+        self,
+    ) -> bool:
+        return bool(
+            self.mcc_status & 0x10
+        )
 
     @property
-    def limit_stop_received(self) -> bool:
-        return bool(self.mcc_status & 0x20)
+    def limit_stop_received(
+        self,
+    ) -> bool:
+        return bool(
+            self.mcc_status & 0x20
+        )
 
     @property
-    def slow_stop_received(self) -> bool:
-        return bool(self.mcc_status & 0x40)
+    def slow_stop_received(
+        self,
+    ) -> bool:
+        return bool(
+            self.mcc_status & 0x40
+        )
 
     @property
-    def emergency_stop_received(self) -> bool:
-        return bool(self.mcc_status & 0x80)
+    def emergency_stop_received(
+        self,
+    ) -> bool:
+        return bool(
+            self.mcc_status & 0x80
+        )
 
     @property
-    def rotation_state(self) -> int:
-        if self.direction in ("P", "N"):
+    def rotation_state(
+        self,
+    ) -> int:
+        if self.direction in ("P", "N",):
             return 1
+
         return 0
 
     @property
-    def cw_ls(self) -> bool:
-        return bool(self.ls_status & 0x01)
+    def cw_ls(
+        self,
+    ) -> bool:
+        return bool(
+            self.ls_status & 0x01
+        )
 
     @property
-    def ccw_ls(self) -> bool:
-        return bool(self.ls_status & 0x02)
+    def ccw_ls(
+        self,
+    ) -> bool:
+        return bool(
+            self.ls_status & 0x02
+        )
 
     @property
-    def hp_ls(self) -> bool:
-        return bool(self.ls_status & 0x04)
+    def hp_ls(
+        self,
+    ) -> bool:
+        return bool(
+            self.ls_status & 0x04
+        )
 
     @property
-    def hold_off(self) -> bool:
-        return bool(self.ls_status & 0x08)
+    def hold_off(
+        self,
+    ) -> bool:
+        return bool(
+            self.ls_status & 0x08
+        )
 
     @property
-    def legacy_status_bits(self) -> int:
+    def legacy_status_bits(
+        self,
+    ) -> int:
         status = 0
+
         if self.cw_ls:
             status |= 0x01 | 0x04
+
         if self.ccw_ls:
             status |= 0x02 | 0x08
+
         if self.hp_ls:
             status |= 0x10
+
         return status
 
-    def __repr__(self) -> str:
+    def __repr__(
+        self,
+    ) -> str:
         return (
-            "MotorStatus(motor={!r}, channel={!r}, remote_local={!r}, "
-            "direction={!r}, ls_status=0x{:X}, mcc_status=0x{:02X}, position={!r})"
-        ).format(
-            self.motor,
-            self.channel,
-            self.remote_local,
-            self.direction,
-            self.ls_status,
-            self.mcc_status,
-            self.position,
+            f"MotorStatus(motor={self.motor!r}, "
+            f"channel={self.channel!r}, "
+            f"remote_local={self.remote_local!r}, "
+            f"direction={self.direction!r}, "
+            f"ls_status=0x{self.ls_status:X}, "
+            f"mcc_status=0x{self.mcc_status:02X}, "
+            f"position={self.position!r})"
         )
+
+def main(
+) -> None:
+    """MotorStatus の STS? 解析例を実行する。
+
+    Returns:
+        None。
+    """
+    # STS? の4枠応答形式を確認するための解析用サンプル。
+    raw = "R0123/PNSN/0000/01020000/100/200/300/400"
+    values = MotorStatus.parse_all(
+        raw
+    )
+
+    if values is None:
+        print(f"parse failed: {raw!r}")
+        return
+
+    for value in values:
+        print(value)
+        print(
+            f"  motor={value.motor}, "
+            f"channel={value.channel}, "
+            f"busy={value.is_busy}, "
+            f"driving={value.is_driving}, "
+            f"direction={value.direction!r}, "
+            f"position={value.position}"
+        )
+
+
+if __name__ == "__main__":
+    main()

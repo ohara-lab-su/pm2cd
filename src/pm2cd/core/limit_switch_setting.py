@@ -1,57 +1,127 @@
-from .errors import ProtocolError
+from typing import Optional
 
 
 class LimitSwitchSetting:
     """``SETLS?x`` の ``DYYY0yyy`` 応答を保持する。"""
 
-    def __init__(self, raw: str):
-        if not isinstance(raw, str):
-            raise TypeError("rawはstrで指定してください")
+    def __init__(
+        self,
+        raw: str,
+    ):
+        self.raw = ""
+        self.is_valid = False
+
+        if not isinstance(
+            raw,
+            str
+        ):
+            return
+
         text = raw.strip()
         if len(text) != 8:
-            raise ProtocolError("SETLS?応答の長さが不正です: {!r}".format(raw))
+            return
+
         if text[4] != "0":
-            raise ProtocolError("SETLS?応答の予約ビットが不正です: {!r}".format(raw))
+            return
+
         for value in text:
-            if value not in ("0", "1"):
-                raise ProtocolError("SETLS?応答が2進表記ではありません: {!r}".format(raw))
+            if value not in ("0", "1",):
+                return
+
         self.raw = text
+        self.is_valid = True
 
     @property
-    def digital_limit_enabled(self) -> bool:
-        return self.raw[0] == "1"
+    def digital_limit_enabled(
+        self,
+    ) -> bool:
+        return self.is_valid and self.raw[0] == "1"
 
     @property
-    def hp_enabled(self) -> bool:
-        return self.raw[1] == "1"
+    def hp_enabled(
+        self,
+    ) -> bool:
+        return self.is_valid and self.raw[1] == "1"
 
     @property
-    def ccw_enabled(self) -> bool:
-        return self.raw[2] == "1"
+    def ccw_enabled(
+        self,
+    ) -> bool:
+        return self.is_valid and self.raw[2] == "1"
 
     @property
-    def cw_enabled(self) -> bool:
-        return self.raw[3] == "1"
+    def cw_enabled(
+        self,
+    ) -> bool:
+        return self.is_valid and self.raw[3] == "1"
 
     @property
-    def hp_nc(self) -> bool:
-        return self.raw[5] == "1"
+    def hp_nc(
+        self,
+    ) -> bool:
+        return self.is_valid and self.raw[5] == "1"
 
     @property
-    def ccw_nc(self) -> bool:
-        return self.raw[6] == "1"
+    def ccw_nc(
+        self,
+    ) -> bool:
+        return self.is_valid and self.raw[6] == "1"
 
     @property
-    def cw_nc(self) -> bool:
-        return self.raw[7] == "1"
+    def cw_nc(
+        self,
+    ) -> bool:
+        return self.is_valid and self.raw[7] == "1"
 
-    def with_digital_limit(self, enabled: bool) -> str:
-        if not isinstance(enabled, bool):
-            raise TypeError("enabledはboolで指定してください")
+    def with_digital_limit(
+        self,
+        enabled: bool,
+    ) -> Optional[str]:
+        if not isinstance(
+            enabled,
+            bool
+        ):
+            return None
+
+        if not self.is_valid:
+            return None
+
         prefix = "0"
         if enabled:
             prefix = "1"
+
         return prefix + self.raw[1:]
 
-    def __repr__(self) -> str:
-        return "LimitSwitchSetting(raw={!r})".format(self.raw)
+    def __repr__(
+        self,
+    ) -> str:
+        return (
+            f"LimitSwitchSetting(raw={self.raw!r}, "
+            f"is_valid={self.is_valid!r})"
+        )
+
+def main(
+) -> None:
+    """LimitSwitchSetting の解析例を実行する。
+
+    Returns:
+        None。
+    """
+    raw = "11110111"
+    value = LimitSwitchSetting(
+        raw
+    )
+
+    print(f"raw={value.raw!r}")
+    print(f"digital_limit_enabled={value.digital_limit_enabled}")
+    print(f"hp_enabled={value.hp_enabled}")
+    print(f"ccw_enabled={value.ccw_enabled}")
+    print(f"cw_enabled={value.cw_enabled}")
+    print(f"hp_nc={value.hp_nc}")
+    print(f"ccw_nc={value.ccw_nc}")
+    print(f"cw_nc={value.cw_nc}")
+    print(f"is_valid={value.is_valid}")
+
+
+if __name__ == "__main__":
+    main()

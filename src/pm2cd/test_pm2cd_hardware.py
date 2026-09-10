@@ -20,7 +20,7 @@ class PM2CDHardwareTest:
         self.ctrl = PM2CD(
             ip_address=ip_address,
             port=port,
-            timeout_sec=timeout_sec,
+            timeout_sec=timeout_sec
         )
         self.motor = motor
         self.test_pulse = test_pulse
@@ -30,22 +30,24 @@ class PM2CDHardwareTest:
 
     @staticmethod
     def _show(name: str, value) -> None:
-        print("[PASS] {}: {}".format(name, value))
+        print(f"[PASS] {name}: {value}")
 
     def _ensure_remote_and_stopped(self) -> None:
         self.ctrl.emergency_stop_all()
         time.sleep(0.05)
         self.ctrl.remote()
         status = self.ctrl.status(self.motor)
+        if status is None:
+            raise AssertionError("STS?応答を取得できません")
         if status.remote_local != "R":
-            raise AssertionError("REMOTEへ移行していません: {!r}".format(status.raw))
+            raise AssertionError(f"REMOTEへ移行していません: {status.raw!r}")
         if status.is_busy:
-            raise AssertionError("motor {} が停止していません".format(self.motor))
+            raise AssertionError(f"motor {self.motor} が停止していません")
 
     def _wait(self) -> None:
         self.ctrl.wait_stop(
             self.motor,
-            timeout_sec=self.motion_timeout_sec,
+            timeout_sec=self.motion_timeout_sec
         )
 
     def test_connection(self) -> None:
@@ -55,8 +57,10 @@ class PM2CDHardwareTest:
 
     def test_version(self) -> None:
         value = self.ctrl.version()
+        if value is None:
+            raise AssertionError("VER?応答を取得できません")
         if not value.is_pm2cd:
-            raise AssertionError("PM2CD系のVER?応答ではありません: {!r}".format(value.raw))
+            raise AssertionError(f"PM2CD系のVER?応答ではありません: {value.raw!r}")
         self._show("version", value.raw)
         self._show("hardware_version", self.ctrl.hardware_version())
 
@@ -64,10 +68,14 @@ class PM2CDHardwareTest:
         self.ctrl.stop_all()
         self.ctrl.local()
         status = self.ctrl.status(self.motor)
+        if status is None:
+            raise AssertionError("LOC後のSTS?応答を取得できません")
         if status.remote_local != "L":
             raise AssertionError("LOC後もLOCALではありません")
         self.ctrl.remote()
         status = self.ctrl.status(self.motor)
+        if status is None:
+            raise AssertionError("REM後のSTS?応答を取得できません")
         if status.remote_local != "R":
             raise AssertionError("REM後もREMOTEではありません")
         self._show("remote/local", status.raw)
@@ -135,7 +143,7 @@ class PM2CDHardwareTest:
                 self.motor,
                 original_low,
                 original_middle,
-                original_high,
+                original_high
             )
         self._show("set_speed", "OK")
 
@@ -219,7 +227,7 @@ class PM2CDHardwareTest:
             self.motor,
             status.found,
             status.found_direction,
-            status.auto_start_direction,
+            status.auto_start_direction
         )
         self.ctrl.set_home_offset(self.motor, offset)
         if position is not None:
@@ -251,7 +259,7 @@ class PM2CDHardwareTest:
             self.motor,
             value.drive_enabled,
             value.hold_mode,
-            value.output_mode,
+            value.output_mode
         )
         actual = self.ctrl.motor_setting(self.motor)
         if actual.raw != value.raw:
@@ -263,7 +271,7 @@ class PM2CDHardwareTest:
         self.ctrl.set_stop_mode(
             self.motor,
             value.panel_fast,
-            value.limit_fast,
+            value.limit_fast
         )
         actual = self.ctrl.stop_mode(self.motor)
         if actual.raw != value.raw:
@@ -382,3 +390,39 @@ class PM2CDHardwareTest:
                 self.ctrl.emergency_stop_all()
             finally:
                 self.ctrl.close()
+
+
+def main(
+) -> None:
+    """PM2CD の公開 I/F を実機で一括確認する。
+
+    このファイルはパッケージ内のモジュールとして実行する。
+    ``ip_address``、``motor``、移動量などを実機環境に合わせて変更してから
+    実行する。
+
+    Returns:
+        None。
+    """
+    # 実機の設定に合わせて変更する。
+    ip_address = "192.168.0.10"
+    port = 7777
+    motor = 0
+
+    # 動作を伴う試験で使用する値。test_pulse は移動量 [pulse]、
+    # scan_time_sec は連続動作を停止するまでの時間 [s]。
+    test = PM2CDHardwareTest(
+        ip_address=ip_address,
+        port=port,
+        motor=motor,
+        test_pulse=10,
+        scan_time_sec=0.2,
+        motion_timeout_sec=30.0,
+        enable_home_tests=False
+    )
+
+    print(f"PM2CD hardware test: {ip_address}:{port}, motor={motor}")
+    test.run_all()
+
+
+if __name__ == "__main__":
+    main()
