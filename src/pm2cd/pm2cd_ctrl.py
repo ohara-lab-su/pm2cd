@@ -3,13 +3,12 @@ from typing import Union
 
 from .core.communication_tcp import Communication
 from .core.motor_status import MotorStatus
-
-from .pm2cd_device import PM2CDDevice
 from .core.version_info import VersionInfo
+from .pm2cd_device import PM2CDDevice
 
 
 class PM2CD:
-    """Python利用者向けI/F層。"""
+    """PM2CD を Python から制御するための公開 I/F。"""
 
     def __init__(
         self,
@@ -20,6 +19,9 @@ class PM2CD:
         logger=None,
         log_level: str = "INFO",
     ):
+        if channel_count != 2:
+            raise ValueError("PM2CDのchannel_countは2です")
+
         self.communication = Communication(
             ip_address=ip_address,
             port=port,
@@ -27,11 +29,18 @@ class PM2CD:
         )
         self.communication.connect()
         self.device = PM2CDDevice(
-            self.communication,
+            communication=self.communication,
             channel_count=channel_count,
+            logger=logger,
+            log_level=log_level,
         )
-        self.logger = logger
-        self.log_level = log_level
+
+    @property
+    def is_connected(self) -> bool:
+        return self.communication.is_connected
+
+    def close(self) -> None:
+        self.communication.close()
 
     def remote(self) -> None:
         self.device.remote()
@@ -49,7 +58,7 @@ class PM2CD:
         self,
         motor: int,
         pulse: int,
-        backlash: Union[str, bool] = True,
+        backlash: Union[str, bool, None] = True,
     ) -> None:
         self.device.move(motor, pulse, backlash)
 
@@ -57,7 +66,7 @@ class PM2CD:
         self,
         motor: int,
         pulse: int,
-        backlash: Union[str, bool] = True,
+        backlash: Union[str, bool, None] = True,
     ) -> None:
         self.device.move_relative(motor, pulse, backlash)
 
@@ -155,12 +164,24 @@ class PM2CD:
     ) -> None:
         self.device.set_position(motor, pulse)
 
+    def zero_position(self, motor: int) -> None:
+        self.set_position(motor, 0)
+
     def set_speed(
         self,
         motor: int,
         speed: int,
     ) -> None:
         self.device.set_speed(motor, speed)
+
+    def set_speed_profile(
+        self,
+        motor: int,
+        low_speed: int,
+        middle_speed: int,
+        high_speed: int,
+    ) -> None:
+        self.device.set_speed_profile(motor, low_speed, middle_speed, high_speed)
 
     def high_speed(
         self,
@@ -277,24 +298,6 @@ class PM2CD:
     ) -> None:
         self.device.set_hold(motor, enabled)
 
-    def ttl_output_start(
-        self,
-        motor: int,
-    ) -> None:
-        self.device.ttl_output_start(motor)
-
-    def ttl_output_stop(
-        self,
-        motor: int,
-    ) -> None:
-        self.device.ttl_output_stop(motor)
-
-    def ttl_status(
-        self,
-        motor: int,
-    ) -> int:
-        return self.device.ttl_status(motor)
-
     def number_to_rate(
         self,
         index: int,
@@ -306,3 +309,9 @@ class PM2CD:
         rate: float,
     ) -> int:
         return self.device.rate_to_number(rate)
+
+    def __enter__(self) -> "PM2CD":
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback) -> None:
+        self.close()
