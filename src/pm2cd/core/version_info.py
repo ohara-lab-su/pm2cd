@@ -1,12 +1,10 @@
 import re
 
+from .errors import ProtocolError
+
 
 class VersionInfo:
-    """装置の ``VER?`` 応答を解析して保持する。
-
-    想定形式は ``<version> <date> <model>``。日付の有無やモデル名中の
-    空白は許容するが、空応答とバージョン番号を含まない応答は拒否する。
-    """
+    """``VER?`` 応答を解析して保持する。"""
 
     _VERSION_PATTERN = re.compile(r"^\d+(?:\.\d+)+$")
     _DATE_PATTERN = re.compile(r"^\d{2,4}[-/]\d{1,2}[-/]\d{1,2}$")
@@ -17,20 +15,21 @@ class VersionInfo:
 
         normalized = " ".join(raw.strip().split())
         if not normalized:
-            raise ValueError("VER?応答が空です")
+            raise ProtocolError("VER?応答が空です")
 
         parts = normalized.split(" ")
         if not self._VERSION_PATTERN.fullmatch(parts[0]):
-            raise ValueError(f"VER?応答のバージョン形式が不正です: {raw!r}")
+            raise ProtocolError("VER?応答のバージョン形式が不正です: {!r}".format(raw))
 
         self.raw = normalized
         self.version = parts[0]
+        self.date = ""
+        self.model = ""
 
         if len(parts) >= 2 and self._DATE_PATTERN.fullmatch(parts[1]):
             self.date = parts[1]
             self.model = " ".join(parts[2:])
         else:
-            self.date = ""
             self.model = " ".join(parts[1:])
 
     @property
@@ -38,24 +37,15 @@ class VersionInfo:
         return re.sub(r"[^A-Z0-9]", "", self.model.upper())
 
     @property
-    def is_pm16c16(self) -> bool:
-        return self.normalized_model == "PM16C16"
-
-    @property
     def is_pm2cd(self) -> bool:
-        model = self.normalized_model
-        return model in {"PM2CD", "PM2C06A", "PMCD06AX"}
+        return self.normalized_model in {"PMXC06A", "PM2C06A", "PM2CD"}
 
     def __str__(self) -> str:
         return self.raw
 
     def __repr__(self) -> str:
-        return (
-            f"VersionInfo(version={self.version!r}, date={self.date!r}, "
-            f"model={self.model!r})"
+        return "VersionInfo(version={!r}, date={!r}, model={!r})".format(
+            self.version,
+            self.date,
+            self.model,
         )
-
-    def __eq__(self, other) -> bool:
-        if not isinstance(other, VersionInfo):
-            return NotImplemented
-        return self.raw == other.raw
