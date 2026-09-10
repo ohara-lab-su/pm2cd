@@ -12,23 +12,22 @@ from .core.stop_mode import StopMode
 from .core.version_info import VersionInfo
 from .pm2cd_device import PM2CDDevice
 
-
 # PM2CD の公開制御API。
 # 通信層と装置コマンド層を委譲で束ね、上位コードへ装置操作を提供する。
 
+
 class PM2CD:
     """PM2CD を Python から制御するための公開 I/F。"""
-
 
     # --- 初期化・接続管理 ------------------------------------------------------
     def __init__(
         self,
         ip_address: str,
-        port: int=7777,
-        timeout_sec: float=3.0,
-        channel_count: int=2,
+        port: int = 7777,
+        timeout_sec: float = 3.0,
+        channel_count: int = 2,
         logger=None,
-        log_level: str="INFO",
+        log_level: str = "INFO",
     ):
         """インスタンスを初期化する。
 
@@ -44,26 +43,26 @@ class PM2CD:
             ValueError: PM2CD 固有の固定条件に反する設定が指定された場合。
         """
         if not logger:
-            logging.basicConfig(level=(log_level or 'INFO').upper())
+            logging.basicConfig(level=(log_level or "INFO").upper())
             logger = logging.getLogger(__name__)
 
         self._logger = logger
 
         if channel_count != 2:
-            raise ValueError(f'PM2CDのchannel_countは2です: {channel_count}')
+            raise ValueError(f"PM2CDのchannel_countは2です: {channel_count}")
 
         self._communication = Communication(
             ip_address=ip_address,
             port=port,
             timeout_sec=timeout_sec,
             logger=self._logger,
-            log_level=log_level
+            log_level=log_level,
         )
         self._device = PM2CDDevice(
             communication=self._communication,
             channel_count=channel_count,
             logger=self._logger,
-            log_level=log_level
+            log_level=log_level,
         )
         self._communication.connect()
 
@@ -107,7 +106,6 @@ class PM2CD:
             処理に成功した場合は True、失敗した場合は False。
         """
         return self._communication.close()
-
 
     # --- コントローラ基本状態 --------------------------------------------------
     def remote(
@@ -160,13 +158,12 @@ class PM2CD:
         """
         return self._device.controller_status()
 
-
     # --- モータ動作 ------------------------------------------------------------
     def move(
         self,
         motor: int,
         pulse: int,
-        backlash: Union[str, bool, None]=True,
+        backlash: Union[str, bool, None] = True,
     ) -> bool:
         """指定モーターを絶対位置へ移動する。
 
@@ -184,7 +181,7 @@ class PM2CD:
         self,
         motor: int,
         pulse: int,
-        backlash: Union[str, bool, None]=True,
+        backlash: Union[str, bool, None] = True,
     ) -> bool:
         """指定モーターを現在位置から相対移動する。
 
@@ -289,7 +286,6 @@ class PM2CD:
             処理に成功した場合は True、失敗した場合は False。
         """
         return self._device.find_home(motor)
-
 
     # --- 停止・状態監視 --------------------------------------------------------
     def stop(
@@ -399,8 +395,8 @@ class PM2CD:
     def wait_stop(
         self,
         motor: int,
-        timeout_sec: float=30.0,
-        interval_sec: float=0.1,
+        timeout_sec: float = 30.0,
+        interval_sec: float = 0.1,
     ) -> Optional[MotorStatus]:
         """指定モーターが停止するまで状態を監視する。
 
@@ -424,11 +420,10 @@ class PM2CD:
                 return status
 
             if time.monotonic() >= deadline:
-                self._logger.error(f'wait_stop(): motor {motor} が停止しませんでした')
+                self._logger.error(f"wait_stop(): motor {motor} が停止しませんでした")
                 return None
 
             time.sleep(interval_sec)
-
 
     # --- 位置・速度設定 --------------------------------------------------------
     def position(
@@ -510,10 +505,7 @@ class PM2CD:
             処理に成功した場合は True、失敗した場合は False。
         """
         return self._device.set_speed_profile(
-            motor,
-            low_speed,
-            middle_speed,
-            high_speed
+            motor, low_speed, middle_speed, high_speed
         )
 
     def high_speed(
@@ -636,7 +628,6 @@ class PM2CD:
         """
         return self._device.set_speed_mode(motor, mode)
 
-
     # --- 加減速・バックラッシュ・リミット ------------------------------------
     def rate_number(
         self,
@@ -731,7 +722,6 @@ class PM2CD:
             処理に成功した場合は True、失敗した場合は False。
         """
         return self._device.set_limit(motor, side, pulse)
-
 
     # --- 一時停止・励磁保持 ----------------------------------------------------
     def pause(
@@ -854,7 +844,6 @@ class PM2CD:
         """
         return self._device.set_hold_off_time(motor, msec)
 
-
     # --- 原点関連設定 ----------------------------------------------------------
     def home_status(
         self,
@@ -889,10 +878,7 @@ class PM2CD:
             処理に成功した場合は True、失敗した場合は False。
         """
         return self._device.set_home_status(
-            motor,
-            found,
-            found_direction,
-            auto_start_direction
+            motor, found, found_direction, auto_start_direction
         )
 
     def home_position(
@@ -954,7 +940,6 @@ class PM2CD:
             処理に成功した場合は True、失敗した場合は False。
         """
         return self._device.set_home_offset(motor, pulse)
-
 
     # --- プリセット・JOG・装置設定 --------------------------------------------
     def preset_position(
@@ -1080,10 +1065,7 @@ class PM2CD:
             処理に成功した場合は True、失敗した場合は False。
         """
         return self._device.set_motor_setting(
-            motor,
-            drive_enabled,
-            hold_mode,
-            output_mode
+            motor, drive_enabled, hold_mode, output_mode
         )
 
     def stop_mode(
@@ -1117,7 +1099,6 @@ class PM2CD:
             処理に成功した場合は True、失敗した場合は False。
         """
         return self._device.set_stop_mode(motor, panel_fast, limit_fast)
-
 
     # --- RATE変換 --------------------------------------------------------------
     def number_to_rate(
@@ -1156,7 +1137,6 @@ class PM2CD:
         """
         return self._device.rate_to_number(rate)
 
-
     # --- context manager -------------------------------------------------------
     def __enter__(
         self,
@@ -1186,6 +1166,7 @@ class PM2CD:
         """
         self.close()
 
+
 def main() -> None:
     """PM2CD 公開 I/F の基本的な使用例を実行する。
 
@@ -1195,31 +1176,31 @@ def main() -> None:
     Returns:
         None。
     """
-    ip_address = "192.168.0.10"
+    ip_address = "10.170.10.62"
     port = 7777
 
     ctrl = PM2CD(ip_address=ip_address, port=port)
 
     try:
         if not ctrl.is_connected:
-            print('PM2CD へ接続できませんでした')
+            print("PM2CD へ接続できませんでした")
             return
 
         version = ctrl.version()
         if version is None:
-            print('VER? の取得に失敗しました')
+            print("VER? の取得に失敗しました")
         else:
-            print(f'version: {version}')
+            print(f"version: {version}")
 
         controller_status = ctrl.controller_status()
         if controller_status is None:
-            print('STQ? の取得に失敗しました')
+            print("STQ? の取得に失敗しました")
         else:
-            print(f'controller_status: {controller_status}')
+            print(f"controller_status: {controller_status}")
 
         motor_status = ctrl.status_all()
         if motor_status is None:
-            print('STS? の取得に失敗しました')
+            print("STS? の取得に失敗しました")
         else:
             for status in motor_status:
                 print(status)
@@ -1227,5 +1208,5 @@ def main() -> None:
         ctrl.close()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
