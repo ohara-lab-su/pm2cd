@@ -15,16 +15,72 @@ class MotorStatus:
         mcc_status: int,
         position: int,
     ):
-        self.motor = motor
-        self.channel = channel
-        self.raw = raw
-        self.remote_local = remote_local
-        self.direction = direction
-        self.ls_status = ls_status
-        self.mcc_status = mcc_status
-        self.position = position
+        self._motor = motor
+        self._channel = channel
+        self._raw = raw
+        self._remote_local = remote_local
+        self._direction = direction
+        self._ls_status = ls_status
+        self._mcc_status = mcc_status
+        self._position = position
 
     @classmethod
+    @property
+    def motor(
+        self,
+    ):
+        """motor を返す。"""
+        return self._motor
+
+    @property
+    def channel(
+        self,
+    ):
+        """channel を返す。"""
+        return self._channel
+
+    @property
+    def raw(
+        self,
+    ):
+        """raw を返す。"""
+        return self._raw
+
+    @property
+    def remote_local(
+        self,
+    ):
+        """remote_local を返す。"""
+        return self._remote_local
+
+    @property
+    def direction(
+        self,
+    ):
+        """direction を返す。"""
+        return self._direction
+
+    @property
+    def ls_status(
+        self,
+    ):
+        """ls_status を返す。"""
+        return self._ls_status
+
+    @property
+    def mcc_status(
+        self,
+    ):
+        """mcc_status を返す。"""
+        return self._mcc_status
+
+    @property
+    def position(
+        self,
+    ):
+        """position を返す。"""
+        return self._position
+
     def parse_all(
         cls,
         raw: str,
@@ -99,61 +155,61 @@ class MotorStatus:
     def motor_status(
         self,
     ) -> str:
-        return f"{self.mcc_status:02X}"
+        return f"{self._mcc_status:02X}"
 
     @property
     def is_busy(
         self,
     ) -> bool:
-        return bool(self.mcc_status & 1)
+        return bool(self._mcc_status & 1)
 
     @property
     def is_driving(
         self,
     ) -> bool:
-        return bool(self.mcc_status & 2)
+        return bool(self._mcc_status & 2)
 
     @property
     def is_accelerating(
         self,
     ) -> bool:
-        return bool(self.mcc_status & 4)
+        return bool(self._mcc_status & 4)
 
     @property
     def is_decelerating(
         self,
     ) -> bool:
-        return bool(self.mcc_status & 8)
+        return bool(self._mcc_status & 8)
 
     @property
     def has_command_error(
         self,
     ) -> bool:
-        return bool(self.mcc_status & 16)
+        return bool(self._mcc_status & 16)
 
     @property
     def limit_stop_received(
         self,
     ) -> bool:
-        return bool(self.mcc_status & 32)
+        return bool(self._mcc_status & 32)
 
     @property
     def slow_stop_received(
         self,
     ) -> bool:
-        return bool(self.mcc_status & 64)
+        return bool(self._mcc_status & 64)
 
     @property
     def emergency_stop_received(
         self,
     ) -> bool:
-        return bool(self.mcc_status & 128)
+        return bool(self._mcc_status & 128)
 
     @property
     def rotation_state(
         self,
     ) -> int:
-        if self.direction in ('P', 'N'):
+        if self._direction in ('P', 'N'):
             return 1
 
         return 0
@@ -162,25 +218,25 @@ class MotorStatus:
     def cw_ls(
         self,
     ) -> bool:
-        return bool(self.ls_status & 1)
+        return bool(self._ls_status & 1)
 
     @property
     def ccw_ls(
         self,
     ) -> bool:
-        return bool(self.ls_status & 2)
+        return bool(self._ls_status & 2)
 
     @property
     def hp_ls(
         self,
     ) -> bool:
-        return bool(self.ls_status & 4)
+        return bool(self._ls_status & 4)
 
     @property
     def hold_off(
         self,
     ) -> bool:
-        return bool(self.ls_status & 8)
+        return bool(self._ls_status & 8)
 
     @property
     def legacy_status_bits(
@@ -203,13 +259,13 @@ class MotorStatus:
         self,
     ) -> str:
         return (
-            f"MotorStatus(motor={self.motor!r}, "
-            f"channel={self.channel!r}, "
-            f"remote_local={self.remote_local!r}, "
-            f"direction={self.direction!r}, "
-            f"ls_status=0x{self.ls_status:X}, "
-            f"mcc_status=0x{self.mcc_status:02X}, "
-            f"position={self.position!r})"
+            f"MotorStatus(motor={self._motor!r}, "
+            f"channel={self._channel!r}, "
+            f"remote_local={self._remote_local!r}, "
+            f"direction={self._direction!r}, "
+            f"ls_status=0x{self._ls_status:X}, "
+            f"mcc_status=0x{self._mcc_status:02X}, "
+            f"position={self._position!r})"
         )
 
 def main() -> None:

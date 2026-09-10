@@ -8,8 +8,8 @@ class LimitSwitchSetting:
         self,
         raw: str,
     ):
-        self.raw = ""
-        self.is_valid = False
+        self._raw = ""
+        self._is_valid = False
 
         if not isinstance(raw, str):
             return
@@ -25,50 +25,64 @@ class LimitSwitchSetting:
             if value not in ('0', '1'):
                 return
 
-        self.raw = text
-        self.is_valid = True
+        self._raw = text
+        self._is_valid = True
 
     @property
+    @property
+    def raw(
+        self,
+    ):
+        """raw を返す。"""
+        return self._raw
+
+    @property
+    def is_valid(
+        self,
+    ):
+        """is_valid を返す。"""
+        return self._is_valid
+
     def digital_limit_enabled(
         self,
     ) -> bool:
-        return self.is_valid and self.raw[0] == "1"
+        return self._is_valid and self._raw[0] == "1"
 
     @property
     def hp_enabled(
         self,
     ) -> bool:
-        return self.is_valid and self.raw[1] == "1"
+        return self._is_valid and self._raw[1] == "1"
 
     @property
     def ccw_enabled(
         self,
     ) -> bool:
-        return self.is_valid and self.raw[2] == "1"
+        return self._is_valid and self._raw[2] == "1"
 
     @property
     def cw_enabled(
         self,
     ) -> bool:
-        return self.is_valid and self.raw[3] == "1"
+        return self._is_valid and self._raw[3] == "1"
 
     @property
     def hp_nc(
         self,
     ) -> bool:
-        return self.is_valid and self.raw[5] == "1"
+        return self._is_valid and self._raw[5] == "1"
 
     @property
     def ccw_nc(
         self,
     ) -> bool:
-        return self.is_valid and self.raw[6] == "1"
+        return self._is_valid and self._raw[6] == "1"
 
     @property
     def cw_nc(
         self,
     ) -> bool:
-        return self.is_valid and self.raw[7] == "1"
+        return self._is_valid and self._raw[7] == "1"
 
     def with_digital_limit(
         self,
@@ -77,20 +91,20 @@ class LimitSwitchSetting:
         if not isinstance(enabled, bool):
             return None
 
-        if not self.is_valid:
+        if not self._is_valid:
             return None
 
         prefix = "0"
         if enabled:
             prefix = "1"
 
-        return prefix + self.raw[1:]
+        return prefix + self._raw[1:]
 
     def __repr__(
         self,
     ) -> str:
         return (
-            f'LimitSwitchSetting(raw={self.raw!r}, is_valid={self.is_valid!r})'
+            f'LimitSwitchSetting(raw={self._raw!r}, is_valid={self._is_valid!r})'
         )
 
 def main() -> None:

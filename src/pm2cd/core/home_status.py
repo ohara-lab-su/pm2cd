@@ -5,8 +5,8 @@ class HomeStatus:
         self,
         raw: str,
     ):
-        self.raw = ""
-        self.is_valid = False
+        self._raw = ""
+        self._is_valid = False
 
         if not isinstance(raw, str):
             return
@@ -19,23 +19,37 @@ class HomeStatus:
             if value not in ('0', '1'):
                 return
 
-        self.raw = text
-        self.is_valid = True
+        self._raw = text
+        self._is_valid = True
 
     @property
+    @property
+    def raw(
+        self,
+    ):
+        """raw を返す。"""
+        return self._raw
+
+    @property
+    def is_valid(
+        self,
+    ):
+        """is_valid を返す。"""
+        return self._is_valid
+
     def found(
         self,
     ) -> bool:
-        return self.is_valid and self.raw[1] == "1"
+        return self._is_valid and self._raw[1] == "1"
 
     @property
     def found_direction(
         self,
     ) -> str:
-        if not self.is_valid:
+        if not self._is_valid:
             return ""
 
-        if self.raw[2] == '0':
+        if self._raw[2] == '0':
             return "cw"
 
         return "ccw"
@@ -44,10 +58,10 @@ class HomeStatus:
     def auto_start_direction(
         self,
     ) -> str:
-        if not self.is_valid:
+        if not self._is_valid:
             return ""
 
-        if self.raw[3] == '0':
+        if self._raw[3] == '0':
             return "cw"
 
         return "ccw"
@@ -55,7 +69,7 @@ class HomeStatus:
     def __repr__(
         self,
     ) -> str:
-        return f"HomeStatus(raw={self.raw!r}, is_valid={self.is_valid!r})"
+        return f"HomeStatus(raw={self._raw!r}, is_valid={self._is_valid!r})"
 
 def main() -> None:
     """HomeStatus の解析例を実行する。

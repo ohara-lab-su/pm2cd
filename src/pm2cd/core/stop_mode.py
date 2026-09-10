@@ -5,10 +5,10 @@ class StopMode:
         self,
         raw: str,
     ):
-        self.raw = ""
-        self.panel_fast = False
-        self.limit_fast = False
-        self.is_valid = False
+        self._raw = ""
+        self._panel_fast = False
+        self._limit_fast = False
+        self._is_valid = False
 
         if not isinstance(raw, str):
             return
@@ -21,16 +21,44 @@ class StopMode:
             if value not in ('0', '1'):
                 return
 
-        self.raw = text
-        self.panel_fast = text[0] == "1"
-        self.limit_fast = text[1] == "1"
-        self.is_valid = True
+        self._raw = text
+        self._panel_fast = text[0] == "1"
+        self._limit_fast = text[1] == "1"
+        self._is_valid = True
+
+    @property
+    def raw(
+        self,
+    ):
+        """raw を返す。"""
+        return self._raw
+
+    @property
+    def panel_fast(
+        self,
+    ):
+        """panel_fast を返す。"""
+        return self._panel_fast
+
+    @property
+    def limit_fast(
+        self,
+    ):
+        """limit_fast を返す。"""
+        return self._limit_fast
+
+    @property
+    def is_valid(
+        self,
+    ):
+        """is_valid を返す。"""
+        return self._is_valid
 
     def __repr__(
         self,
     ) -> str:
         return (
-            f'StopMode(raw={self.raw!r}, is_valid={self.is_valid!r})'
+            f'StopMode(raw={self._raw!r}, is_valid={self._is_valid!r})'
         )
 
 def main() -> None:

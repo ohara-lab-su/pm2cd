@@ -8,10 +8,10 @@ class ControllerStatus:
         self,
         raw: str,
     ):
-        self.raw = ""
-        self.remote_local = ""
-        self.stopped_motor_count = 0
-        self.is_valid = False
+        self._raw = ""
+        self._remote_local = ""
+        self._stopped_motor_count = 0
+        self._is_valid = False
 
         if not isinstance(raw, str):
             return
@@ -24,30 +24,58 @@ class ControllerStatus:
         if count < 0 or count > 4:
             return
 
-        self.raw = text
-        self.remote_local = text[0]
-        self.stopped_motor_count = count
-        self.is_valid = True
+        self._raw = text
+        self._remote_local = text[0]
+        self._stopped_motor_count = count
+        self._is_valid = True
 
     @property
+    @property
+    def raw(
+        self,
+    ):
+        """raw を返す。"""
+        return self._raw
+
+    @property
+    def remote_local(
+        self,
+    ):
+        """remote_local を返す。"""
+        return self._remote_local
+
+    @property
+    def stopped_motor_count(
+        self,
+    ):
+        """stopped_motor_count を返す。"""
+        return self._stopped_motor_count
+
+    @property
+    def is_valid(
+        self,
+    ):
+        """is_valid を返す。"""
+        return self._is_valid
+
     def is_remote(
         self,
     ) -> bool:
-        return self.is_valid and self.remote_local == "R"
+        return self._is_valid and self._remote_local == "R"
 
     @property
     def can_start(
         self,
     ) -> bool:
-        return self.is_valid and self.stopped_motor_count > 0
+        return self._is_valid and self._stopped_motor_count > 0
 
     def __repr__(
         self,
     ) -> str:
         return (
-            f"ControllerStatus(raw={self.raw!r}, "
-            f"stopped_motor_count={self.stopped_motor_count!r}, "
-            f"is_valid={self.is_valid!r})"
+            f"ControllerStatus(raw={self._raw!r}, "
+            f"stopped_motor_count={self._stopped_motor_count!r}, "
+            f"is_valid={self._is_valid!r})"
         )
 
 def main() -> None:

@@ -5,12 +5,12 @@ class MotorSetting:
         self,
         raw: str,
     ):
-        self.raw = ""
-        self.drive_enabled = False
-        self.hold_mode = 0
-        self.drive_mode = 0
-        self.output_mode = 0
-        self.is_valid = False
+        self._raw = ""
+        self._drive_enabled = False
+        self._hold_mode = 0
+        self._drive_mode = 0
+        self._output_mode = 0
+        self._is_valid = False
 
         if not isinstance(raw, str):
             return
@@ -31,18 +31,60 @@ class MotorSetting:
         if text[3] not in ('0', '1', '2'):
             return
 
-        self.raw = text
-        self.drive_enabled = text[0] == "1"
-        self.hold_mode = int(text[1])
-        self.drive_mode = int(text[2])
-        self.output_mode = int(text[3])
-        self.is_valid = True
+        self._raw = text
+        self._drive_enabled = text[0] == "1"
+        self._hold_mode = int(text[1])
+        self._drive_mode = int(text[2])
+        self._output_mode = int(text[3])
+        self._is_valid = True
+
+    @property
+    def raw(
+        self,
+    ):
+        """raw を返す。"""
+        return self._raw
+
+    @property
+    def drive_enabled(
+        self,
+    ):
+        """drive_enabled を返す。"""
+        return self._drive_enabled
+
+    @property
+    def hold_mode(
+        self,
+    ):
+        """hold_mode を返す。"""
+        return self._hold_mode
+
+    @property
+    def drive_mode(
+        self,
+    ):
+        """drive_mode を返す。"""
+        return self._drive_mode
+
+    @property
+    def output_mode(
+        self,
+    ):
+        """output_mode を返す。"""
+        return self._output_mode
+
+    @property
+    def is_valid(
+        self,
+    ):
+        """is_valid を返す。"""
+        return self._is_valid
 
     def __repr__(
         self,
     ) -> str:
         return (
-            f'MotorSetting(raw={self.raw!r}, is_valid={self.is_valid!r})'
+            f'MotorSetting(raw={self._raw!r}, is_valid={self._is_valid!r})'
         )
 
 def main() -> None:

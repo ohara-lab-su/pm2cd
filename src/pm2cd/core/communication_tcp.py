@@ -20,11 +20,11 @@ class Communication:
     def __init__(
         self,
         ip_address: str,
-        port: int=7777,
-        timeout_sec: float=3.0,
-        encoding: str="ascii",
+        port: int = 7777,
+        timeout_sec: float = 3.0,
+        encoding: str = "ascii",
         logger=None,
-        log_level: str="INFO",
+        log_level: str = "INFO",
     ):
         """インスタンスを初期化する。
 
@@ -41,36 +41,36 @@ class Communication:
             ValueError: 引数の値が不正な場合。
         """
         if not logger:
-            logging.basicConfig(level=(log_level or 'INFO').upper())
+            logging.basicConfig(level=(log_level or "INFO").upper())
             logger = logging.getLogger(__name__)
 
         self._logger = logger
 
         if not isinstance(ip_address, str):
-            raise TypeError('ip_addressはstrで指定してください')
+            raise TypeError("ip_addressはstrで指定してください")
 
         if not ip_address:
-            raise ValueError('ip_addressは空にできません')
+            raise ValueError("ip_addressは空にできません")
 
         if not isinstance(port, int) or isinstance(port, bool):
-            raise TypeError('portはintで指定してください')
+            raise TypeError("portはintで指定してください")
 
         if port < 1 or port > 65535:
-            raise ValueError('portは1から65535の範囲で指定してください')
+            raise ValueError("portは1から65535の範囲で指定してください")
 
         if not isinstance(timeout_sec, (int, float)) or isinstance(timeout_sec, bool):
-            raise TypeError('timeout_secは数値で指定してください')
+            raise TypeError("timeout_secは数値で指定してください")
 
         if timeout_sec <= 0:
-            raise ValueError('timeout_secは0より大きい値を指定してください')
+            raise ValueError("timeout_secは0より大きい値を指定してください")
 
         if not isinstance(encoding, str):
-            raise TypeError('encodingはstrで指定してください')
+            raise TypeError("encodingはstrで指定してください")
 
-        self.ip_address = ip_address
-        self.port = port
-        self.timeout_sec = timeout_sec
-        self.encoding = encoding
+        self._ip_address = ip_address
+        self._port = port
+        self._timeout_sec = timeout_sec
+        self._encoding = encoding
 
         self._socket = None  # type: Optional[socket.socket]
         self._receive_buffer = bytearray()
@@ -78,6 +78,34 @@ class Communication:
         self._lock = threading.RLock()
 
     @property
+    @property
+    def ip_address(
+        self,
+    ):
+        """ip_address を返す。"""
+        return self._ip_address
+
+    @property
+    def port(
+        self,
+    ):
+        """port を返す。"""
+        return self._port
+
+    @property
+    def timeout_sec(
+        self,
+    ):
+        """timeout_sec を返す。"""
+        return self._timeout_sec
+
+    @property
+    def encoding(
+        self,
+    ):
+        """encoding を返す。"""
+        return self._encoding
+
     def is_connected(
         self,
     ) -> bool:
@@ -97,7 +125,7 @@ class Communication:
             接続済み、または接続に成功した場合は ``True``。
             接続に失敗した場合は ``False``。
         """
-        self._logger.info(f'== connect()')
+        self._logger.info(f"== connect()")
 
         with self._lock:
             if self._socket is not None:
@@ -107,18 +135,21 @@ class Communication:
 
             try:
                 sock = socket.create_connection(
-                    (self.ip_address, self.port),
-                    timeout=self.timeout_sec
+                    (self._ip_address, self._port), timeout=self._timeout_sec
                 )
-                sock.settimeout(self.timeout_sec)
+                sock.settimeout(self._timeout_sec)
             except OSError as exc:
                 if sock is not None:
                     try:
                         sock.close()
                     except OSError as close_exc:
-                        self._logger.error(f'接続失敗後のTCPソケット破棄にも失敗しました: {close_exc}')
+                        self._logger.error(
+                            f"接続失敗後のTCPソケット破棄にも失敗しました: {close_exc}"
+                        )
 
-                message = f"TCP接続に失敗しました: {self.ip_address}:{self.port}: {exc}"
+                message = (
+                    f"TCP接続に失敗しました: {self._ip_address}:{self._port}: {exc}"
+                )
                 self._logger.error(message)
                 return False
 
@@ -126,14 +157,14 @@ class Communication:
             self._socket = sock
             self._receive_buffer.clear()
 
-            self._logger.info(f'TCP接続しました: {self.ip_address}:{self.port}')
+            self._logger.info(f"TCP接続しました: {self._ip_address}:{self._port}")
             return True
 
     def disconnect(
         self,
     ) -> bool:
         """TCP接続を切断する。"""
-        self._logger.info(f'== disconnect()')
+        self._logger.info(f"== disconnect()")
 
         with self._lock:
             # 切断処理中に別経路から古いソケットを使用しないよう、先に内部状態を切り離す。
@@ -152,10 +183,10 @@ class Communication:
             try:
                 sock.close()
             except OSError as exc:
-                self._logger.error(f'TCP切断に失敗しました: {exc}')
+                self._logger.error(f"TCP切断に失敗しました: {exc}")
                 return False
 
-            self._logger.info(f'TCP切断しました')
+            self._logger.info(f"TCP切断しました")
             return True
 
     def send(
@@ -163,13 +194,13 @@ class Communication:
         command: str,
     ) -> bool:
         """CR+LFを付加してコマンドを送信する。"""
-        self._logger.info(f'== send(): {command!r}')
+        self._logger.info(f"== send(): {command!r}")
 
         if not isinstance(command, str):
-            raise TypeError('commandはstrで指定してください')
+            raise TypeError("commandはstrで指定してください")
 
-        if '\r' in command or '\n' in command:
-            raise ValueError('commandに改行文字を含めることはできません')
+        if "\r" in command or "\n" in command:
+            raise ValueError("commandに改行文字を含めることはできません")
 
         with self._lock:
             return self._send(command)
@@ -178,7 +209,7 @@ class Communication:
         self,
     ) -> Optional[str]:
         """CR+LF単位で装置応答を1件受信する。"""
-        self._logger.info(f'== receive()')
+        self._logger.info(f"== receive()")
 
         with self._lock:
             return self._receive()
@@ -188,13 +219,13 @@ class Communication:
         command: str,
     ) -> Optional[str]:
         """コマンドを送信し、その応答を1件受信する。"""
-        self._logger.info(f'== query(): {command!r}')
+        self._logger.info(f"== query(): {command!r}")
 
         if not isinstance(command, str):
-            raise TypeError('commandはstrで指定してください')
+            raise TypeError("commandはstrで指定してください")
 
-        if '\r' in command or '\n' in command:
-            raise ValueError('commandに改行文字を含めることはできません')
+        if "\r" in command or "\n" in command:
+            raise ValueError("commandに改行文字を含めることはできません")
 
         with self._lock:
             # query は同一ロック内で send -> receive を完結させ、別コマンドの応答が
@@ -222,7 +253,9 @@ class Communication:
             CommunicationError: PM2CD への接続を確立できない場合。
         """
         if not self.connect():
-            raise CommunicationError(f'TCP接続を開始できません: {self.ip_address}:{self.port}')
+            raise CommunicationError(
+                f"TCP接続を開始できません: {self._ip_address}:{self._port}"
+            )
 
         return self
 
@@ -249,20 +282,22 @@ class Communication:
         command: str,
     ) -> bool:
         """ロック取得済みの状態でコマンドを送信する。"""
-        sock = self._require_socket('送信')
+        sock = self._require_socket("送信")
         if sock is None:
             return False
 
         try:
-            data = command.encode(self.encoding) + self._delimiter
+            data = command.encode(self._encoding) + self._delimiter
         except (UnicodeEncodeError, LookupError) as exc:
-            self._logger.error(f'コマンドのエンコードに失敗しました: {command!r}: {exc}')
+            self._logger.error(
+                f"コマンドのエンコードに失敗しました: {command!r}: {exc}"
+            )
             return False
 
         try:
             sock.sendall(data)
         except (OSError, socket.timeout) as exc:
-            self._logger.error(f'コマンド送信に失敗しました: {command!r}: {exc}')
+            self._logger.error(f"コマンド送信に失敗しました: {command!r}: {exc}")
             self._close_after_error()
             return False
 
@@ -277,37 +312,37 @@ class Communication:
 
             if delimiter_index >= 0:
                 raw = bytes(self._receive_buffer[:delimiter_index])
-                del self._receive_buffer[:delimiter_index + len(self._delimiter)]
+                del self._receive_buffer[: delimiter_index + len(self._delimiter)]
 
                 try:
-                    response = raw.decode(self.encoding)
+                    response = raw.decode(self._encoding)
                 except (UnicodeDecodeError, LookupError) as exc:
-                    self._logger.error(f'装置応答のデコードに失敗しました: {exc}')
+                    self._logger.error(f"装置応答のデコードに失敗しました: {exc}")
                     self._close_after_error()
                     return None
 
                 return response
 
-            sock = self._require_socket('受信')
+            sock = self._require_socket("受信")
             if sock is None:
                 return None
 
             try:
                 chunk = sock.recv(4096)
             except socket.timeout as exc:
-                self._logger.error(f'装置応答の受信がタイムアウトしました: {exc}')
+                self._logger.error(f"装置応答の受信がタイムアウトしました: {exc}")
 
                 # タイムアウト後に遅延応答が到着すると、次のqueryが古い応答を
                 # 誤って受信する可能性があるため、接続を破棄して同期を取り直す。
                 self._close_after_error()
                 return None
             except OSError as exc:
-                self._logger.error(f'装置応答の受信に失敗しました: {exc}')
+                self._logger.error(f"装置応答の受信に失敗しました: {exc}")
                 self._close_after_error()
                 return None
 
             if not chunk:
-                self._logger.error(f'装置側からTCP接続が切断されました')
+                self._logger.error(f"装置側からTCP接続が切断されました")
                 self._close_after_error()
                 return None
 
@@ -319,7 +354,7 @@ class Communication:
     ) -> Optional[socket.socket]:
         """接続済みソケットを返す。"""
         if self._socket is None:
-            self._logger.error(f'TCP接続されていないため{operation}できません')
+            self._logger.error(f"TCP接続されていないため{operation}できません")
             return None
 
         return self._socket
@@ -338,7 +373,8 @@ class Communication:
         try:
             sock.close()
         except OSError as exc:
-            self._logger.error(f'通信異常後のTCPソケット破棄に失敗しました: {exc}')
+            self._logger.error(f"通信異常後のTCPソケット破棄に失敗しました: {exc}")
+
 
 def main() -> None:
     """Communication の基本的な送受信例を実行する。
@@ -355,18 +391,18 @@ def main() -> None:
     communication = Communication(ip_address=ip_address, port=port)
 
     if not communication.connect():
-        print('PM2CD へ接続できませんでした')
+        print("PM2CD へ接続できませんでした")
         return
 
     try:
-        response = communication.query('VER?')
+        response = communication.query("VER?")
         if response is None:
-            print('VER? の取得に失敗しました')
+            print("VER? の取得に失敗しました")
         else:
-            print(f'VER?: {response}')
+            print(f"VER?: {response}")
     finally:
         communication.disconnect()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
