@@ -4,6 +4,9 @@ IP_ADDRESS = "10.170.10.62"
 PORT = 7777
 TIMEOUT_SEC = 3.0
 
+# PAUSE on (pause)
+# PAUSE off (resume)
+
 ctrl = PM2CD(ip_address=IP_ADDRESS, port=PORT, timeout_sec=TIMEOUT_SEC)
 try:
     original = ctrl.get_pause_status()

@@ -707,23 +707,7 @@ normal motor/controller status
 
 `SETLS?` を current limit state と解釈しない。
 
-### 11. 現時点の未確定・今後精査する事項
-
-以下は v0.0.0 時点で意図的に「確定事項」にしない。
-
-- Ctrl の `get_limit_switch_setting()` を公開 API として残すか。個別 getter と重複している。
-- hardware limit enable/contact の setter を PM2C-06A 固有の連動仕様にどの粒度で見せるか。
-- Ctrl の List 順序 `[CW, CCW, HP]` / `[CW, CCW]` を今後も統一規約として固定するか。
-- C版ハンドラー I/F 全ファイルを受領していないため、C版公開 I/F 全体との完全対応表は未完成。
-- TTL/display/ALLREP 等、今回 C版実装を読んだが現行 Python Ctrl/Device に API が存在しない機能について、今後追加するかどうか。
-- 現行 Python の limit 以外の各 Device ハンドラーについて、C版との処理順・符号形式・複合処理をさらに個別照合する必要がある。
-
-これらを推論し直す場合でも、
-ここまで読んだ C版実ハンドラー、PM2C-06A の装置仕様、
-現在の Python 構造、責務分離の議論を破棄して最初からやり直してはならない。
-再推論とは既存の事実と議論を保持した上で結論を再評価することである。
-
-### 12. v0.0.0 での修正内容
+### 11. v0.0.0 での修正内容
 
 - `LimitSwitchSetting.digital_limit_enabled` を property として統一。
 - `LimitSwitchSetting` に hardware limit enable/contact の read-modify-write 処理を追加。

@@ -1,6 +1,5 @@
 from pm2cd.pm2cd_ctrl import PM2CD
 
-
 IP_ADDRESS = "10.170.10.62"
 PORT = 7777
 MOTOR = 0
@@ -18,9 +17,6 @@ def main() -> None:
 
         print("[INFO] limit switch setting")
         print(pm2cd.get_limit_switch_setting(MOTOR))
-
-        print("[INFO] limit switch setting raw")
-        print(pm2cd.get_limit_switch_setting_raw(MOTOR))
 
         print("[INFO] motor setting")
         print(pm2cd.get_motor_setting(MOTOR))
