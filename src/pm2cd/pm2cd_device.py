@@ -184,7 +184,7 @@ class PM2CDDevice:
             return False
 
         command = (
-            f'ABS{self._motor_text(motor)}{suffix}{pulse:d}'
+            f'ABS{self._motor_text(motor)}{suffix}{pulse:+d}'
         )
         return self._communication.send(command)
 
@@ -217,7 +217,7 @@ class PM2CDDevice:
             return False
 
         command = (
-            f'REL{self._motor_text(motor)}{suffix}{pulse:d}'
+            f'REL{self._motor_text(motor)}{suffix}{pulse:+d}'
         )
         return self._communication.send(command)
 

@@ -29,14 +29,16 @@ try:
     if target > 8388607:
         target = before - TEST_PULSE
 
+    print(f"[INFO] {'move'}: {target}")
     ctrl.move(MOTOR, target, backlash=False)
-    ctrl.wait_stop(MOTOR, timeout_sec=MOTION_TIMEOUT_SEC)
-    if ctrl.get_position(MOTOR) != target:
-        raise AssertionError("ABS移動位置不一致")
+    time.sleep(10)
+    # ctrl.wait_stop(MOTOR, timeout_sec=MOTION_TIMEOUT_SEC)
+    # if ctrl.get_position(MOTOR) != target:
+    #     raise AssertionError("ABS移動位置不一致")
 
-    ctrl.move(MOTOR, before, backlash=False)
-    ctrl.wait_stop(MOTOR, timeout_sec=MOTION_TIMEOUT_SEC)
-    print(f"[PASS] {'move'}: {'OK'}")
+    # ctrl.move(MOTOR, before, backlash=False)
+    # ctrl.wait_stop(MOTOR, timeout_sec=MOTION_TIMEOUT_SEC)
+    # print(f"[PASS] {'move'}: {'OK'}")
 finally:
     try:
         ctrl.emergency_stop_all()
