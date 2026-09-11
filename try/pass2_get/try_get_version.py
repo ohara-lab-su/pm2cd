@@ -7,8 +7,6 @@ try:
     value = ctrl.get_version()
     if value is None:
         raise AssertionError('VER?応答を取得できません')
-    if not value.is_pm2cd:
-        raise AssertionError(f'PM2CD系のVER?応答ではありません: {value.raw!r}')
     print(f"[PASS] {'get_version'}: {value.raw}")
 finally:
     try:

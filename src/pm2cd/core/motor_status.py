@@ -27,7 +27,6 @@ class MotorStatus:
         self._mcc_status = mcc_status
         self._position = position
 
-    @classmethod
     @property
     def motor(
         self,
@@ -84,18 +83,19 @@ class MotorStatus:
         """position を返す。"""
         return self._position
 
+    @classmethod
     def parse_all(
         cls,
         raw: str,
     ) -> Optional[List["MotorStatus"]]:
-        """PM4C-06A互換の4枠 ``STS?`` 応答を解析する。"""
+        """PM4C-06A互換の ``STS?`` 応答を解析する。"""
         if not isinstance(raw, str):
             return None
 
         text = raw.strip()
-        # STS? 応答は "/" 区切りでヘッダ、方向、LS、MCC、4位置を返す。
+        # STS? 応答は "/" 区切りでヘッダ、方向、LS、MCC、各位置を返す。
         parts = text.split('/')
-        if len(parts) != 8:
+        if len(parts) < 5:
             return None
 
         header = parts[0]
@@ -104,20 +104,25 @@ class MotorStatus:
         mcc = parts[3]
         positions = parts[4:]
 
-        if len(header) != 5 or header[0] not in ('R', 'L'):
+        if len(header) < 2 or header[0] not in ('R', 'L'):
             return None
 
-        if len(directions) != 4:
+        motor_count = len(header) - 1
+
+        if len(parts) != 4 + motor_count:
+            return None
+
+        if len(directions) != motor_count:
             return None
 
         for value in directions:
             if value not in 'PNS':
                 return None
 
-        if len(limits) != 4:
+        if len(limits) != motor_count:
             return None
 
-        if len(mcc) != 8:
+        if len(mcc) != motor_count * 2:
             return None
 
         # 16進表現のチャンネル・LS・MCCと、10進表現の位置を数値化する。
@@ -131,7 +136,7 @@ class MotorStatus:
                 ls_values.append(int(value, 16))
 
             mcc_values = []
-            for index in range(0, 8, 2):
+            for index in range(0, len(mcc), 2):
                 mcc_values.append(int(mcc[index:index + 2], 16))
 
             position_values = []
@@ -140,9 +145,9 @@ class MotorStatus:
         except ValueError:
             return None
 
-        # PM2CDは2軸だがSTS?応答はPM4C互換の4枠なので、4枠すべて解析する。
+        # 応答ヘッダに含まれるチャンネル数だけ解析する。
         statuses = []
-        for index in range(4):
+        for index in range(motor_count):
             status = cls(
                 motor=index,
                 channel=channels[index],
