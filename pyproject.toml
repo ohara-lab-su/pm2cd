@@ -9,7 +9,7 @@ version = "0.0.0"
 description = "tuji pm2cd"
 authors = [
     { name = "Kengo NAKADA", email = "kengo.nakada@email.com" },
-    { name = "Kentaro Kobayashi", email = "kobayashi@mat.shimane-u.ac.jp" }
+    #{ name = "Kentaro Kobayashi", email = "kobayashi@mat.shimane-u.ac.jp" }
 ]
 readme = "README.md"
 # requires-python = ">=3.8"

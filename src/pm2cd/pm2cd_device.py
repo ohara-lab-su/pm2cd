@@ -1,563 +1,2291 @@
-from typing import Optional, Union
+import logging
+from typing import List, Optional, Union
 
-from .core.communication_tcp import Communication
-from .core.data import RATE_TABLE
-from .core.errors import ProtocolError
-from .core.motor_status import MotorStatus
-from .version_info import VersionInfo
+from pm2cd.core.communication_tcp import Communication
+from pm2cd.core.controller_status import ControllerStatus
+from pm2cd.core.data import RATE_TABLE
+from pm2cd.core.home_status import HomeStatus
+from pm2cd.core.limit_status import LimitStatus
+from pm2cd.core.limit_switch_setting import LimitSwitchSetting
+from pm2cd.core.motor_setting import MotorSetting
+from pm2cd.core.motor_status import MotorStatus
+from pm2cd.core.stop_mode import StopMode
+from pm2cd.core.version_info import VersionInfo
 
+
+# PM2CD の装置コマンド層。
+# ASCII コマンド生成、応答解析、引数検証を担当し、TCP処理は Communication へ委譲する。
 
 class PM2CDDevice:
-    """PM2CD/PM2C-06A固有のコマンド生成と応答解析を担当する。"""
+    """PM2CD / PM2C-06A 固有のコマンド生成・応答処理を担当する。"""
 
+    CHANNEL_COUNT = 2
+    POSITION_MIN = -8_388_608
+    POSITION_MAX = 8_388_607
+    SPEED_MIN = 5
+    SPEED_MAX = 100_000
+    BACKLASH_MIN = -9_999
+    BACKLASH_MAX = 9_999
+    RATE_MIN = 0
+    RATE_MAX = 25
+    JOG_PULSE_MIN = 0
+    JOG_PULSE_MAX = 9_999
+    HOME_OFFSET_MIN = 0
+    HOME_OFFSET_MAX = 9_999
+    HOLD_TIME_MIN = 50
+    HOLD_TIME_MAX = 3_000
+    HOLD_TIME_STEP = 10
+
+
+    # --- 初期化 ----------------------------------------------------------------
     def __init__(
         self,
         communication: Communication,
-        channel_count: int = 2,
+        channel_count: int=2,
         logger=None,
-        log_level: str = "INFO",
+        log_level: str="INFO",
     ):
-        if channel_count < 1 or channel_count > 4:
-            raise ValueError("channel_countは1から4の範囲で指定してください")
+        """インスタンスを初期化する。
 
+        Args:
+            communication: PM2CD と接続する Communication インスタンス。
+            channel_count: 制御対象チャンネル数。PM2CD では 2 固定。
+            logger: 使用する logger。None の場合はこのモジュールで生成する。
+            log_level: logger を生成する場合のログレベル。
+
+        Raises:
+            ValueError: PM2CD 固有の固定条件に反する設定が指定された場合。
+        """
         if not logger:
-            import logging
-
-            log_level = log_level or "INFO"
-            logging.basicConfig(level=log_level.upper())
+            logging.basicConfig(level=(log_level or 'INFO').upper())
             logger = logging.getLogger(__name__)
-            # logger = get_silent_logger())
 
         self._logger = logger
         self._communication = communication
-        self._channel_count = channel_count
-        self._version_info: Optional[VersionInfo] = None
+        if channel_count != self.CHANNEL_COUNT:
+            raise ValueError(f'PM2CDのchannel_countは2です: {channel_count}')
 
-    def remote(self) -> None:
-        self._logger.info(f"== remote()")
-        self._communication.send("REM")
+        self._version_info = None  # type: Optional[VersionInfo]
 
-    def local(self) -> None:
-        self._logger.info(f"== local()")
-        self._communication.send("LOC")
 
-    def version(self) -> VersionInfo:
-        self._version_info = VersionInfo(self._communication.query("VER?"))
-        return self._version_info
-
-    def hardware_version(self) -> str:
-        return self._communication.query("VERH?")
-
-    # ----------------
-    # JOG
-    # ----------------
-    def jog(
+    # --- コントローラ基本コマンド --------------------------------------------
+    def remote(
         self,
-        motor: int,
-        direction: str,
-    ) -> None:
-        """指定した軸をJOG移動させます。
+    ) -> bool:
+        """装置をリモート操作モードへ切り替える。
 
-        Args:
-            motor (int): モータ番号（0～15）。
-            direction (str): 移動方向。正転は「+」または「cw」、
-                逆転は「-」または「ccw」。
-
-        Raises:
-            ValueError: モータ番号または移動方向が無効な場合。
+        Returns:
+            処理に成功した場合は True、失敗した場合は False。
         """
-        self._logger.info(f"== jog(motor={motor}, direction={direction!r})")
+        self._logger.info(f'== remote()')
+        return self._communication.send('REM')
 
-        self._check_motor(motor)
+    def local(
+        self,
+    ) -> bool:
+        """装置をローカル操作モードへ切り替える。
 
-        normalized_direction = direction.lower()
+        Returns:
+            処理に成功した場合は True、失敗した場合は False。
+        """
+        self._logger.info(f'== local()')
+        return self._communication.send('LOC')
 
-        if normalized_direction == "+":
-            direction_command = "+"
-        elif normalized_direction == "cw":
-            direction_command = "+"
-        elif normalized_direction == "-":
-            direction_command = "-"
-        elif normalized_direction == "ccw":
-            direction_command = "-"
-        else:
-            raise ValueError(
-                "directionは'+'、'-'、'cw'、'ccw'のいずれかで指定してください"
-            )
+    def version(
+        self,
+    ) -> Optional[VersionInfo]:
+        """装置のソフトウェアバージョン情報を取得する。
 
-        self._communication.send(f"JOG{direction_command}{motor:X}")
+        Returns:
+            取得または変換に成功した値。失敗した場合は None。
+        """
+        self._logger.info(f'== get_version()')
 
-    def jog_stop(self, motor: int) -> None:
-        """JOG移動を停止します（通常のstopと同じコマンドにマッピング）。"""
-        self.stop(motor)
+        raw = self._communication.query('VER?')
+        if raw is None:
+            return None
 
+        value = VersionInfo(raw)
+        if not value.is_valid:
+            self._logger.error(f'VER?応答を解釈できません: {raw!r}')
+            return None
+
+        self._version_info = value
+        return value
+
+    def hardware_version(
+        self,
+    ) -> Optional[str]:
+        """装置のハードウェアバージョン情報を取得する。
+
+        Returns:
+            取得または変換に成功した値。失敗した場合は None。
+        """
+        self._logger.info(f'== get_hardware_version()')
+
+        raw = self._query_text('VERH?')
+        if raw is None:
+            return None
+
+        if not raw.startswith('HD-VER'):
+            self._logger.error(f'VERH?応答を解釈できません: {raw!r}')
+            return None
+
+        return raw
+
+    def controller_status(
+        self,
+    ) -> Optional[ControllerStatus]:
+        """コントローラー全体の状態を取得する。
+
+        Returns:
+            取得または変換に成功した値。失敗した場合は None。
+        """
+        self._logger.info(f'== get_controller_status()')
+
+        raw = self._communication.query('STQ?')
+        if raw is None:
+            return None
+
+        value = ControllerStatus(raw)
+        if not value.is_valid:
+            self._logger.error(f'STQ?応答を解釈できません: {raw!r}')
+            return None
+
+        return value
+
+
+    # --- モータ動作コマンド ----------------------------------------------------
     def move(
         self,
         motor: int,
         pulse: int,
-        backlash: Union[str, bool] = True,
-    ) -> None:
+        backlash: Union[str, bool, None]=True,
+    ) -> bool:
+        """指定モーターを絶対位置へ移動する。
+
+        Args:
+            motor: モーター番号。0 または 1。
+            pulse: パルス値。
+            backlash: バックラッシュ補正指定。
+
+        Returns:
+            処理に成功した場合は True、失敗した場合は False。
+        """
+        self._logger.info(f'== move()')
+
+        if not self._check_motor(motor):
+            return False
+
+        if not self._check_position(pulse, 'pulse'):
+            return False
+
         suffix = self._backlash_suffix(backlash)
-        self._check_motor(motor)
-        self._communication.send(f"ABS{motor:X}{suffix}{pulse:+d}")
+        if suffix is None:
+            return False
+
+        command = (
+            f'ABS{self._motor_text(motor)}{suffix}{pulse:+d}'
+        )
+        return self._communication.send(command)
 
     def move_relative(
         self,
         motor: int,
         pulse: int,
-        backlash: Union[str, bool] = True,
-    ) -> None:
+        backlash: Union[str, bool, None]=True,
+    ) -> bool:
+        """指定モーターを現在位置から相対移動する。
+
+        Args:
+            motor: モーター番号。0 または 1。
+            pulse: パルス値。
+            backlash: バックラッシュ補正指定。
+
+        Returns:
+            処理に成功した場合は True、失敗した場合は False。
+        """
+        self._logger.info(f'== move_relative()')
+
+        if not self._check_motor(motor):
+            return False
+
+        if not self._check_position(pulse, 'pulse'):
+            return False
+
         suffix = self._backlash_suffix(backlash)
-        self._check_motor(motor)
-        self._communication.send(f"REL{motor:X}{suffix}{pulse:+d}")
+        if suffix is None:
+            return False
+
+        command = (
+            f'REL{self._motor_text(motor)}{suffix}{pulse:+d}'
+        )
+        return self._communication.send(command)
 
     def scan(
         self,
         motor: int,
         direction: str,
-    ) -> None:
-        direction = self._normalize_direction(direction)
-        if direction == "cw":
+    ) -> bool:
+        """指定方向へ連続スキャン動作を開始する。
+
+        Args:
+            motor: モーター番号。0 または 1。
+            direction: 回転方向。cw または ccw。
+
+        Returns:
+            処理に成功した場合は True、失敗した場合は False。
+        """
+        self._logger.info(f'== scan()')
+
+        normalized = self._normalize_direction(direction)
+        if normalized is None:
+            return False
+
+        command = "SCANN"
+        if normalized == 'cw':
             command = "SCANP"
-        else:
-            command = "SCANN"
-        self._send_motor_command(command, motor)
+
+        return self._send_motor_command(command, motor)
 
     def constant_speed_scan(
         self,
         motor: int,
         direction: str,
-    ) -> None:
-        direction = self._normalize_direction(direction)
-        if direction == "cw":
+    ) -> bool:
+        """指定方向へ定速スキャン動作を開始する。
+
+        Args:
+            motor: モーター番号。0 または 1。
+            direction: 回転方向。cw または ccw。
+
+        Returns:
+            処理に成功した場合は True、失敗した場合は False。
+        """
+        self._logger.info(f'== constant_speed_scan()')
+
+        normalized = self._normalize_direction(direction)
+        if normalized is None:
+            return False
+
+        command = "CSCANN"
+        if normalized == 'cw':
             command = "CSCANP"
-        else:
-            command = "CSCANN"
-        self._send_motor_command(command, motor)
+
+        return self._send_motor_command(command, motor)
 
     def jog(
         self,
         motor: int,
         direction: str,
-    ) -> None:
-        direction = self._normalize_direction(direction)
-        if direction == "cw":
+    ) -> bool:
+        """指定方向へ JOG 動作する。
+
+        Args:
+            motor: モーター番号。0 または 1。
+            direction: 回転方向。cw または ccw。
+
+        Returns:
+            処理に成功した場合は True、失敗した場合は False。
+        """
+        self._logger.info(f'== jog()')
+
+        normalized = self._normalize_direction(direction)
+        if normalized is None:
+            return False
+
+        command = "JOGN"
+        if normalized == 'cw':
             command = "JOGP"
-        else:
-            command = "JOGN"
-        self._send_motor_command(command, motor)
+
+        return self._send_motor_command(command, motor)
+
+    def scan_home(
+        self,
+        motor: int,
+        direction: str,
+    ) -> bool:
+        """指定方向へ原点探索スキャンを開始する。
+
+        Args:
+            motor: モーター番号。0 または 1。
+            direction: 回転方向。cw または ccw。
+
+        Returns:
+            処理に成功した場合は True、失敗した場合は False。
+        """
+        self._logger.info(f'== scan_home()')
+
+        normalized = self._normalize_direction(direction)
+        if normalized is None:
+            return False
+
+        command = "SCANHN"
+        if normalized == 'cw':
+            command = "SCANHP"
+
+        return self._send_motor_command(command, motor)
 
     def home(
         self,
         motor: int,
-    ) -> None:
-        self._send_motor_command("GTHP", motor)
+    ) -> bool:
+        """記録済み原点位置へ移動する。
+
+        Args:
+            motor: モーター番号。0 または 1。
+
+        Returns:
+            処理に成功した場合は True、失敗した場合は False。
+        """
+        self._logger.info(f'== home()')
+        return self._send_motor_command('GTHP', motor)
 
     def find_home(
         self,
         motor: int,
-    ) -> None:
-        self._send_motor_command("FDHP", motor)
+    ) -> bool:
+        """原点検出動作を開始する。
 
+        Args:
+            motor: モーター番号。0 または 1。
+
+        Returns:
+            処理に成功した場合は True、失敗した場合は False。
+        """
+        self._logger.info(f'== find_home()')
+        return self._send_motor_command('FDHP', motor)
+
+
+    # --- 停止・状態取得 --------------------------------------------------------
     def stop(
         self,
         motor: int,
-    ) -> None:
-        self._send_motor_command("SSTP", motor)
+    ) -> bool:
+        """指定モーターを停止する。
 
-    def stop_all(self) -> None:
-        self._communication.send("ASSTP")
+        Args:
+            motor: モーター番号。0 または 1。
+
+        Returns:
+            処理に成功した場合は True、失敗した場合は False。
+        """
+        self._logger.info(f'== stop()')
+        return self._send_motor_command('SSTP', motor)
+
+    def stop_all(
+        self,
+    ) -> bool:
+        """全モーターを停止する。
+
+        Returns:
+            処理に成功した場合は True、失敗した場合は False。
+        """
+        self._logger.info(f'== stop_all()')
+        return self._communication.send('ASSTP')
 
     def emergency_stop(
         self,
         motor: int,
-    ) -> None:
-        self._send_motor_command("ESTP", motor)
+    ) -> bool:
+        """指定モーターを非常停止する。
 
-    def emergency_stop_all(self) -> None:
-        self._communication.send("AESTP")
+        Args:
+            motor: モーター番号。0 または 1。
+
+        Returns:
+            処理に成功した場合は True、失敗した場合は False。
+        """
+        self._logger.info(f'== emergency_stop()')
+        return self._send_motor_command('ESTP', motor)
+
+    def emergency_stop_all(
+        self,
+    ) -> bool:
+        """全モーターを非常停止する。
+
+        Returns:
+            処理に成功した場合は True、失敗した場合は False。
+        """
+        self._logger.info(f'== emergency_stop_all()')
+        return self._communication.send('AESTP')
 
     def status(
         self,
         motor: int,
-    ) -> MotorStatus:
-        self._check_motor(motor)
-        raw = self._communication.query("STS?")
-        statuses = self._parse_status_all(raw)
-        return statuses[motor]
-
-    def status_all(self) -> list[MotorStatus]:
-        return self._parse_status_all(self._communication.query("STS?"))
-
-    # ----------------------
-    # motor
-    # ----------------------
-    def set_motor_free(
-        self,
-        motor: int,
-        free: bool = True,
-    ) -> None:
-        """モータの励磁状態を設定します。
+    ) -> Optional[MotorStatus]:
+        """指定モーターの状態を取得する。
 
         Args:
-            motor (int): モータ番号（0～15）。
-            free (bool): Trueの場合は励磁をOFFにしてフリー状態にします。
-                Falseの場合は励磁をONにしてホールド状態にします。
+            motor: モーター番号。0 または 1。
 
-        Raises:
-            ValueError: モータ番号が範囲外の場合。
+        Returns:
+            取得または変換に成功した値。失敗した場合は None。
         """
-        self._logger.info(f"== set_motor_free(motor={motor!r}, free={free!r})")
-        self._check_motor(motor)
+        self._logger.info(f'== get_status()')
 
-        if free:
-            mode = "OFF"
-        else:
-            mode = "ON"
+        if not self._check_motor(motor):
+            return None
 
-        self._communication.send(f"HOLD{motor:X}{mode}")
+        # STS? は全モーター分をまとめて返すため、一度だけ取得して対象 motor を選ぶ。
+        values = self.status_all()
+        if values is None:
+            return None
 
-    def zero_position(self, motor: int) -> None:
-        """指定軸の現在位置カウンタを 0 にリセットします。"""
-        self._logger.info(f"== zero_position(motor={motor!r})")
-        self.set_position(motor, 0)
+        return values[motor]
 
+    def status_all(
+        self,
+    ) -> Optional[List[MotorStatus]]:
+        """全モーターの状態を取得する。
+
+        Returns:
+            取得または変換に成功した値。失敗した場合は None。
+        """
+        self._logger.info(f'== get_status_all()')
+
+        raw = self._communication.query('STS?')
+        if raw is None:
+            return None
+
+        values = MotorStatus.parse_all(raw)
+        if values is None:
+            self._logger.error(f'STS?応答を解釈できません: {raw!r}')
+            return None
+
+        return values[: self.CHANNEL_COUNT]
+
+    def check_rotate(
+        self,
+        motor: int,
+    ) -> Optional[bool]:
+        """指定モーターが回転中か確認する。
+
+        Args:
+            motor: モーター番号。0 または 1。
+
+        Returns:
+            取得または変換に成功した値。失敗した場合は None。
+        """
+        self._logger.info(f'== get_rotate()')
+
+        status = self.status(motor)
+        if status is None:
+            return None
+
+        if status.rotation_state != 1:
+            return False
+
+        return True
+
+
+    # --- 位置・速度設定 --------------------------------------------------------
     def position(
         self,
         motor: int,
-    ) -> int:
-        return int(self._query_motor_command("PS?", motor))
+    ) -> Optional[int]:
+        """指定モーターの現在位置を取得する。
+
+        Args:
+            motor: モーター番号。0 または 1。
+
+        Returns:
+            取得または変換に成功した値。失敗した場合は None。
+        """
+        self._logger.info(f'== get_position()')
+
+        motor_text = self._motor_text(motor)
+        if motor_text is None:
+            return None
+
+        return self._query_int(f'PS?{motor_text}', 'PS?')
 
     def set_position(
         self,
         motor: int,
         pulse: int,
-    ) -> None:
-        self._send_motor_value("PS", motor, pulse, signed=True)
+    ) -> bool:
+        """指定モーターの現在位置カウンタを設定する。
 
-    def set_speed_profile(
+        Args:
+            motor: モーター番号。0 または 1。
+            pulse: パルス値。
+
+        Returns:
+            処理に成功した場合は True、失敗した場合は False。
+        """
+        self._logger.info(f'== set_position()')
+
+        motor_text = self._motor_text(motor)
+        if motor_text is None:
+            return False
+
+        if not self._check_position(pulse, 'pulse'):
+            return False
+
+        return self._communication.send(f'PS{motor_text}{pulse:d}')
+
+    def speed(
         self,
         motor: int,
-        low_speed: int,
-        mid_speed: int,
-        high_speed: int,
-    ) -> None:
-        """低速(L)・中速(M)・高速(H)のパラメータを個別に一括設定します。"""
-        self._logger.info(f"== set_speed_profile(motor={motor!r}, ")
-        self._check_motor(motor)
-        self._communication.send(f"SPDL{motor:X}{low_speed}")
-        self._communication.send(f"SPDM{motor:X}{mid_speed}")
-        self._communication.send(f"SPDH{motor:X}{high_speed}")
+    ) -> Optional[int]:
+        """set_speed() の基準となる高速設定値を取得する。
+
+        Args:
+            motor: モーター番号。0 または 1。
+
+        Returns:
+            取得または変換に成功した値。失敗した場合は None。
+        """
+        self._logger.info(f'== get_speed()')
+        return self.high_speed(motor)
 
     def set_speed(
         self,
         motor: int,
         speed: int,
-    ) -> None:
-        self._logger.info(f"== set_speed(motor={motor}, speed={speed!r})")
-        self.set_high_speed(motor, speed)
-        self.set_middle_speed(motor, max(speed // 3, 5))
-        self.set_low_speed(motor, max(speed // 10, 5))
+    ) -> bool:
+        """高速値を基準に低速・中速・高速を設定する。
+
+        Args:
+            motor: モーター番号。0 または 1。
+            speed: 速度。
+
+        Returns:
+            処理に成功した場合は True、失敗した場合は False。
+        """
+        self._logger.info(f'== set_speed()')
+
+        if not self._check_motor(motor):
+            return False
+
+        if not self._check_speed(speed):
+            return False
+
+        # PM16 系既存実装と同じ比率で、中速を高速の 1/3 から求める。
+        middle = speed // 3
+        if middle < self.SPEED_MIN:
+            middle = self.SPEED_MIN
+
+        # 低速は高速の 1/10 とし、装置仕様の最低速度を下回らせない。
+        low = speed // 10
+        if low < self.SPEED_MIN:
+            low = self.SPEED_MIN
+
+        if not self.set_high_speed(motor, speed):
+            return False
+
+        if not self.set_middle_speed(motor, middle):
+            return False
+
+        return self.set_low_speed(motor, low)
+
+    def speed_profile(
+        self,
+        motor: int,
+    ) -> Optional[List[int]]:
+        """低速・中速・高速の設定値を取得する。
+
+        Args:
+            motor: モーター番号。0 または 1。
+
+        Returns:
+            低速・中速・高速の順の設定値。取得に失敗した場合は None。
+        """
+        self._logger.info(f'== get_speed_profile()')
+
+        low_speed = self.low_speed(motor)
+        if low_speed is None:
+            return None
+
+        middle_speed = self.middle_speed(motor)
+        if middle_speed is None:
+            return None
+
+        high_speed = self.high_speed(motor)
+        if high_speed is None:
+            return None
+
+        return [low_speed, middle_speed, high_speed]
+
+    def set_speed_profile(
+        self,
+        motor: int,
+        low_speed: int,
+        middle_speed: int,
+        high_speed: int,
+    ) -> bool:
+        """低速・中速・高速を個別に設定する。
+
+        Args:
+            motor: モーター番号。0 または 1。
+            low_speed: 低速値。
+            middle_speed: 中速値。
+            high_speed: 高速値。
+
+        Returns:
+            処理に成功した場合は True、失敗した場合は False。
+        """
+        self._logger.info(f'== set_speed_profile()')
+
+        if not self._check_motor(motor):
+            return False
+
+        if not self._check_speed(low_speed):
+            return False
+
+        if not self._check_speed(middle_speed):
+            return False
+
+        if not self._check_speed(high_speed):
+            return False
+
+        if not self.set_low_speed(motor, low_speed):
+            return False
+
+        if not self.set_middle_speed(motor, middle_speed):
+            return False
+
+        return self.set_high_speed(motor, high_speed)
 
     def high_speed(
         self,
         motor: int,
-    ) -> int:
-        return int(self._query_motor_command("SPDH?", motor))
+    ) -> Optional[int]:
+        """高速設定値を取得する。
+
+        Args:
+            motor: モーター番号。0 または 1。
+
+        Returns:
+            取得または変換に成功した値。失敗した場合は None。
+        """
+        self._logger.info(f'== get_high_speed()')
+        return self._query_motor_int('SPDH?', motor)
 
     def set_high_speed(
         self,
         motor: int,
         speed: int,
-    ) -> None:
-        self._logger.info(f"== set_high_speed(motor={motor}, speed={speed!r})")
-        self._send_motor_value("SPDH", motor, speed)
+    ) -> bool:
+        """高速設定値を設定する。
+
+        Args:
+            motor: モーター番号。0 または 1。
+            speed: 速度。
+
+        Returns:
+            処理に成功した場合は True、失敗した場合は False。
+        """
+        self._logger.info(f'== set_high_speed()')
+        return self._set_speed_value('SPDH', motor, speed)
 
     def middle_speed(
         self,
         motor: int,
-    ) -> int:
-        return int(self._query_motor_command("SPDM?", motor))
+    ) -> Optional[int]:
+        """中速設定値を取得する。
+
+        Args:
+            motor: モーター番号。0 または 1。
+
+        Returns:
+            取得または変換に成功した値。失敗した場合は None。
+        """
+        self._logger.info(f'== get_middle_speed()')
+        return self._query_motor_int('SPDM?', motor)
 
     def set_middle_speed(
         self,
         motor: int,
         speed: int,
-    ) -> None:
-        self._logger.info(f"== set_middle_speed(motor={motor}, speed={speed!r})")
-        self._send_motor_value("SPDM", motor, speed)
+    ) -> bool:
+        """中速設定値を設定する。
+
+        Args:
+            motor: モーター番号。0 または 1。
+            speed: 速度。
+
+        Returns:
+            処理に成功した場合は True、失敗した場合は False。
+        """
+        self._logger.info(f'== set_middle_speed()')
+        return self._set_speed_value('SPDM', motor, speed)
 
     def low_speed(
         self,
         motor: int,
-    ) -> int:
-        return int(self._query_motor_command("SPDL?", motor))
+    ) -> Optional[int]:
+        """低速設定値を取得する。
+
+        Args:
+            motor: モーター番号。0 または 1。
+
+        Returns:
+            取得または変換に成功した値。失敗した場合は None。
+        """
+        self._logger.info(f'== get_low_speed()')
+        return self._query_motor_int('SPDL?', motor)
 
     def set_low_speed(
         self,
         motor: int,
         speed: int,
-    ) -> None:
-        self._logger.info(f"== set_low_speed(motor={motor}, speed={speed!r})")
-        self._send_motor_value("SPDL", motor, speed)
+    ) -> bool:
+        """低速設定値を設定する。
+
+        Args:
+            motor: モーター番号。0 または 1。
+            speed: 速度。
+
+        Returns:
+            処理に成功した場合は True、失敗した場合は False。
+        """
+        self._logger.info(f'== set_low_speed()')
+        return self._set_speed_value('SPDL', motor, speed)
 
     def speed_mode(
         self,
         motor: int,
-    ) -> str:
-        return self._query_motor_command("SPD?", motor)
+    ) -> Optional[str]:
+        """現在の速度モードを取得する。
+
+        Args:
+            motor: モーター番号。0 または 1。
+
+        Returns:
+            取得または変換に成功した値。失敗した場合は None。
+        """
+        self._logger.info(f'== get_speed_mode()')
+
+        motor_text = self._motor_text(motor)
+        if motor_text is None:
+            return None
+
+        raw = self._query_text(f'SPD?{motor_text}')
+        if raw is None:
+            return None
+
+        if raw not in ('HSPD', 'MSPD', 'LSPD'):
+            self._logger.error(f'SPD?応答を解釈できません: {raw!r}')
+            return None
+
+        return raw
 
     def set_speed_mode(
         self,
         motor: int,
         mode: Union[int, str],
-    ) -> None:
-        self._logger.info(f"== set_speed_mode(motor={motor}, mode={mode!r})")
-        self._check_motor(motor)
-        if isinstance(mode, int):
-            values = {1: "L", 2: "M", 3: "H"}
-            if mode not in values:
-                raise ValueError("modeは1(L), 2(M), 3(H)で指定してください")
-            mode = values[mode]
-        mode = str(mode).upper()
-        if mode not in ("L", "M", "H"):
-            raise ValueError("modeは'L', 'M', 'H'で指定してください")
-        self._communication.send(f"SPD{mode}{motor:X}")
+    ) -> bool:
+        """速度モードを設定する。
 
+        Args:
+            motor: モーター番号。0 または 1。
+            mode: 速度モード。
+
+        Returns:
+            処理に成功した場合は True、失敗した場合は False。
+        """
+        self._logger.info(f'== set_speed_mode()')
+
+        motor_text = self._motor_text(motor)
+        if motor_text is None:
+            return False
+
+        normalized = self._normalize_speed_mode(mode)
+        if normalized is None:
+            return False
+
+        return self._communication.send(f'SPD{normalized}{motor_text}')
+
+
+    # --- 加減速・バックラッシュ・リミット ------------------------------------
     def rate_number(
         self,
         motor: int,
-    ) -> int:
-        self._logger.info(f"== rate_number(motor={motor!r})")
-        return int(self._query_motor_command("RTE?", motor))
+    ) -> Optional[int]:
+        """加減速レート番号を取得する。
+
+        Args:
+            motor: モーター番号。0 または 1。
+
+        Returns:
+            取得または変換に成功した値。失敗した場合は None。
+        """
+        self._logger.info(f'== get_rate_number()')
+
+        motor_text = self._motor_text(motor)
+        if motor_text is None:
+            return None
+
+        value = self._query_int(f'RTE?{motor_text}', 'RTE?')
+        if value is None:
+            return None
+
+        if value < self.RATE_MIN or value > self.RATE_MAX:
+            self._logger.error(f'RTE?応答が範囲外です: {value}')
+            return None
+
+        return value
 
     def set_rate_number(
         self,
         motor: int,
         number: int,
-    ) -> None:
-        self._logger.info(f"== set_rate_number(motor={motor}, number={number!r})")
-        self._send_motor_value("RTE", motor, number)
+    ) -> bool:
+        """加減速レート番号を設定する。
+
+        Args:
+            motor: モーター番号。0 または 1。
+            number: レート番号。
+
+        Returns:
+            処理に成功した場合は True、失敗した場合は False。
+        """
+        self._logger.info(f'== set_rate_number()')
+
+        motor_text = self._motor_text(motor)
+        if motor_text is None:
+            return False
+
+        if not self._check_int(number, 'number'):
+            return False
+
+        if number < self.RATE_MIN or number > self.RATE_MAX:
+            self._logger.error(f'numberは0から25の範囲で指定してください')
+            return False
+
+        return self._communication.send(f'RTE{motor_text}{number:03d}')
 
     def backlash(
         self,
         motor: int,
-    ) -> int:
-        self._check_motor(motor)
-        return int(self._communication.query(f"B?{motor:X}"))
+    ) -> Optional[int]:
+        """バックラッシュ補正量を取得する。
+
+        Args:
+            motor: モーター番号。0 または 1。
+
+        Returns:
+            取得または変換に成功した値。失敗した場合は None。
+        """
+        self._logger.info(f'== get_backlash()')
+        return self._query_motor_int('B?', motor)
 
     def set_backlash(
         self,
         motor: int,
         backlash: int,
-    ) -> None:
-        self._logger.info(f"== set_backlash(motor={motor}, backlash={backlash!r})")
-        self._check_motor(motor)
-        self._send_motor_value("B", motor, backlash, signed=True)
+    ) -> bool:
+        """バックラッシュ補正量を設定する。
+
+        Args:
+            motor: モーター番号。0 または 1。
+            backlash: バックラッシュ補正指定。
+
+        Returns:
+            処理に成功した場合は True、失敗した場合は False。
+        """
+        self._logger.info(f'== set_backlash()')
+
+        motor_text = self._motor_text(motor)
+        if motor_text is None:
+            return False
+
+        if not self._check_int(backlash, 'backlash'):
+            return False
+
+        if backlash < self.BACKLASH_MIN or backlash > self.BACKLASH_MAX:
+            self._logger.error(f'backlashは-9999から9999の範囲で指定してください')
+            return False
+
+        return self._communication.send(f'B{motor_text}{backlash:d}')
 
     def limit(
         self,
         motor: int,
         side: str,
-    ) -> int:
-        self._logger.info(f"== limit(motor={motor}, side={side!r})")
-        self._check_motor(motor)
+    ) -> Optional[int]:
+        """指定側のソフトウェアリミット位置を取得する。
 
-        side = self._normalize_side(side)
-        if side == "cw":
+        Args:
+            motor: モーター番号。0 または 1。
+            side: リミット側。cw または ccw。
+
+        Returns:
+            取得または変換に成功した値。失敗した場合は None。
+        """
+        self._logger.info(f'== get_limit()')
+
+        motor_text = self._motor_text(motor)
+        if motor_text is None:
+            return None
+
+        normalized = self._normalize_side(side)
+        if normalized is None:
+            return None
+
+        command = "BL?"
+        if normalized == 'cw':
             command = "FL?"
-        else:
-            command = "BL?"
-        return int(self._communication.query(f"{command}{motor:X}"))
+
+        return self._query_int(f'{command}{motor_text}', command)
 
     def set_limit(
         self,
         motor: int,
         side: str,
         pulse: int,
-    ) -> None:
-        self._logger.info(
-            f"== set_limit(motor={motor}, side={side!r}, pulse={pulse!r})"
-        )
-        self._check_motor(motor)
+    ) -> bool:
+        """指定側のソフトウェアリミット位置を設定する。
 
-        side = self._normalize_side(side)
-        if side == "cw":
+        Args:
+            motor: モーター番号。0 または 1。
+            side: リミット側。cw または ccw。
+            pulse: パルス値。
+
+        Returns:
+            処理に成功した場合は True、失敗した場合は False。
+        """
+        self._logger.info(f'== set_limit()')
+
+        motor_text = self._motor_text(motor)
+        if motor_text is None:
+            return False
+
+        if not self._check_position(pulse, 'pulse'):
+            return False
+
+        normalized = self._normalize_side(side)
+        if normalized is None:
+            return False
+
+        # ソフトウェアリミットを設定する前に SETLS を読み、デジタルリミットが
+        # 無効なら既存設定を保持したまま有効化する。
+        setting = self.limit_switch_setting(motor)
+        if setting is None:
+            return False
+
+        if not setting.digital_limit_enabled:
+            changed = setting.with_digital_limit(True)
+            if changed is None:
+                return False
+
+            if not self.set_limit_switch_setting_raw(motor, changed):
+                return False
+
+        command = "BL"
+        if normalized == 'cw':
             command = "FL"
-        else:
-            command = "BL"
-        self._communication.send(f"{command}{motor:X}{pulse:+d}")
 
-    def pause(self) -> None:
-        self._logger.info("== pause()")
-        self._communication.send("PAUSE ON")
+        return self._communication.send(f'{command}{motor_text}{pulse:+d}')
 
-    def resume(self) -> None:
-        self._logger.info("== resume()")
-        self._communication.send("PAUSE OFF")
 
-    def pause_status(self) -> str:
-        self._logger.info("== pause_status()")
-        return self._communication.query("PAUSE?")
+    def limit_status(
+        self,
+        motor: int,
+    ) -> Optional[LimitStatus]:
+        """指定モーターのハード/ソフトリミット現在状態を取得する。"""
+        self._logger.info(f'== get_limit_status()')
+
+        if self._motor_text(motor) is None:
+            return None
+
+        values = self.limit_status_all()
+        if values is None:
+            return None
+
+        return values[motor]
+
+    def limit_status_all(
+        self,
+    ) -> Optional[List[LimitStatus]]:
+        """全モーターのハード/ソフトリミット現在状態を取得する。"""
+        self._logger.info(f'== get_limit_status_all()')
+
+        raw = self._communication.query('HDSTLS?')
+        if raw is None:
+            return None
+
+        values = LimitStatus.parse_all(raw)
+        if values is None:
+            self._logger.error(f'HDSTLS?応答を解釈できません: {raw!r}')
+            return None
+
+        return values[: self.CHANNEL_COUNT]
+
+    def set_digital_limit_enabled(
+        self,
+        motor: int,
+        enabled: bool,
+    ) -> bool:
+        """指定モーターのソフトウェアリミットを有効/無効にする。"""
+        self._logger.info(f'== set_digital_limit_enabled()')
+
+        if not isinstance(enabled, bool):
+            self._logger.error('enabledはboolで指定してください')
+            return False
+
+        setting = self.limit_switch_setting(motor)
+        if setting is None:
+            return False
+
+        changed = setting.with_digital_limit(enabled)
+        if changed is None:
+            return False
+
+        return self.set_limit_switch_setting_raw(motor, changed)
+
+    def set_hard_limit_enabled(
+        self,
+        motor: int,
+        enabled: bool,
+    ) -> bool:
+        """指定モーターのCW/CCWハードウェアリミットを有効/無効にする。"""
+        self._logger.info(f'== set_hard_limit_enabled()')
+
+        if not isinstance(enabled, bool):
+            self._logger.error('enabledはboolで指定してください')
+            return False
+
+        setting = self.limit_switch_setting(motor)
+        if setting is None:
+            return False
+
+        changed = setting.with_hardware_limit(enabled)
+        if changed is None:
+            return False
+
+        return self.set_limit_switch_setting_raw(motor, changed)
+
+    def set_hard_limit_normally_closed(
+        self,
+        motor: int,
+        side: str,
+        normally_closed: bool,
+    ) -> bool:
+        """ハードウェアLSの接点仕様を normally closed/open で設定する。"""
+        self._logger.info(f'== set_hard_limit_normally_closed()')
+
+        setting = self.limit_switch_setting(motor)
+        if setting is None:
+            return False
+
+        changed = setting.with_hardware_limit_normally_closed(
+            side,
+            normally_closed,
+        )
+        if changed is None:
+            self._logger.error(
+                'sideはhp/cw/ccw、normally_closedはboolで指定してください'
+            )
+            return False
+
+        return self.set_limit_switch_setting_raw(motor, changed)
+
+
+    # --- 一時停止・励磁保持 ----------------------------------------------------
+    def pause(
+        self,
+    ) -> bool:
+        """動作を一時停止する。
+
+        Returns:
+            処理に成功した場合は True、失敗した場合は False。
+        """
+        self._logger.info(f'== pause()')
+        return self._communication.send('PAUSE ON')
+
+    def resume(
+        self,
+    ) -> bool:
+        """一時停止を解除する。
+
+        Returns:
+            処理に成功した場合は True、失敗した場合は False。
+        """
+        self._logger.info(f'== resume()')
+        return self._communication.send('PAUSE OFF')
+
+    def pause_status(
+        self,
+    ) -> Optional[str]:
+        """一時停止状態を取得する。
+
+        Returns:
+            取得または変換に成功した値。失敗した場合は None。
+        """
+        self._logger.info(f'== get_pause_status()')
+        return self._query_on_off('PAUSE?')
 
     def hold(
         self,
         motor: int,
-    ) -> str:
-        self._logger.info(f"== hold(motor={motor!r})")
-        return self._query_motor_command("HOLD?", motor)
+    ) -> Optional[str]:
+        """指定モーターの HOLD 状態を取得する。
+
+        Args:
+            motor: モーター番号。0 または 1。
+
+        Returns:
+            取得または変換に成功した値。失敗した場合は None。
+        """
+        self._logger.info(f'== get_hold()')
+
+        motor_text = self._motor_text(motor)
+        if motor_text is None:
+            return None
+
+        return self._query_on_off(f'HOLD?{motor_text}')
 
     def set_hold(
         self,
         motor: int,
         enabled: bool,
-    ) -> None:
-        self._logger.info(f"== set_hold(motor={motor!r}, enabled={enabled!r})")
-        self._check_motor(motor)
+    ) -> bool:
+        """指定モーターの HOLD 状態を設定する。
+
+        Args:
+            motor: モーター番号。0 または 1。
+            enabled: 有効にする場合は True、無効にする場合は False。
+
+        Returns:
+            処理に成功した場合は True、失敗した場合は False。
+        """
+        self._logger.info(f'== set_hold()')
+
+        motor_text = self._motor_text(motor)
+        if motor_text is None:
+            return False
+
+        if not isinstance(enabled, bool):
+            self._logger.error(f'enabledはboolで指定してください')
+            return False
+
+        mode = "OFF"
         if enabled:
             mode = "ON"
-        else:
-            mode = "OFF"
-        self._communication.send(f"HOLD{motor:X}{mode}")
 
-    def ttl_output_start(
+        return self._communication.send(f'HOLD{motor_text}{mode}')
+
+    def hold_on_time(
         self,
         motor: int,
-    ) -> None:
-        self._logger.info(f"== ttl_output_start(motor={motor!r}), TMGR")
-        self._send_motor_command("TMGR", motor)
+    ) -> Optional[int]:
+        """HOLD ON 時間を取得する。
 
-    def ttl_output_stop(
+        Args:
+            motor: モーター番号。0 または 1。
+
+        Returns:
+            取得または変換に成功した値。失敗した場合は None。
+        """
+        self._logger.info(f'== get_hold_on_time()')
+        return self._query_motor_msec('H_ONTM?', motor)
+
+    def set_hold_on_time(
         self,
         motor: int,
-    ) -> None:
-        self._logger.info(f"== ttl_output_stop(motor={motor!r}), TMGC")
-        self._send_motor_command("TMGC", motor)
+        msec: int,
+    ) -> bool:
+        """HOLD ON 時間を設定する。
 
-    def ttl_status(
+        Args:
+            motor: モーター番号。0 または 1。
+            msec: 時間。単位は ms。
+
+        Returns:
+            処理に成功した場合は True、失敗した場合は False。
+        """
+        self._logger.info(f'== set_hold_on_time()')
+        return self._set_hold_time('H_ONTM', motor, msec)
+
+    def hold_off_time(
         self,
         motor: int,
+    ) -> Optional[int]:
+        """HOLD OFF 時間を取得する。
+
+        Args:
+            motor: モーター番号。0 または 1。
+
+        Returns:
+            取得または変換に成功した値。失敗した場合は None。
+        """
+        self._logger.info(f'== get_hold_off_time()')
+        return self._query_motor_msec('H_OFTM?', motor)
+
+    def set_hold_off_time(
+        self,
+        motor: int,
+        msec: int,
+    ) -> bool:
+        """HOLD OFF 時間を設定する。
+
+        Args:
+            motor: モーター番号。0 または 1。
+            msec: 時間。単位は ms。
+
+        Returns:
+            処理に成功した場合は True、失敗した場合は False。
+        """
+        self._logger.info(f'== set_hold_off_time()')
+        return self._set_hold_time('H_OFTM', motor, msec)
+
+
+    # --- 原点関連設定 ----------------------------------------------------------
+    def home_status(
+        self,
+        motor: int,
+    ) -> Optional[HomeStatus]:
+        """原点検出設定状態を取得する。
+
+        Args:
+            motor: モーター番号。0 または 1。
+
+        Returns:
+            取得または変換に成功した値。失敗した場合は None。
+        """
+        self._logger.info(f'== get_home_status()')
+
+        motor_text = self._motor_text(motor)
+        if motor_text is None:
+            return None
+
+        raw = self._communication.query(f'SETHP?{motor_text}')
+        if raw is None:
+            return None
+
+        value = HomeStatus(raw)
+        if not value.is_valid:
+            self._logger.error(f'SETHP?応答を解釈できません: {raw!r}')
+            return None
+
+        return value
+
+    def set_home_status(
+        self,
+        motor: int,
+        found: bool,
+        found_direction: str,
+        auto_start_direction: str,
+    ) -> bool:
+        """原点検出設定状態を設定する。
+
+        Args:
+            motor: モーター番号。0 または 1。
+            found: 原点検出済み状態。
+            found_direction: 原点検出方向。
+            auto_start_direction: 自動原点検出開始方向。
+
+        Returns:
+            処理に成功した場合は True、失敗した場合は False。
+        """
+        self._logger.info(f'== set_home_status()')
+
+        motor_text = self._motor_text(motor)
+        if motor_text is None:
+            return False
+
+        found_value = self._bool_digit(found, 'found')
+        if found_value is None:
+            return False
+
+        found_dir = self._direction_digit(found_direction)
+        if found_dir is None:
+            return False
+
+        auto_dir = self._direction_digit(auto_start_direction)
+        if auto_dir is None:
+            return False
+
+        command = (
+            f'SETHP{motor_text}0{found_value}{found_dir}{auto_dir}'
+        )
+        return self._communication.send(command)
+
+    def home_position(
+        self,
+        motor: int,
+    ) -> Optional[int]:
+        """記録済み原点位置を取得する。
+
+        Args:
+            motor: モーター番号。0 または 1。
+
+        Returns:
+            取得または変換に成功した値。失敗した場合は None。
+        """
+        self._logger.info(f'== get_home_position()')
+
+        motor_text = self._motor_text(motor)
+        if motor_text is None:
+            return None
+
+        raw = self._query_text(f'SHP?{motor_text}')
+        if raw is None:
+            return None
+
+        if raw == 'NO H.P':
+            return None
+
+        return self._parse_int(raw, 'SHP?')
+
+    def set_home_position(
+        self,
+        motor: int,
+        pulse: int,
+    ) -> bool:
+        """原点位置を設定する。
+
+        Args:
+            motor: モーター番号。0 または 1。
+            pulse: パルス値。
+
+        Returns:
+            処理に成功した場合は True、失敗した場合は False。
+        """
+        self._logger.info(f'== set_home_position()')
+
+        motor_text = self._motor_text(motor)
+        if motor_text is None:
+            return False
+
+        if not self._check_position(pulse, 'pulse'):
+            return False
+
+        return self._communication.send(f'SHP{motor_text}{pulse:d}')
+
+    def home_offset(
+        self,
+        motor: int,
+    ) -> Optional[int]:
+        """原点オフセットを取得する。
+
+        Args:
+            motor: モーター番号。0 または 1。
+
+        Returns:
+            取得または変換に成功した値。失敗した場合は None。
+        """
+        self._logger.info(f'== get_home_offset()')
+        return self._query_motor_int('SHPF?', motor)
+
+    def set_home_offset(
+        self,
+        motor: int,
+        pulse: int,
+    ) -> bool:
+        """原点オフセットを設定する。
+
+        Args:
+            motor: モーター番号。0 または 1。
+            pulse: パルス値。
+
+        Returns:
+            処理に成功した場合は True、失敗した場合は False。
+        """
+        self._logger.info(f'== set_home_offset()')
+
+        motor_text = self._motor_text(motor)
+        if motor_text is None:
+            return False
+
+        if not self._check_int(pulse, 'pulse'):
+            return False
+
+        if pulse < self.HOME_OFFSET_MIN or pulse > self.HOME_OFFSET_MAX:
+            self._logger.error(f'pulseは0から9999の範囲で指定してください')
+            return False
+
+        return self._communication.send(f'SHPF{motor_text}{pulse:d}')
+
+
+    # --- プリセット・JOG・装置設定 --------------------------------------------
+    def preset_position(
+        self,
+        motor: int,
+    ) -> Optional[int]:
+        """プリセット位置を取得する。
+
+        Args:
+            motor: モーター番号。0 または 1。
+
+        Returns:
+            取得または変換に成功した値。失敗した場合は None。
+        """
+        self._logger.info(f'== get_preset_position()')
+        return self._query_motor_int('SPRS?', motor)
+
+    def set_preset_position(
+        self,
+        motor: int,
+        pulse: int,
+    ) -> bool:
+        """プリセット位置を設定する。
+
+        Args:
+            motor: モーター番号。0 または 1。
+            pulse: パルス値。
+
+        Returns:
+            処理に成功した場合は True、失敗した場合は False。
+        """
+        self._logger.info(f'== set_preset_position()')
+
+        motor_text = self._motor_text(motor)
+        if motor_text is None:
+            return False
+
+        if not self._check_position(pulse, 'pulse'):
+            return False
+
+        return self._communication.send(f'SPRS{motor_text}{pulse:d}')
+
+    def jog_pulse(
+        self,
+        motor: int,
+    ) -> Optional[int]:
+        """JOG パルス数を取得する。
+
+        Args:
+            motor: モーター番号。0 または 1。
+
+        Returns:
+            取得または変換に成功した値。失敗した場合は None。
+        """
+        self._logger.info(f'== get_jog_pulse()')
+        return self._query_motor_int('SETJG?', motor)
+
+    def set_jog_pulse(
+        self,
+        motor: int,
+        pulse: int,
+    ) -> bool:
+        """JOG パルス数を設定する。
+
+        Args:
+            motor: モーター番号。0 または 1。
+            pulse: パルス値。
+
+        Returns:
+            処理に成功した場合は True、失敗した場合は False。
+        """
+        self._logger.info(f'== set_jog_pulse()')
+
+        motor_text = self._motor_text(motor)
+        if motor_text is None:
+            return False
+
+        if not self._check_int(pulse, 'pulse'):
+            return False
+
+        if pulse < self.JOG_PULSE_MIN or pulse > self.JOG_PULSE_MAX:
+            self._logger.error(f'pulseは0から9999の範囲で指定してください')
+            return False
+
+        return self._communication.send(f'SETJG{motor_text}{pulse:04d}')
+
+    def limit_switch_setting(
+        self,
+        motor: int,
+    ) -> Optional[LimitSwitchSetting]:
+        """リミットスイッチ設定を取得する。
+
+        Args:
+            motor: モーター番号。0 または 1。
+
+        Returns:
+            取得または変換に成功した値。失敗した場合は None。
+        """
+        self._logger.info(f'== get_limit_switch_setting()')
+
+        motor_text = self._motor_text(motor)
+        if motor_text is None:
+            return None
+
+        raw = self._communication.query(f'SETLS?{motor_text}')
+        if raw is None:
+            return None
+
+        value = LimitSwitchSetting(raw)
+        if not value.is_valid:
+            self._logger.error(f'SETLS?応答を解釈できません: {raw!r}')
+            return None
+
+        return value
+
+    def limit_switch_setting_raw(
+        self,
+        motor: int,
+    ) -> Optional[str]:
+        """リミットスイッチ設定を生の設定文字列で取得する。
+
+        Args:
+            motor: モーター番号。0 または 1。
+
+        Returns:
+            取得した生の設定文字列。失敗した場合は None。
+        """
+        setting = self.limit_switch_setting(motor)
+        if setting is None:
+            return None
+
+        return setting.raw
+
+    def set_limit_switch_setting_raw(
+        self,
+        motor: int,
+        setting: str,
+    ) -> bool:
+        """リミットスイッチ設定を生の設定文字列で書き込む。
+
+        Args:
+            motor: モーター番号。0 または 1。
+            setting: 装置へ設定する生の設定文字列。
+
+        Returns:
+            処理に成功した場合は True、失敗した場合は False。
+        """
+        self._logger.info(f'== set_limit_switch_setting_raw()')
+
+        motor_text = self._motor_text(motor)
+        if motor_text is None:
+            return False
+
+        parsed = LimitSwitchSetting(setting)
+        if not parsed.is_valid:
+            self._logger.error(f'SETLS設定値を解釈できません: {setting!r}')
+            return False
+
+        return self._communication.send(f'SETLS{motor_text}{parsed.raw}')
+
+    def motor_setting(
+        self,
+        motor: int,
+    ) -> Optional[MotorSetting]:
+        """モーター設定を取得する。
+
+        Args:
+            motor: モーター番号。0 または 1。
+
+        Returns:
+            取得または変換に成功した値。失敗した場合は None。
+        """
+        self._logger.info(f'== get_motor_setting()')
+
+        motor_text = self._motor_text(motor)
+        if motor_text is None:
+            return None
+
+        raw = self._communication.query(f'SETMT?{motor_text}')
+        if raw is None:
+            return None
+
+        value = MotorSetting(raw)
+        if not value.is_valid:
+            self._logger.error(f'SETMT?応答を解釈できません: {raw!r}')
+            return None
+
+        return value
+
+    def set_motor_setting(
+        self,
+        motor: int,
+        drive_enabled: bool,
+        hold_mode: int,
+        output_mode: int,
+    ) -> bool:
+        """モーター設定を書き込む。
+
+        Args:
+            motor: モーター番号。0 または 1。
+            drive_enabled: モータードライブを有効にする場合は True。
+            hold_mode: ホールドモード。
+            output_mode: 出力モード。
+
+        Returns:
+            処理に成功した場合は True、失敗した場合は False。
+        """
+        self._logger.info(f'== set_motor_setting()')
+
+        motor_text = self._motor_text(motor)
+        if motor_text is None:
+            return False
+
+        drive = self._bool_digit(drive_enabled, 'drive_enabled')
+        if drive is None:
+            return False
+
+        if not self._check_int(hold_mode, 'hold_mode'):
+            return False
+
+        if not self._check_int(output_mode, 'output_mode'):
+            return False
+
+        if hold_mode < 0 or hold_mode > 3:
+            self._logger.error(f'hold_modeは0から3の範囲で指定してください')
+            return False
+
+        if output_mode < 0 or output_mode > 2:
+            self._logger.error(f'output_modeは0から2の範囲で指定してください')
+            return False
+
+        command = f"SETMT{motor_text}{drive}{hold_mode}1{output_mode}"
+        return self._communication.send(command)
+
+    def stop_mode(
+        self,
+        motor: int,
+    ) -> Optional[StopMode]:
+        """停止モード設定を取得する。
+
+        Args:
+            motor: モーター番号。0 または 1。
+
+        Returns:
+            取得または変換に成功した値。失敗した場合は None。
+        """
+        self._logger.info(f'== get_stop_mode()')
+
+        motor_text = self._motor_text(motor)
+        if motor_text is None:
+            return None
+
+        raw = self._communication.query(f'STOPMD?{motor_text}')
+        if raw is None:
+            return None
+
+        value = StopMode(raw)
+        if not value.is_valid:
+            self._logger.error(f'STOPMD?応答を解釈できません: {raw!r}')
+            return None
+
+        return value
+
+    def set_stop_mode(
+        self,
+        motor: int,
+        panel_fast: bool,
+        limit_fast: bool,
+    ) -> bool:
+        """停止モード設定を書き込む。
+
+        Args:
+            motor: モーター番号。0 または 1。
+            panel_fast: パネル停止を高速停止にする場合は True。
+            limit_fast: リミット停止を高速停止にする場合は True。
+
+        Returns:
+            処理に成功した場合は True、失敗した場合は False。
+        """
+        self._logger.info(f'== set_stop_mode()')
+
+        motor_text = self._motor_text(motor)
+        if motor_text is None:
+            return False
+
+        panel = self._bool_digit(panel_fast, 'panel_fast')
+        if panel is None:
+            return False
+
+        limit_value = self._bool_digit(limit_fast, 'limit_fast')
+        if limit_value is None:
+            return False
+
+        return self._communication.send(f'STOPMD{motor_text}{panel}{limit_value}')
+
+
+    # --- RATE変換 --------------------------------------------------------------
+    @staticmethod
+    def number_to_rate(
+        index: int,
+    ) -> float:
+        """レート番号を RATE_TABLE のレート値へ変換する。
+
+        Args:
+            index: RATE_TABLE のインデックス。
+
+        Returns:
+            float 型の結果。
+
+        Raises:
+            TypeError: 引数の型が不正な場合。
+            ValueError: 変換可能な範囲外の場合。
+        """
+        if not isinstance(index, int) or isinstance(index, bool):
+            raise TypeError('indexはintで指定してください')
+
+        if index < 0 or index >= len(RATE_TABLE):
+            raise ValueError('レート番号は0から25の範囲で指定してください')
+
+        return RATE_TABLE[index]
+
+    @staticmethod
+    def rate_to_number(
+        rate: float,
     ) -> int:
-        self._logger.info(f"== ttl_status(motor={motor!r}), TMGR?")
-        raw = self._query_motor_command("TMGR?", motor)
-        if raw == "YES":
-            return 1
-        if raw == "NO":
-            return 0
-        raise ProtocolError(f"TTL状態応答を解釈できません: {raw!r}")
+        """レート値を対応する RATE_TABLE の番号へ変換する。
 
-    # -------------
-    # support
-    # -------------
+        Args:
+            rate: 変換するレート値。
 
-    @staticmethod
-    def number_to_rate(index: int) -> float:
-        try:
-            return RATE_TABLE[index]
-        except IndexError as exc:
-            raise ValueError("レート番号が範囲外です") from exc
+        Returns:
+            int 型の結果。
 
-    @staticmethod
-    def rate_to_number(rate: float) -> int:
-        error = -0.0001
+        Raises:
+            TypeError: 引数の型が不正な場合。
+            ValueError: 変換可能な範囲外の場合。
+        """
+        if not isinstance(rate, (int, float)) or isinstance(rate, bool):
+            raise TypeError('rateは数値で指定してください')
+
+        target = abs(float(rate))
         for number, table_rate in enumerate(RATE_TABLE):
-            if abs(rate) - abs(table_rate) >= error:
+            if target >= table_rate:
                 return number
-        raise ValueError("レートが範囲外です")
 
-    def _parse_status_all(
-        self,
-        raw: str,
-    ) -> list[MotorStatus]:
-        parts = raw.split("/")
-        if len(parts) < 4 + self._channel_count:
-            raise ProtocolError(f"STS?応答が不正です: {raw!r}")
-        header = parts[0]
-        directions = parts[1]
-        limits = parts[2]
-        positions = parts[4 : 4 + self._channel_count]
-        result = []
-        try:
-            for motor in range(self._channel_count):
-                result.append(
-                    MotorStatus(
-                        motor=motor,
-                        raw=raw,
-                        remote_local=header[0],
-                        direction=directions[motor],
-                        ls_status=int(limits[motor], 16),
-                        position=int(positions[motor]),
-                    )
-                )
-        except (IndexError, ValueError) as exc:
-            raise ProtocolError(f"STS?応答を解析できません: {raw!r}") from exc
-        return result
+        raise ValueError('rateがRATE TABLEの範囲外です')
 
+
+    # --- 内部コマンド生成・応答変換 ------------------------------------------
     def _send_motor_command(
         self,
         command: str,
         motor: int,
-    ) -> None:
-        self._check_motor(motor)
-        self._communication.send(f"{command}{motor:X}")
+    ) -> bool:
+        """モーター番号を付加した単純コマンドを送信する。
 
-    def _send_motor_value(
+        Args:
+            command: 送信または問い合わせを行う PM2CD コマンド。
+            motor: モーター番号。0 または 1。
+
+        Returns:
+            処理に成功した場合は True、失敗した場合は False。
+        """
+        motor_text = self._motor_text(motor)
+        if motor_text is None:
+            return False
+
+        return self._communication.send(f'{command}{motor_text}')
+
+    def _set_speed_value(
         self,
         command: str,
         motor: int,
-        value: int,
-        signed: bool = False,
-    ) -> None:
-        self._check_motor(motor)
-        if signed:
-            text = f"{value:+d}"
-        else:
-            text = str(value)
-        self._communication.send(f"{command}{motor:X}{text}")
+        speed: int,
+    ) -> bool:
+        """速度値を検証して速度設定コマンドを送信する。
 
-    def _query_motor_command(
+        Args:
+            command: 送信または問い合わせを行う PM2CD コマンド。
+            motor: モーター番号。0 または 1。
+            speed: 速度。
+
+        Returns:
+            処理に成功した場合は True、失敗した場合は False。
+        """
+        motor_text = self._motor_text(motor)
+        if motor_text is None:
+            return False
+
+        if not self._check_speed(speed):
+            return False
+
+        return self._communication.send(f'{command}{motor_text}{speed:d}')
+
+    def _set_hold_time(
         self,
         command: str,
         motor: int,
-    ) -> str:
-        self._check_motor(motor)
-        return self._communication.query(f"{command}{motor:X}")
+        msec: int,
+    ) -> bool:
+        """HOLD 時間を検証して設定コマンドを送信する。
+
+        Args:
+            command: 送信または問い合わせを行う PM2CD コマンド。
+            motor: モーター番号。0 または 1。
+            msec: 時間。単位は ms。
+
+        Returns:
+            処理に成功した場合は True、失敗した場合は False。
+        """
+        motor_text = self._motor_text(motor)
+        if motor_text is None:
+            return False
+
+        if not self._check_int(msec, 'msec'):
+            return False
+
+        if msec < self.HOLD_TIME_MIN or msec > self.HOLD_TIME_MAX:
+            self._logger.error(f'msecは50から3000の範囲で指定してください')
+            return False
+
+        if msec % self.HOLD_TIME_STEP != 0:
+            self._logger.error(f'msecは10刻みで指定してください')
+            return False
+
+        return self._communication.send(f'{command}{motor_text}{msec:d}')
+
+    def _query_motor_int(
+        self,
+        command: str,
+        motor: int,
+    ) -> Optional[int]:
+        """モーター別問い合わせを行い整数応答を返す。
+
+        Args:
+            command: 送信または問い合わせを行う PM2CD コマンド。
+            motor: モーター番号。0 または 1。
+
+        Returns:
+            取得または変換に成功した値。失敗した場合は None。
+        """
+        motor_text = self._motor_text(motor)
+        if motor_text is None:
+            return None
+
+        return self._query_int(f'{command}{motor_text}', command)
+
+    def _query_motor_msec(
+        self,
+        command: str,
+        motor: int,
+    ) -> Optional[int]:
+        """モーター別問い合わせを行い時間応答を返す。
+
+        Args:
+            command: 送信または問い合わせを行う PM2CD コマンド。
+            motor: モーター番号。0 または 1。
+
+        Returns:
+            取得または変換に成功した値。失敗した場合は None。
+        """
+        motor_text = self._motor_text(motor)
+        if motor_text is None:
+            return None
+
+        return self._query_msec(f'{command}{motor_text}')
+
+    def _query_msec(
+        self,
+        command: str,
+    ) -> Optional[int]:
+        """時間表記を含む応答を整数の ms 値へ変換する。
+
+        Args:
+            command: 送信または問い合わせを行う PM2CD コマンド。
+
+        Returns:
+            取得または変換に成功した値。失敗した場合は None。
+        """
+        raw = self._query_text(command)
+        if raw is None:
+            return None
+
+        # 装置応答はファームウェア差で単位表記を含むため、数値化前に単位だけ除去する。
+        normalized = (
+            raw.lower().replace('msec.', '').replace('ms', '').strip()
+        )
+        return self._parse_int(normalized, command)
+
+    def _query_int(
+        self,
+        command: str,
+        name: str,
+    ) -> Optional[int]:
+        """問い合わせ応答を整数へ変換する。
+
+        Args:
+            command: 送信または問い合わせを行う PM2CD コマンド。
+            name: ログに表示する値または応答の名称。
+
+        Returns:
+            取得または変換に成功した値。失敗した場合は None。
+        """
+        raw = self._query_text(command)
+        if raw is None:
+            return None
+
+        return self._parse_int(raw, name)
+
+    def _parse_int(
+        self,
+        raw: str,
+        name: str,
+    ) -> Optional[int]:
+        """応答文字列を整数へ変換する。
+
+        Args:
+            raw: 装置から受信した生の応答文字列。
+            name: ログに表示する値または応答の名称。
+
+        Returns:
+            取得または変換に成功した値。失敗した場合は None。
+        """
+        try:
+            return int(raw, 10)
+        except (TypeError, ValueError) as exc:
+            self._logger.error(f'{name}応答を整数へ変換できません: {raw!r}: {exc}')
+            return None
+
+    def _query_text(
+        self,
+        command: str,
+    ) -> Optional[str]:
+        """問い合わせを実行し前後空白を除去した応答を返す。
+
+        Args:
+            command: 送信または問い合わせを行う PM2CD コマンド。
+
+        Returns:
+            取得または変換に成功した値。失敗した場合は None。
+        """
+        raw = self._communication.query(command)
+        if raw is None:
+            return None
+
+        return raw.strip()
+
+    def _query_on_off(
+        self,
+        command: str,
+    ) -> Optional[str]:
+        """問い合わせ応答を ON/OFF として検証する。
+
+        Args:
+            command: 送信または問い合わせを行う PM2CD コマンド。
+
+        Returns:
+            取得または変換に成功した値。失敗した場合は None。
+        """
+        raw = self._query_text(command)
+        if raw is None:
+            return None
+
+        raw = raw.upper()
+        if raw not in ('ON', 'OFF'):
+            self._logger.error(f'{command}応答を解釈できません: {raw!r}')
+            return None
+
+        return raw
+
+
+    # --- 引数検証・正規化 ------------------------------------------------------
+    def _motor_text(
+        self,
+        motor: int,
+    ) -> Optional[str]:
+        """モーター番号をコマンド用 16 進文字列へ変換する。
+
+        Args:
+            motor: モーター番号。0 または 1。
+
+        Returns:
+            取得または変換に成功した値。失敗した場合は None。
+        """
+        if not self._check_motor(motor):
+            return None
+
+        return f"{motor:X}"
 
     def _check_motor(
         self,
         motor: int,
-    ) -> None:
-        if motor < 0 or motor >= self._channel_count:
-            raise ValueError(
-                f"motorは0から{self._channel_count - 1}の範囲で指定してください"
+    ) -> bool:
+        """モーター番号が PM2CD の範囲内か検証する。
+
+        Args:
+            motor: モーター番号。0 または 1。
+
+        Returns:
+            処理に成功した場合は True、失敗した場合は False。
+        """
+        if not self._check_int(motor, 'motor'):
+            return False
+
+        if motor < 0 or motor >= self.CHANNEL_COUNT:
+            self._logger.error(f'motorは0または1で指定してください')
+            return False
+
+        return True
+
+    def _check_position(
+        self,
+        value: int,
+        name: str,
+    ) -> bool:
+        """位置値が装置仕様の範囲内か検証する。
+
+        Args:
+            value: 検証する値。
+            name: ログに表示する値または応答の名称。
+
+        Returns:
+            処理に成功した場合は True、失敗した場合は False。
+        """
+        if not self._check_int(value, name):
+            return False
+
+        if value < self.POSITION_MIN or value > self.POSITION_MAX:
+            message = (
+                f"{name}は{self.POSITION_MIN}から"
+                f"{self.POSITION_MAX}の範囲で指定してください"
             )
+            self._logger.error(message)
+            return False
 
-    @staticmethod
-    def _normalize_direction(direction: str) -> str:
-        direction = direction.lower()
-        aliases = {
-            "+": "cw",
-            "p": "cw",
-            "cw": "cw",
-            "-": "ccw",
-            "n": "ccw",
-            "ccw": "ccw",
+        return True
+
+    def _check_speed(
+        self,
+        speed: int,
+    ) -> bool:
+        """速度値が装置仕様の範囲内か検証する。
+
+        Args:
+            speed: 速度。
+
+        Returns:
+            処理に成功した場合は True、失敗した場合は False。
+        """
+        if not self._check_int(speed, 'speed'):
+            return False
+
+        if speed < self.SPEED_MIN or speed > self.SPEED_MAX:
+            self._logger.error(f'speedは5から100000の範囲で指定してください')
+            return False
+
+        return True
+
+    def _check_int(
+        self,
+        value,
+        name: str,
+    ) -> bool:
+        """値が bool ではない int か検証する。
+
+        Args:
+            value: 検証する値。
+            name: ログに表示する値または応答の名称。
+
+        Returns:
+            処理に成功した場合は True、失敗した場合は False。
+        """
+        if not isinstance(value, int) or isinstance(value, bool):
+            self._logger.error(f'{name}はintで指定してください')
+            return False
+
+        return True
+
+    def _normalize_direction(
+        self,
+        direction: str,
+    ) -> Optional[str]:
+        """方向指定を cw または ccw に正規化する。
+
+        Args:
+            direction: 回転方向。cw または ccw。
+
+        Returns:
+            取得または変換に成功した値。失敗した場合は None。
+        """
+        if not isinstance(direction, str):
+            self._logger.error(f'directionはstrで指定してください')
+            return None
+
+        normalized = direction.strip().lower()
+        if normalized in ('cw', '+', 'p', 'positive'):
+            return "cw"
+
+        if normalized in ('ccw', '-', 'n', 'negative'):
+            return "ccw"
+
+        self._logger.error(f'directionはcwまたはccwで指定してください')
+        return None
+
+    def _normalize_side(
+        self,
+        side: str,
+    ) -> Optional[str]:
+        """リミット側指定を方向表現として正規化する。
+
+        Args:
+            side: リミット側。cw または ccw。
+
+        Returns:
+            取得または変換に成功した値。失敗した場合は None。
+        """
+        return self._normalize_direction(side)
+
+    def _normalize_speed_mode(
+        self,
+        mode: Union[int, str],
+    ) -> Optional[str]:
+        """速度モード指定を装置コマンド文字へ正規化する。
+
+        Args:
+            mode: 速度モード。
+
+        Returns:
+            取得または変換に成功した値。失敗した場合は None。
+        """
+        if isinstance(mode, bool):
+            self._logger.error(f'modeはintまたはstrで指定してください')
+            return None
+
+        if isinstance(mode, int):
+            mapping = {1: 'L', 2: 'M', 3: 'H'}
+            if mode not in mapping:
+                self._logger.error(f'modeは1, 2, 3またはL/M/Hで指定してください')
+                return None
+
+            return mapping[mode]
+
+        if not isinstance(mode, str):
+            self._logger.error(f'modeはintまたはstrで指定してください')
+            return None
+
+        normalized = mode.strip().upper()
+        mapping = {
+            "L": "L",
+            "LOW": "L",
+            "LSPD": "L",
+            "M": "M",
+            "MIDDLE": "M",
+            "MSPD": "M",
+            "H": "H",
+            "HIGH": "H",
+            "HSPD": "H"
         }
-        if direction not in aliases:
-            raise ValueError("directionは'cw'または'ccw'で指定してください")
-        return aliases[direction]
 
-    @staticmethod
-    def _normalize_side(side: str) -> str:
-        return PM2CDDevice._normalize_direction(side)
+        if normalized not in mapping:
+            self._logger.error(f'modeはL/M/Hで指定してください')
+            return None
 
-    @staticmethod
-    def _backlash_suffix(backlash: Union[str, bool]) -> str:
+        return mapping[normalized]
+
+
+    # --- コマンド用値変換 ------------------------------------------------------
+    def _backlash_suffix(
+        self,
+        backlash: Union[str, bool, None],
+    ) -> Optional[str]:
+        """バックラッシュ指定を ABS/REL コマンドの接尾辞へ変換する。
+
+        Args:
+            backlash: バックラッシュ補正指定。
+
+        Returns:
+            取得または変換に成功した値。失敗した場合は None。
+        """
         if backlash is True:
             return "B"
+
         if backlash is False or backlash is None:
             return ""
-        value = str(backlash).upper()
-        if value not in ("B", "S", ""):
-            raise ValueError("backlashはTrue, False, 'B', 'S'で指定してください")
-        return value
+
+        if not isinstance(backlash, str):
+            self._logger.error(f'backlashはbool, str, Noneで指定してください')
+            return None
+
+        normalized = backlash.strip().upper()
+        if normalized in ('', 'NONE', 'OFF'):
+            return ""
+
+        if normalized in ('B', 'S'):
+            return normalized
+
+        self._logger.error(f'backlashはTrue/FalseまたはB/Sで指定してください')
+        return None
+
+    def _direction_digit(
+        self,
+        direction: str,
+    ) -> Optional[str]:
+        """方向指定を設定コマンド用の 0/1 へ変換する。
+
+        Args:
+            direction: 回転方向。cw または ccw。
+
+        Returns:
+            取得または変換に成功した値。失敗した場合は None。
+        """
+        normalized = self._normalize_direction(direction)
+        if normalized is None:
+            return None
+
+        if normalized == 'cw':
+            return "0"
+
+        return "1"
+
+    def _bool_digit(
+        self,
+        value: bool,
+        name: str,
+    ) -> Optional[str]:
+        """bool 値を設定コマンド用の 0/1 へ変換する。
+
+        Args:
+            value: 検証する値。
+            name: ログに表示する値または応答の名称。
+
+        Returns:
+            取得または変換に成功した値。失敗した場合は None。
+        """
+        if not isinstance(value, bool):
+            self._logger.error(f'{name}はboolで指定してください')
+            return None
+
+        if value:
+            return "1"
+
+        return "0"
+
+def main() -> None:
+    """PM2CDDevice の基本的な使用例を実行する。
+
+    PM2CDDevice は通信層を外部から受け取るため、Communication を生成して
+    接続した後に Device I/F を使用する。この例では装置を動かさず、
+    バージョンと状態取得だけを確認する。
+
+    Returns:
+        None。
+    """
+    ip_address = "10.170.10.62"
+    port = 7777
+
+    communication = Communication(ip_address=ip_address, port=port)
+
+    if not communication.connect():
+        print('PM2CD へ接続できませんでした')
+        return
+
+    try:
+        device = PM2CDDevice(communication=communication)
+
+        version = device.version()
+        if version is None:
+            print('VER? の取得に失敗しました')
+        else:
+            print(f'version: {version}')
+
+        controller_status = device.controller_status()
+        if controller_status is None:
+            print('STQ? の取得に失敗しました')
+        else:
+            print(f'controller_status: {controller_status}')
+
+        motor_status = device.status_all()
+        if motor_status is None:
+            print('STS? の取得に失敗しました')
+        else:
+            for status in motor_status:
+                print(status)
+    finally:
+        communication.disconnect()
+
+
+if __name__ == '__main__':
+    main()
