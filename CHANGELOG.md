@@ -1,5 +1,59 @@
 # CHANGELOG
 
+## v0.0.1 — 2026-09-11
+
+v0.0.0 からの変更点。
+
+### Added
+
+#### `PM2CD.version`
+
+`get_version()` を呼び出す property として `version` を追加した。
+
+```python
+version = ctrl.version
+```
+
+`get_version()` 自体は既存のまま残している。
+
+#### rate 値 I/F
+
+rate number を直接指定する既存 I/F
+
+- `get_rate_number(motor)`
+- `set_rate_number(motor, number)`
+
+はそのまま維持し、rate 値を直接扱う I/F を追加した。
+
+- `get_rate(motor)`
+- `set_rate(motor, rate)`
+
+`get_rate()` は、装置から取得した rate number を既存の `number_to_rate()` で rate 値へ変換して返す。
+
+`set_rate()` は、指定された rate に最も近い設定可能 rate の number を選択し、既存の `set_rate_number()` で設定する。
+
+その最近傍 rate number を求める Ctrl 内部 helper として、非公開メソッド
+
+- `_nearest_rate_number(rate)`
+
+を追加した。
+
+既存の
+
+- `number_to_rate(index)`
+- `rate_to_number(rate)`
+
+は変更していない。
+
+### Changed
+
+- `main()` 内の version 取得を `ctrl.version()` から property の `ctrl.version` へ変更した。
+- Black によるコードフォーマットを適用した。
+
+### Device
+
+`pm2cd_device.py` は v0.0.0 から変更していない。
+
 ## v0.0.0 — 2026-09-11
 
 この版はリリース履歴というより、PM2CD / PM2C-06A Python 制御コードを今後継続して設計・修正するための
