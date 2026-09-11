@@ -46,6 +46,7 @@ class LimitSwitchSetting:
         """is_valid を返す。"""
         return self._is_valid
 
+    @property
     def digital_limit_enabled(
         self,
     ) -> bool:
@@ -131,6 +132,63 @@ class LimitSwitchSetting:
             prefix = "1"
 
         return prefix + self._raw[1:]
+
+    def with_hardware_limit(
+        self,
+        enabled: bool,
+    ) -> Optional[str]:
+        """CW/CCW ハードウェアリミットの enable 設定を書き換える。
+
+        PM2C-06A では CCW LS の enable 設定が CW LS にも適用されるため、
+        CCW/CW の2ビットを同じ値にする。HP LS の設定は保持する。
+        """
+        if not isinstance(enabled, bool):
+            return None
+
+        if not self._is_valid:
+            return None
+
+        value = "1" if enabled else "0"
+        return self._raw[:2] + value + value + self._raw[4:]
+
+    def with_hardware_limit_normally_closed(
+        self,
+        side: str,
+        normally_closed: bool,
+    ) -> Optional[str]:
+        """ハードウェアLSの接点仕様を意味指定で書き換える。
+
+        Args:
+            side: ``hp``、``cw``、``ccw``。
+            normally_closed: normally closed にする場合は True。
+
+        Returns:
+            更新後の ``SETLS`` 設定文字列。失敗した場合は None。
+        """
+        if not self._is_valid:
+            return None
+
+        if not isinstance(side, str):
+            return None
+
+        if not isinstance(normally_closed, bool):
+            return None
+
+        normalized = side.strip().lower()
+        if normalized not in ("hp", "cw", "ccw"):
+            return None
+
+        value = "1" if normally_closed else "0"
+        chars = list(self._raw)
+
+        if normalized == "hp":
+            chars[5] = value
+        else:
+            # PM2C-06A では CCW LS の接点仕様が CW LS にも適用される。
+            chars[6] = value
+            chars[7] = value
+
+        return "".join(chars)
 
     def __repr__(
         self,

@@ -5,7 +5,6 @@ from typing import List, Optional, Union
 from pm2cd.core.communication_tcp import Communication
 from pm2cd.core.controller_status import ControllerStatus
 from pm2cd.core.home_status import HomeStatus
-from pm2cd.core.limit_switch_setting import LimitSwitchSetting
 from pm2cd.core.motor_setting import MotorSetting
 from pm2cd.core.motor_status import MotorStatus
 from pm2cd.core.stop_mode import StopMode
@@ -760,6 +759,121 @@ class PM2CD:
         return self._device.set_limit(motor, side, pulse)
 
 
+    def get_limit_status(
+        self,
+        motor: int,
+    ) -> Optional[List[bool]]:
+        """ソフトウェアリミット状態を ``[CW, CCW]`` で取得する。"""
+        status = self._device.limit_status(motor)
+        if status is None:
+            return None
+
+        return status.soft
+
+    def get_limit_status_all(
+        self,
+    ) -> Optional[List[List[bool]]]:
+        """全モーターのソフトウェアリミット状態を ``[[CW, CCW], ...]`` で取得する。"""
+        statuses = self._device.limit_status_all()
+        if statuses is None:
+            return None
+
+        return [status.soft for status in statuses]
+
+    def get_hard_limit_status(
+        self,
+        motor: int,
+    ) -> Optional[List[bool]]:
+        """ハードウェアリミット状態を ``[CW, CCW, HP]`` で取得する。"""
+        status = self._device.limit_status(motor)
+        if status is None:
+            return None
+
+        return status.hard
+
+    def get_hard_limit_status_all(
+        self,
+    ) -> Optional[List[List[bool]]]:
+        """全モーターのハードウェアリミット状態を ``[[CW, CCW, HP], ...]`` で取得する。"""
+        statuses = self._device.limit_status_all()
+        if statuses is None:
+            return None
+
+        return [status.hard for status in statuses]
+
+    def get_limit_enabled(
+        self,
+        motor: int,
+    ) -> Optional[bool]:
+        """ソフトウェアリミットの有効/無効を取得する。"""
+        setting = self._device.limit_switch_setting(motor)
+        if setting is None:
+            return None
+
+        return setting.digital_limit_enabled
+
+    def set_limit_enabled(
+        self,
+        motor: int,
+        enabled: bool,
+    ) -> bool:
+        """ソフトウェアリミットを有効/無効にする。"""
+        return self._device.set_digital_limit_enabled(motor, enabled)
+
+    def get_hard_limit_enabled(
+        self,
+        motor: int,
+    ) -> Optional[List[bool]]:
+        """ハードウェアリミット enable 設定を ``[CW, CCW, HP]`` で取得する。"""
+        setting = self._device.limit_switch_setting(motor)
+        if setting is None:
+            return None
+
+        return [setting.cw_enabled, setting.ccw_enabled, setting.hp_enabled]
+
+    def set_hard_limit_enabled(
+        self,
+        motor: int,
+        enabled: bool,
+    ) -> bool:
+        """CW/CCW ハードウェアリミットを有効/無効にする。"""
+        return self._device.set_hard_limit_enabled(motor, enabled)
+
+    def get_hard_limit_normally_closed(
+        self,
+        motor: int,
+    ) -> Optional[List[bool]]:
+        """ハードウェアLS接点設定を ``[CW, CCW, HP]`` で取得する。
+
+        True は normally closed、False は normally open を表す。
+        """
+        setting = self._device.limit_switch_setting(motor)
+        if setting is None:
+            return None
+
+        return [setting.cw_nc, setting.ccw_nc, setting.hp_nc]
+
+    def set_hard_limit_normally_closed(
+        self,
+        motor: int,
+        side: str,
+        normally_closed: bool,
+    ) -> bool:
+        """ハードウェアLSの接点仕様を設定する。
+
+        Args:
+            motor: モーター番号。0 または 1。
+            side: ``hp``、``cw``、``ccw``。
+            normally_closed: normally closed にする場合は True、
+                normally open にする場合は False。
+        """
+        return self._device.set_hard_limit_normally_closed(
+            motor,
+            side,
+            normally_closed,
+        )
+
+
     # --- 一時停止・励磁保持 ----------------------------------------------------
     def pause(
         self,
@@ -1047,46 +1161,27 @@ class PM2CD:
     def get_limit_switch_setting(
         self,
         motor: int,
-    ) -> Optional[LimitSwitchSetting]:
-        """リミットスイッチ設定を取得する。
-
-        Args:
-            motor: モーター番号。0 または 1。
+    ) -> Optional[List[bool]]:
+        """リミット設定を意味値のリストで取得する。
 
         Returns:
-            取得または変換に成功した値。失敗した場合は None。
+            ``[software_enable, CW_enable, CCW_enable, HP_enable,
+            CW_normally_closed, CCW_normally_closed, HP_normally_closed]``。
+            取得に失敗した場合は None。
         """
-        return self._device.limit_switch_setting(motor)
+        setting = self._device.limit_switch_setting(motor)
+        if setting is None:
+            return None
 
-    def get_limit_switch_setting_raw(
-        self,
-        motor: int,
-    ) -> Optional[str]:
-        """リミットスイッチ設定を生の設定文字列で取得する。
-
-        Args:
-            motor: モーター番号。0 または 1。
-
-        Returns:
-            取得した生の設定文字列。失敗した場合は None。
-        """
-        return self._device.limit_switch_setting_raw(motor)
-
-    def set_limit_switch_setting_raw(
-        self,
-        motor: int,
-        setting: str,
-    ) -> bool:
-        """リミットスイッチ設定を生の設定文字列で書き込む。
-
-        Args:
-            motor: モーター番号。0 または 1。
-            setting: 装置へ設定する生の設定文字列。
-
-        Returns:
-            処理に成功した場合は True、失敗した場合は False。
-        """
-        return self._device.set_limit_switch_setting_raw(motor, setting)
+        return [
+            setting.digital_limit_enabled,
+            setting.cw_enabled,
+            setting.ccw_enabled,
+            setting.hp_enabled,
+            setting.cw_nc,
+            setting.ccw_nc,
+            setting.hp_nc,
+        ]
 
     def get_motor_setting(
         self,

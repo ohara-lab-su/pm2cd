@@ -5,6 +5,7 @@ from pm2cd.core.communication_tcp import Communication
 from pm2cd.core.controller_status import ControllerStatus
 from pm2cd.core.data import RATE_TABLE
 from pm2cd.core.home_status import HomeStatus
+from pm2cd.core.limit_status import LimitStatus
 from pm2cd.core.limit_switch_setting import LimitSwitchSetting
 from pm2cd.core.motor_setting import MotorSetting
 from pm2cd.core.motor_status import MotorStatus
@@ -977,7 +978,110 @@ class PM2CDDevice:
         if normalized == 'cw':
             command = "FL"
 
-        return self._communication.send(f'{command}{motor_text}{pulse:d}')
+        return self._communication.send(f'{command}{motor_text}{pulse:+d}')
+
+
+    def limit_status(
+        self,
+        motor: int,
+    ) -> Optional[LimitStatus]:
+        """指定モーターのハード/ソフトリミット現在状態を取得する。"""
+        self._logger.info(f'== get_limit_status()')
+
+        if self._motor_text(motor) is None:
+            return None
+
+        values = self.limit_status_all()
+        if values is None:
+            return None
+
+        return values[motor]
+
+    def limit_status_all(
+        self,
+    ) -> Optional[List[LimitStatus]]:
+        """全モーターのハード/ソフトリミット現在状態を取得する。"""
+        self._logger.info(f'== get_limit_status_all()')
+
+        raw = self._communication.query('HDSTLS?')
+        if raw is None:
+            return None
+
+        values = LimitStatus.parse_all(raw)
+        if values is None:
+            self._logger.error(f'HDSTLS?応答を解釈できません: {raw!r}')
+            return None
+
+        return values[: self.CHANNEL_COUNT]
+
+    def set_digital_limit_enabled(
+        self,
+        motor: int,
+        enabled: bool,
+    ) -> bool:
+        """指定モーターのソフトウェアリミットを有効/無効にする。"""
+        self._logger.info(f'== set_digital_limit_enabled()')
+
+        if not isinstance(enabled, bool):
+            self._logger.error('enabledはboolで指定してください')
+            return False
+
+        setting = self.limit_switch_setting(motor)
+        if setting is None:
+            return False
+
+        changed = setting.with_digital_limit(enabled)
+        if changed is None:
+            return False
+
+        return self.set_limit_switch_setting_raw(motor, changed)
+
+    def set_hard_limit_enabled(
+        self,
+        motor: int,
+        enabled: bool,
+    ) -> bool:
+        """指定モーターのCW/CCWハードウェアリミットを有効/無効にする。"""
+        self._logger.info(f'== set_hard_limit_enabled()')
+
+        if not isinstance(enabled, bool):
+            self._logger.error('enabledはboolで指定してください')
+            return False
+
+        setting = self.limit_switch_setting(motor)
+        if setting is None:
+            return False
+
+        changed = setting.with_hardware_limit(enabled)
+        if changed is None:
+            return False
+
+        return self.set_limit_switch_setting_raw(motor, changed)
+
+    def set_hard_limit_normally_closed(
+        self,
+        motor: int,
+        side: str,
+        normally_closed: bool,
+    ) -> bool:
+        """ハードウェアLSの接点仕様を normally closed/open で設定する。"""
+        self._logger.info(f'== set_hard_limit_normally_closed()')
+
+        setting = self.limit_switch_setting(motor)
+        if setting is None:
+            return False
+
+        changed = setting.with_hardware_limit_normally_closed(
+            side,
+            normally_closed,
+        )
+        if changed is None:
+            self._logger.error(
+                'sideはhp/cw/ccw、normally_closedはboolで指定してください'
+            )
+            return False
+
+        return self.set_limit_switch_setting_raw(motor, changed)
 
 
     # --- 一時停止・励磁保持 ----------------------------------------------------
