@@ -1,5 +1,59 @@
 # CHANGELOG
 
+## v0.0.1 — 2026-09-11
+
+v0.0.0 からの変更点。
+
+### Added
+
+#### `PM2CD.version`
+
+`get_version()` を呼び出す property として `version` を追加した。
+
+```python
+version = ctrl.version
+```
+
+`get_version()` 自体は既存のまま残している。
+
+#### rate 値 I/F
+
+rate number を直接指定する既存 I/F
+
+- `get_rate_number(motor)`
+- `set_rate_number(motor, number)`
+
+はそのまま維持し、rate 値を直接扱う I/F を追加した。
+
+- `get_rate(motor)`
+- `set_rate(motor, rate)`
+
+`get_rate()` は、装置から取得した rate number を既存の `number_to_rate()` で rate 値へ変換して返す。
+
+`set_rate()` は、指定された rate に最も近い設定可能 rate の number を選択し、既存の `set_rate_number()` で設定する。
+
+その最近傍 rate number を求める Ctrl 内部 helper として、非公開メソッド
+
+- `_nearest_rate_number(rate)`
+
+を追加した。
+
+既存の
+
+- `number_to_rate(index)`
+- `rate_to_number(rate)`
+
+は変更していない。
+
+### Changed
+
+- `main()` 内の version 取得を `ctrl.version()` から property の `ctrl.version` へ変更した。
+- Black によるコードフォーマットを適用した。
+
+### Device
+
+`pm2cd_device.py` は v0.0.0 から変更していない。
+
 ## v0.0.0 — 2026-09-11
 
 この版はリリース履歴というより、PM2CD / PM2C-06A Python 制御コードを今後継続して設計・修正するための
@@ -707,23 +761,7 @@ normal motor/controller status
 
 `SETLS?` を current limit state と解釈しない。
 
-### 11. 現時点の未確定・今後精査する事項
-
-以下は v0.0.0 時点で意図的に「確定事項」にしない。
-
-- Ctrl の `get_limit_switch_setting()` を公開 API として残すか。個別 getter と重複している。
-- hardware limit enable/contact の setter を PM2C-06A 固有の連動仕様にどの粒度で見せるか。
-- Ctrl の List 順序 `[CW, CCW, HP]` / `[CW, CCW]` を今後も統一規約として固定するか。
-- C版ハンドラー I/F 全ファイルを受領していないため、C版公開 I/F 全体との完全対応表は未完成。
-- TTL/display/ALLREP 等、今回 C版実装を読んだが現行 Python Ctrl/Device に API が存在しない機能について、今後追加するかどうか。
-- 現行 Python の limit 以外の各 Device ハンドラーについて、C版との処理順・符号形式・複合処理をさらに個別照合する必要がある。
-
-これらを推論し直す場合でも、
-ここまで読んだ C版実ハンドラー、PM2C-06A の装置仕様、
-現在の Python 構造、責務分離の議論を破棄して最初からやり直してはならない。
-再推論とは既存の事実と議論を保持した上で結論を再評価することである。
-
-### 12. v0.0.0 での修正内容
+### 11. v0.0.0 での修正内容
 
 - `LimitSwitchSetting.digital_limit_enabled` を property として統一。
 - `LimitSwitchSetting` に hardware limit enable/contact の read-modify-write 処理を追加。

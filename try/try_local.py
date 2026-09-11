@@ -13,7 +13,7 @@ try:
     if status is None or status.remote_local != "L":
         raise AssertionError("LOCALへ移行していません")
     print(f"[PASS] {'local'}: {status.raw}")
-    ctrl.remote()
+    # ctrl.remote()
 
 finally:
     try:

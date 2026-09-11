@@ -6,7 +6,7 @@ IP_ADDRESS = "10.170.10.62"
 PORT = 7777
 TIMEOUT_SEC = 3.0
 MOTOR = 0
-TEST_PULSE = 10
+# TEST_PULSE = 10
 MOTION_TIMEOUT_SEC = 30.0
 
 ctrl = PM2CD(ip_address=IP_ADDRESS, port=PORT, timeout_sec=TIMEOUT_SEC)
@@ -25,9 +25,14 @@ try:
 
     before = ctrl.get_position(MOTOR)
 
-    target = before + TEST_PULSE
-    if target > 8388607:
-        target = before - TEST_PULSE
+    # target = before + T1EST_PULSE
+    # target = before + 10
+    # target = before + 10
+
+    # if target > 8388607:
+    #     # target = before - TEST_PULSE
+    #     target = before - 10
+    target = 0
 
     print(f"[INFO] {'move'}: {target}")
     ctrl.move(MOTOR, target, backlash=False)
