@@ -1,6 +1,5 @@
 from pm2cd.pm2cd_ctrl import PM2CD
 
-
 IP_ADDRESS = "10.170.10.62"
 PORT = 7777
 TIMEOUT_SEC = 3.0
@@ -14,10 +13,12 @@ ctrl = PM2CD(
 
 try:
     original = ctrl.get_hold(MOTOR)
-    enabled = original == "ON"
+    if original == "ON":
+        enabled = True
+    else:
+        enabled = False
 
     ctrl.set_hold(MOTOR, enabled)
-
     actual = ctrl.get_hold(MOTOR)
 
     if actual != original:
