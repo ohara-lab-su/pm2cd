@@ -126,7 +126,7 @@ class PM2CD:
         """
         return self._device.local()
 
-    @property
+    # @property
     def version(self):
         return self.get_version()
 
@@ -151,6 +151,16 @@ class PM2CD:
         return self._device.hardware_version()
 
     def get_controller_status(
+        self,
+    ) -> Optional[ControllerStatus]:
+        """コントローラー全体の状態を取得する。
+
+        Returns:
+            取得または変換に成功した値。失敗した場合は None。
+        """
+        return self._device.controller_status()
+
+    def controller_status(
         self,
     ) -> Optional[ControllerStatus]:
         """コントローラー全体の状態を取得する。
@@ -353,6 +363,16 @@ class PM2CD:
         return self._device.status(motor)
 
     def get_status_all(
+        self,
+    ) -> Optional[List[MotorStatus]]:
+        """全モーターの状態を取得する。
+
+        Returns:
+            取得または変換に成功した値。失敗した場合は None。
+        """
+        return self._device.status_all()
+
+    def status_all(
         self,
     ) -> Optional[List[MotorStatus]]:
         """全モーターの状態を取得する。
@@ -1395,7 +1415,7 @@ def main() -> None:
             print("PM2CD へ接続できませんでした")
             return
 
-        version = ctrl.version
+        version = ctrl.version()
         if version is None:
             print("VER? の取得に失敗しました")
         else:
