@@ -1,5 +1,79 @@
 # CHANGELOG
 
+## 2026.09.13, v0.0.2, nakada
+
+**PM2CD Ctrl API の拡張・整理と位置決め完了判定の改良**
+
+- `PM2CDsingle`
+    - デフォルトのモーター番号を保持する `motor` プロパティを追加
+        - 各メソッドで `motor` を明示した場合はその値を優先
+        - `motor` を省略した場合は `motor` プロパティの値を使用
+        - 従来のモーター番号を明示する呼び出し方は維持
+    - モーター依存 API を `motor` 省略に対応
+        - 移動、停止、状態取得、位置、速度、加減速、バックラッシュ、
+          リミット、HOLD、原点、プリセット、JOG、モーター設定、停止設定など
+    - `move()` / `move_relative()` で、位置決め完了判定に必要な移動条件を
+      モーターごとに保持するよう変更
+        - 目標位置
+        - バックラッシュ補正の有無
+        - バックラッシュ補正量
+        - `move_relative()` では移動前の現在位置から絶対目標位置を算出
+    - 位置決め完了待ちを `wait_for_complete()` として再構成
+        - `STS?` の BUSY だけでなく DRIVE、方向、現在位置を使って
+          active / inactive を判定
+        - 短距離動作では active 状態そのものをポーリングで観測できない場合が
+          あるため、active の観測を完了条件として必須にしない
+        - バックラッシュ補正なしでは、目標位置で inactive になったことを確認
+        - バックラッシュ補正ありでは、
+          「目標位置 -> バックラッシュ点 -> 目標位置」の補正動作を考慮
+        - バックラッシュ距離が十分長く途中の active / inactive を観測できる場合と、
+          距離が短く状態遷移がポーリング間で縮退する場合の両方を考慮
+        - 最初の「目標位置 + inactive」をバックラッシュ補正完了とは即断せず、
+          補正動作後の最終目標位置を判定
+        - 位置決めコンテキストがない場合は、単純な停止待ちとして inactive を
+          連続確認
+    - `stop()` / `stop_all()` と `emergency_stop()` /
+      `emergency_stop_all()` を通常停止と非常停止として明確に分離
+        - 通常停止では slow stop を使用
+        - 非常停止では emergency stop を使用
+        - 停止成功時に対象モーターの移動コンテキストを破棄
+    - `get_status()`、`is_busy()` などの状態取得 API を
+      デフォルト `motor` に対応
+    - `version()` / `get_version()`、`controller_status()` /
+      `get_controller_status()`、`status_all()` / `get_status_all()` など、
+      既存の情報取得 API を維持
+
+- 速度・加減速 API
+    - 低速・中速・高速をまとめて扱う speed profile API を追加・整理
+    - 高速・中速・低速の個別 get/set API を追加・整理
+    - `get_rate_number()` / `set_rate_number()` と
+      `get_rate()` / `set_rate()` を分離
+        - rate number と実際の rate 値を別 API として扱う
+        - `set_rate()` は RATE table から指定値に最も近い rate number を選択
+        - Device 層の `rate_to_number()` / `number_to_rate()` は
+          装置・旧 C API 側の変換として維持
+
+- バックラッシュ API
+    - `get_backlash()` / `set_backlash()` を Ctrl API として整理
+    - `move()` / `move_relative()` のバックラッシュ指定と設定済み補正量を
+      完了判定へ引き継ぐよう変更
+
+- リミット API
+    - Ctrl 層では raw bit を直接扱わず、意味ベースの API に整理
+    - ソフトウェアリミット状態を `[CW, CCW]` で取得
+    - ハードウェアリミット状態を `[CW, CCW, HP]` で取得
+    - ソフトウェアリミットの enable 設定を get/set API 化
+    - ハードウェアリミットの enable 設定を get/set API 化
+    - ハードウェアリミット接点を normally closed / normally open の
+      bool として扱う API を追加
+    - `get_limit_switch_setting()` では Device 層の設定情報を
+      Ctrl 側から取得可能な形で維持
+
+- その他
+    - `Communication` インスタンスの外部注入に対応し、
+      通信層と Ctrl / Device 層の委譲構造を維持
+    - Google style docstring、型注釈を各公開 API に反映
+
 ## v0.0.1 — 2026-09-11
 
 v0.0.0 からの変更点。
@@ -463,7 +537,7 @@ emergency_stop
 emergency_stop_all
 get_rotate
 is_busy
-wait_stop
+wait_for_complete
 ```
 
 `AESTP` は emergency stop。通常初期化・通常停止用途には使用しない。

@@ -24,7 +24,7 @@ try:
     ctrl.scan(MOTOR, "cw")
     time.sleep(SCAN_TIME_SEC)
     ctrl.stop(MOTOR)
-    ctrl.wait_stop(MOTOR, timeout_sec=MOTION_TIMEOUT_SEC)
+    ctrl.wait_for_complete(MOTOR, timeout_sec=MOTION_TIMEOUT_SEC)
     print(f"[PASS] {'scan'}: {'OK'}")
 
 finally:

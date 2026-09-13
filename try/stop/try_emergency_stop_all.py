@@ -25,7 +25,7 @@ try:
     ctrl.scan(MOTOR, "cw")
     time.sleep(SCAN_TIME_SEC)
     ctrl.emergency_stop_all()
-    ctrl.wait_stop(MOTOR, timeout_sec=MOTION_TIMEOUT_SEC)
+    ctrl.wait_for_complete(MOTOR, timeout_sec=MOTION_TIMEOUT_SEC)
     print(f"[PASS] {'emergency_stop_all'}: {'OK'}")
 finally:
     try:
