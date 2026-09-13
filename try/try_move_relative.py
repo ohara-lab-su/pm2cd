@@ -27,11 +27,11 @@ try:
     TEST_PULSE = 10
 
     ctrl.move_relative(MOTOR, TEST_PULSE, backlash=False)
-    ctrl.wait_stop(MOTOR, timeout_sec=MOTION_TIMEOUT_SEC)
+    ctrl.wait_for_complete(MOTOR, timeout_sec=MOTION_TIMEOUT_SEC)
     if ctrl.get_position(MOTOR) != before + TEST_PULSE:
         raise AssertionError("REL移動位置不一致")
     ctrl.move_relative(MOTOR, -TEST_PULSE, backlash=False)
-    ctrl.wait_stop(MOTOR, timeout_sec=MOTION_TIMEOUT_SEC)
+    ctrl.wait_for_complete(MOTOR, timeout_sec=MOTION_TIMEOUT_SEC)
     print(f"[PASS] {'move_relative'}: {'OK'}")
 finally:
     try:

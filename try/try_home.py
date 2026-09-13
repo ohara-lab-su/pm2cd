@@ -1,6 +1,7 @@
 import time
 from pm2cd.pm2cd_ctrl import PM2CD
-IP_ADDRESS = '10.170.10.62'
+
+IP_ADDRESS = "10.170.10.62"
 PORT = 7777
 TIMEOUT_SEC = 3.0
 MOTOR = 0
@@ -16,13 +17,13 @@ try:
         ctrl.remote()
         status = ctrl.get_status(MOTOR)
         if status is None:
-            raise AssertionError('STS?応答を取得できません')
-        if status.remote_local != 'R':
-            raise AssertionError(f'REMOTEへ移行していません: {status.raw!r}')
+            raise AssertionError("STS?応答を取得できません")
+        if status.remote_local != "R":
+            raise AssertionError(f"REMOTEへ移行していません: {status.raw!r}")
         if status.is_busy:
-            raise AssertionError(f'motor {MOTOR} が停止していません')
+            raise AssertionError(f"motor {MOTOR} が停止していません")
         ctrl.home(MOTOR)
-        ctrl.wait_stop(MOTOR, timeout_sec=MOTION_TIMEOUT_SEC)
+        ctrl.wait_for_complete(MOTOR, timeout_sec=MOTION_TIMEOUT_SEC)
         print(f"[PASS] {'home'}: {'OK'}")
 finally:
     try:

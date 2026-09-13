@@ -22,12 +22,12 @@ try:
         raise AssertionError(f"motor {MOTOR} が停止していません")
     before = ctrl.get_position(MOTOR)
     ctrl.jog(MOTOR, "cw")
-    ctrl.wait_stop(MOTOR, timeout_sec=MOTION_TIMEOUT_SEC)
+    ctrl.wait_for_complete(MOTOR, timeout_sec=MOTION_TIMEOUT_SEC)
     after = ctrl.get_position(MOTOR)
     if after != before + 1:
         raise AssertionError("JOGPは1 pulseではありません")
     ctrl.jog(MOTOR, "ccw")
-    ctrl.wait_stop(MOTOR, timeout_sec=MOTION_TIMEOUT_SEC)
+    ctrl.wait_for_complete(MOTOR, timeout_sec=MOTION_TIMEOUT_SEC)
     print(f"[PASS] {'jog'}: {(before, after)}")
 finally:
     try:

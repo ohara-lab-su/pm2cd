@@ -24,7 +24,7 @@ try:
         if status.is_busy:
             raise AssertionError(f"motor {MOTOR} が停止していません")
         ctrl.scan_home(MOTOR, "cw")
-        ctrl.wait_stop(MOTOR, timeout_sec=MOTION_TIMEOUT_SEC)
+        ctrl.wait_for_complete(MOTOR, timeout_sec=MOTION_TIMEOUT_SEC)
         print(f"[PASS] {'scan_home'}: {'OK'}")
 finally:
     try:

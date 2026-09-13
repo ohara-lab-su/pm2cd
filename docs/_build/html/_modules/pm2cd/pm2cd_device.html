@@ -1,154 +1,331 @@
-
-
 <!DOCTYPE html>
 <html class="writer-html5" lang="ja" data-content_root="../../">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>pm2cd.pm2cd_device &mdash; Project  ドキュメント</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
-      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>pm2cd.pm2cd_device &mdash; Project ドキュメント</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3"/>
+    <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e"/>
 
-  
-      <script src="../../_static/jquery.js?v=5d32c60e"></script>
-      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=c033477b"></script>
-      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
-      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
-      <script src="../../_static/translations.js?v=4755f45a"></script>
+
+    <script src="../../_static/jquery.js?v=5d32c60e"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+    <script src="../../_static/documentation_options.js?v=c033477b"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../_static/translations.js?v=4755f45a"></script>
     <script src="../../_static/js/theme.js"></script>
-    <link rel="index" title="索引" href="../../genindex.html" />
-    <link rel="search" title="検索" href="../../search.html" /> 
+    <link rel="index" title="索引" href="../../genindex.html"/>
+    <link rel="search" title="検索" href="../../search.html"/>
 </head>
 
-<body class="wy-body-for-nav"> 
-  <div class="wy-grid-for-nav">
+<body class="wy-body-for-nav">
+<div class="wy-grid-for-nav">
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
-      <div class="wy-side-scroll">
-        <div class="wy-side-nav-search" >
+        <div class="wy-side-scroll">
+            <div class="wy-side-nav-search">
 
-          
-          
-          <a href="../../index.html" class="icon icon-home">
-            Project
-          </a>
-<div role="search">
-  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
-    <input type="hidden" name="check_keywords" value="yes" />
-    <input type="hidden" name="area" value="default" />
-  </form>
-</div>
-        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../../api/modules.html">pm2cd</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../../api/pm2cd.html">pm2cd package</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../api/pm2cd.html#pm2cd.PM2CD"><code class="docutils literal notranslate"><span class="pre">PM2CD</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="../../api/pm2cd.html#pm2cd.PM2CD.backlash"><code class="docutils literal notranslate"><span class="pre">PM2CD.backlash()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../api/pm2cd.html#pm2cd.PM2CD.constant_speed_scan"><code class="docutils literal notranslate"><span class="pre">PM2CD.constant_speed_scan()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../api/pm2cd.html#pm2cd.PM2CD.emergency_stop"><code class="docutils literal notranslate"><span class="pre">PM2CD.emergency_stop()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../api/pm2cd.html#pm2cd.PM2CD.emergency_stop_all"><code class="docutils literal notranslate"><span class="pre">PM2CD.emergency_stop_all()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../api/pm2cd.html#pm2cd.PM2CD.find_home"><code class="docutils literal notranslate"><span class="pre">PM2CD.find_home()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../api/pm2cd.html#pm2cd.PM2CD.hardware_version"><code class="docutils literal notranslate"><span class="pre">PM2CD.hardware_version()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../api/pm2cd.html#pm2cd.PM2CD.high_speed"><code class="docutils literal notranslate"><span class="pre">PM2CD.high_speed()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../api/pm2cd.html#pm2cd.PM2CD.hold"><code class="docutils literal notranslate"><span class="pre">PM2CD.hold()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../api/pm2cd.html#pm2cd.PM2CD.home"><code class="docutils literal notranslate"><span class="pre">PM2CD.home()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../api/pm2cd.html#pm2cd.PM2CD.is_busy"><code class="docutils literal notranslate"><span class="pre">PM2CD.is_busy()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../api/pm2cd.html#pm2cd.PM2CD.jog"><code class="docutils literal notranslate"><span class="pre">PM2CD.jog()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../api/pm2cd.html#pm2cd.PM2CD.limit"><code class="docutils literal notranslate"><span class="pre">PM2CD.limit()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../api/pm2cd.html#pm2cd.PM2CD.local"><code class="docutils literal notranslate"><span class="pre">PM2CD.local()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../api/pm2cd.html#pm2cd.PM2CD.low_speed"><code class="docutils literal notranslate"><span class="pre">PM2CD.low_speed()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../api/pm2cd.html#pm2cd.PM2CD.middle_speed"><code class="docutils literal notranslate"><span class="pre">PM2CD.middle_speed()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../api/pm2cd.html#pm2cd.PM2CD.move"><code class="docutils literal notranslate"><span class="pre">PM2CD.move()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../api/pm2cd.html#pm2cd.PM2CD.move_relative"><code class="docutils literal notranslate"><span class="pre">PM2CD.move_relative()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../api/pm2cd.html#pm2cd.PM2CD.number_to_rate"><code class="docutils literal notranslate"><span class="pre">PM2CD.number_to_rate()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../api/pm2cd.html#pm2cd.PM2CD.pause"><code class="docutils literal notranslate"><span class="pre">PM2CD.pause()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../api/pm2cd.html#pm2cd.PM2CD.pause_status"><code class="docutils literal notranslate"><span class="pre">PM2CD.pause_status()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../api/pm2cd.html#pm2cd.PM2CD.position"><code class="docutils literal notranslate"><span class="pre">PM2CD.position()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../api/pm2cd.html#pm2cd.PM2CD.rate_number"><code class="docutils literal notranslate"><span class="pre">PM2CD.rate_number()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../api/pm2cd.html#pm2cd.PM2CD.rate_to_number"><code class="docutils literal notranslate"><span class="pre">PM2CD.rate_to_number()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../api/pm2cd.html#pm2cd.PM2CD.remote"><code class="docutils literal notranslate"><span class="pre">PM2CD.remote()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../api/pm2cd.html#pm2cd.PM2CD.resume"><code class="docutils literal notranslate"><span class="pre">PM2CD.resume()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../api/pm2cd.html#pm2cd.PM2CD.scan"><code class="docutils literal notranslate"><span class="pre">PM2CD.scan()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../api/pm2cd.html#pm2cd.PM2CD.set_backlash"><code class="docutils literal notranslate"><span class="pre">PM2CD.set_backlash()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../api/pm2cd.html#pm2cd.PM2CD.set_high_speed"><code class="docutils literal notranslate"><span class="pre">PM2CD.set_high_speed()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../api/pm2cd.html#pm2cd.PM2CD.set_hold"><code class="docutils literal notranslate"><span class="pre">PM2CD.set_hold()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../api/pm2cd.html#pm2cd.PM2CD.set_limit"><code class="docutils literal notranslate"><span class="pre">PM2CD.set_limit()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../api/pm2cd.html#pm2cd.PM2CD.set_low_speed"><code class="docutils literal notranslate"><span class="pre">PM2CD.set_low_speed()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../api/pm2cd.html#pm2cd.PM2CD.set_middle_speed"><code class="docutils literal notranslate"><span class="pre">PM2CD.set_middle_speed()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../api/pm2cd.html#pm2cd.PM2CD.set_position"><code class="docutils literal notranslate"><span class="pre">PM2CD.set_position()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../api/pm2cd.html#pm2cd.PM2CD.set_rate_number"><code class="docutils literal notranslate"><span class="pre">PM2CD.set_rate_number()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../api/pm2cd.html#pm2cd.PM2CD.set_speed"><code class="docutils literal notranslate"><span class="pre">PM2CD.set_speed()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../api/pm2cd.html#pm2cd.PM2CD.set_speed_mode"><code class="docutils literal notranslate"><span class="pre">PM2CD.set_speed_mode()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../api/pm2cd.html#pm2cd.PM2CD.speed_mode"><code class="docutils literal notranslate"><span class="pre">PM2CD.speed_mode()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../api/pm2cd.html#pm2cd.PM2CD.status"><code class="docutils literal notranslate"><span class="pre">PM2CD.status()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../api/pm2cd.html#pm2cd.PM2CD.status_all"><code class="docutils literal notranslate"><span class="pre">PM2CD.status_all()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../api/pm2cd.html#pm2cd.PM2CD.stop"><code class="docutils literal notranslate"><span class="pre">PM2CD.stop()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../api/pm2cd.html#pm2cd.PM2CD.stop_all"><code class="docutils literal notranslate"><span class="pre">PM2CD.stop_all()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../api/pm2cd.html#pm2cd.PM2CD.ttl_output_start"><code class="docutils literal notranslate"><span class="pre">PM2CD.ttl_output_start()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../api/pm2cd.html#pm2cd.PM2CD.ttl_output_stop"><code class="docutils literal notranslate"><span class="pre">PM2CD.ttl_output_stop()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../api/pm2cd.html#pm2cd.PM2CD.ttl_status"><code class="docutils literal notranslate"><span class="pre">PM2CD.ttl_status()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../api/pm2cd.html#pm2cd.PM2CD.version"><code class="docutils literal notranslate"><span class="pre">PM2CD.version()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../api/pm2cd.html#pm2cd.PM2CD.wait_stop"><code class="docutils literal notranslate"><span class="pre">PM2CD.wait_stop()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="../../api/pm2cd.html#subpackages">Subpackages</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="../../api/pm2cd.core.html">pm2cd.core package</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../api/pm2cd.server_fastapi.html">pm2cd.server_fastapi package</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="../../api/pm2cd.html#submodules">Submodules</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../api/pm2cd.html#module-pm2cd.pm2cd_ctrl">pm2cd.pm2cd_ctrl module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="../../api/pm2cd.html#pm2cd.pm2cd_ctrl.PM2CD"><code class="docutils literal notranslate"><span class="pre">PM2CD</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="../../api/pm2cd.html#module-pm2cd.pm2cd_device">pm2cd.pm2cd_device module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="../../api/pm2cd.html#pm2cd.pm2cd_device.PM2CDDevice"><code class="docutils literal notranslate"><span class="pre">PM2CDDevice</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="../../api/pm2cd.html#module-pm2cd.version_info">pm2cd.version_info module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="../../api/pm2cd.html#pm2cd.version_info.VersionInfo"><code class="docutils literal notranslate"><span class="pre">VersionInfo</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
 
+                <a href="../../index.html" class="icon icon-home">
+                    Project
+                </a>
+                <div role="search">
+                    <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+                        <input type="text" name="q" placeholder="Search docs" aria-label="Search docs"/>
+                        <input type="hidden" name="check_keywords" value="yes"/>
+                        <input type="hidden" name="area" value="default"/>
+                    </form>
+                </div>
+            </div>
+            <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+                <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../../api/modules.html">pm2cd</a>
+                        <ul>
+                            <li class="toctree-l2"><a class="reference internal" href="../../api/pm2cd.html">pm2cd
+                                package</a>
+                                <ul>
+                                    <li class="toctree-l3"><a class="reference internal"
+                                                              href="../../api/pm2cd.html#pm2cd.PM2CD"><code
+                                            class="docutils literal notranslate"><span
+                                            class="pre">PM2CD</span></code></a>
+                                        <ul>
+                                            <li class="toctree-l4"><a class="reference internal"
+                                                                      href="../../api/pm2cd.html#pm2cd.PM2CD.backlash"><code
+                                                    class="docutils literal notranslate"><span class="pre">PM2CD.backlash()</span></code></a>
+                                            </li>
+                                            <li class="toctree-l4"><a class="reference internal"
+                                                                      href="../../api/pm2cd.html#pm2cd.PM2CD.constant_speed_scan"><code
+                                                    class="docutils literal notranslate"><span class="pre">PM2CD.constant_speed_scan()</span></code></a>
+                                            </li>
+                                            <li class="toctree-l4"><a class="reference internal"
+                                                                      href="../../api/pm2cd.html#pm2cd.PM2CD.emergency_stop"><code
+                                                    class="docutils literal notranslate"><span class="pre">PM2CD.emergency_stop()</span></code></a>
+                                            </li>
+                                            <li class="toctree-l4"><a class="reference internal"
+                                                                      href="../../api/pm2cd.html#pm2cd.PM2CD.emergency_stop_all"><code
+                                                    class="docutils literal notranslate"><span class="pre">PM2CD.emergency_stop_all()</span></code></a>
+                                            </li>
+                                            <li class="toctree-l4"><a class="reference internal"
+                                                                      href="../../api/pm2cd.html#pm2cd.PM2CD.find_home"><code
+                                                    class="docutils literal notranslate"><span class="pre">PM2CD.find_home()</span></code></a>
+                                            </li>
+                                            <li class="toctree-l4"><a class="reference internal"
+                                                                      href="../../api/pm2cd.html#pm2cd.PM2CD.hardware_version"><code
+                                                    class="docutils literal notranslate"><span class="pre">PM2CD.hardware_version()</span></code></a>
+                                            </li>
+                                            <li class="toctree-l4"><a class="reference internal"
+                                                                      href="../../api/pm2cd.html#pm2cd.PM2CD.high_speed"><code
+                                                    class="docutils literal notranslate"><span class="pre">PM2CD.high_speed()</span></code></a>
+                                            </li>
+                                            <li class="toctree-l4"><a class="reference internal"
+                                                                      href="../../api/pm2cd.html#pm2cd.PM2CD.hold"><code
+                                                    class="docutils literal notranslate"><span
+                                                    class="pre">PM2CD.hold()</span></code></a></li>
+                                            <li class="toctree-l4"><a class="reference internal"
+                                                                      href="../../api/pm2cd.html#pm2cd.PM2CD.home"><code
+                                                    class="docutils literal notranslate"><span
+                                                    class="pre">PM2CD.home()</span></code></a></li>
+                                            <li class="toctree-l4"><a class="reference internal"
+                                                                      href="../../api/pm2cd.html#pm2cd.PM2CD.is_busy"><code
+                                                    class="docutils literal notranslate"><span class="pre">PM2CD.is_busy()</span></code></a>
+                                            </li>
+                                            <li class="toctree-l4"><a class="reference internal"
+                                                                      href="../../api/pm2cd.html#pm2cd.PM2CD.jog"><code
+                                                    class="docutils literal notranslate"><span
+                                                    class="pre">PM2CD.jog()</span></code></a></li>
+                                            <li class="toctree-l4"><a class="reference internal"
+                                                                      href="../../api/pm2cd.html#pm2cd.PM2CD.limit"><code
+                                                    class="docutils literal notranslate"><span
+                                                    class="pre">PM2CD.limit()</span></code></a></li>
+                                            <li class="toctree-l4"><a class="reference internal"
+                                                                      href="../../api/pm2cd.html#pm2cd.PM2CD.local"><code
+                                                    class="docutils literal notranslate"><span
+                                                    class="pre">PM2CD.local()</span></code></a></li>
+                                            <li class="toctree-l4"><a class="reference internal"
+                                                                      href="../../api/pm2cd.html#pm2cd.PM2CD.low_speed"><code
+                                                    class="docutils literal notranslate"><span class="pre">PM2CD.low_speed()</span></code></a>
+                                            </li>
+                                            <li class="toctree-l4"><a class="reference internal"
+                                                                      href="../../api/pm2cd.html#pm2cd.PM2CD.middle_speed"><code
+                                                    class="docutils literal notranslate"><span class="pre">PM2CD.middle_speed()</span></code></a>
+                                            </li>
+                                            <li class="toctree-l4"><a class="reference internal"
+                                                                      href="../../api/pm2cd.html#pm2cd.PM2CD.move"><code
+                                                    class="docutils literal notranslate"><span
+                                                    class="pre">PM2CD.move()</span></code></a></li>
+                                            <li class="toctree-l4"><a class="reference internal"
+                                                                      href="../../api/pm2cd.html#pm2cd.PM2CD.move_relative"><code
+                                                    class="docutils literal notranslate"><span class="pre">PM2CD.move_relative()</span></code></a>
+                                            </li>
+                                            <li class="toctree-l4"><a class="reference internal"
+                                                                      href="../../api/pm2cd.html#pm2cd.PM2CD.number_to_rate"><code
+                                                    class="docutils literal notranslate"><span class="pre">PM2CD.number_to_rate()</span></code></a>
+                                            </li>
+                                            <li class="toctree-l4"><a class="reference internal"
+                                                                      href="../../api/pm2cd.html#pm2cd.PM2CD.pause"><code
+                                                    class="docutils literal notranslate"><span
+                                                    class="pre">PM2CD.pause()</span></code></a></li>
+                                            <li class="toctree-l4"><a class="reference internal"
+                                                                      href="../../api/pm2cd.html#pm2cd.PM2CD.pause_status"><code
+                                                    class="docutils literal notranslate"><span class="pre">PM2CD.pause_status()</span></code></a>
+                                            </li>
+                                            <li class="toctree-l4"><a class="reference internal"
+                                                                      href="../../api/pm2cd.html#pm2cd.PM2CD.position"><code
+                                                    class="docutils literal notranslate"><span class="pre">PM2CD.position()</span></code></a>
+                                            </li>
+                                            <li class="toctree-l4"><a class="reference internal"
+                                                                      href="../../api/pm2cd.html#pm2cd.PM2CD.rate_number"><code
+                                                    class="docutils literal notranslate"><span class="pre">PM2CD.rate_number()</span></code></a>
+                                            </li>
+                                            <li class="toctree-l4"><a class="reference internal"
+                                                                      href="../../api/pm2cd.html#pm2cd.PM2CD.rate_to_number"><code
+                                                    class="docutils literal notranslate"><span class="pre">PM2CD.rate_to_number()</span></code></a>
+                                            </li>
+                                            <li class="toctree-l4"><a class="reference internal"
+                                                                      href="../../api/pm2cd.html#pm2cd.PM2CD.remote"><code
+                                                    class="docutils literal notranslate"><span class="pre">PM2CD.remote()</span></code></a>
+                                            </li>
+                                            <li class="toctree-l4"><a class="reference internal"
+                                                                      href="../../api/pm2cd.html#pm2cd.PM2CD.resume"><code
+                                                    class="docutils literal notranslate"><span class="pre">PM2CD.resume()</span></code></a>
+                                            </li>
+                                            <li class="toctree-l4"><a class="reference internal"
+                                                                      href="../../api/pm2cd.html#pm2cd.PM2CD.scan"><code
+                                                    class="docutils literal notranslate"><span
+                                                    class="pre">PM2CD.scan()</span></code></a></li>
+                                            <li class="toctree-l4"><a class="reference internal"
+                                                                      href="../../api/pm2cd.html#pm2cd.PM2CD.set_backlash"><code
+                                                    class="docutils literal notranslate"><span class="pre">PM2CD.set_backlash()</span></code></a>
+                                            </li>
+                                            <li class="toctree-l4"><a class="reference internal"
+                                                                      href="../../api/pm2cd.html#pm2cd.PM2CD.set_high_speed"><code
+                                                    class="docutils literal notranslate"><span class="pre">PM2CD.set_high_speed()</span></code></a>
+                                            </li>
+                                            <li class="toctree-l4"><a class="reference internal"
+                                                                      href="../../api/pm2cd.html#pm2cd.PM2CD.set_hold"><code
+                                                    class="docutils literal notranslate"><span class="pre">PM2CD.set_hold()</span></code></a>
+                                            </li>
+                                            <li class="toctree-l4"><a class="reference internal"
+                                                                      href="../../api/pm2cd.html#pm2cd.PM2CD.set_limit"><code
+                                                    class="docutils literal notranslate"><span class="pre">PM2CD.set_limit()</span></code></a>
+                                            </li>
+                                            <li class="toctree-l4"><a class="reference internal"
+                                                                      href="../../api/pm2cd.html#pm2cd.PM2CD.set_low_speed"><code
+                                                    class="docutils literal notranslate"><span class="pre">PM2CD.set_low_speed()</span></code></a>
+                                            </li>
+                                            <li class="toctree-l4"><a class="reference internal"
+                                                                      href="../../api/pm2cd.html#pm2cd.PM2CD.set_middle_speed"><code
+                                                    class="docutils literal notranslate"><span class="pre">PM2CD.set_middle_speed()</span></code></a>
+                                            </li>
+                                            <li class="toctree-l4"><a class="reference internal"
+                                                                      href="../../api/pm2cd.html#pm2cd.PM2CD.set_position"><code
+                                                    class="docutils literal notranslate"><span class="pre">PM2CD.set_position()</span></code></a>
+                                            </li>
+                                            <li class="toctree-l4"><a class="reference internal"
+                                                                      href="../../api/pm2cd.html#pm2cd.PM2CD.set_rate_number"><code
+                                                    class="docutils literal notranslate"><span class="pre">PM2CD.set_rate_number()</span></code></a>
+                                            </li>
+                                            <li class="toctree-l4"><a class="reference internal"
+                                                                      href="../../api/pm2cd.html#pm2cd.PM2CD.set_speed"><code
+                                                    class="docutils literal notranslate"><span class="pre">PM2CD.set_speed()</span></code></a>
+                                            </li>
+                                            <li class="toctree-l4"><a class="reference internal"
+                                                                      href="../../api/pm2cd.html#pm2cd.PM2CD.set_speed_mode"><code
+                                                    class="docutils literal notranslate"><span class="pre">PM2CD.set_speed_mode()</span></code></a>
+                                            </li>
+                                            <li class="toctree-l4"><a class="reference internal"
+                                                                      href="../../api/pm2cd.html#pm2cd.PM2CD.speed_mode"><code
+                                                    class="docutils literal notranslate"><span class="pre">PM2CD.speed_mode()</span></code></a>
+                                            </li>
+                                            <li class="toctree-l4"><a class="reference internal"
+                                                                      href="../../api/pm2cd.html#pm2cd.PM2CD.status"><code
+                                                    class="docutils literal notranslate"><span class="pre">PM2CD.status()</span></code></a>
+                                            </li>
+                                            <li class="toctree-l4"><a class="reference internal"
+                                                                      href="../../api/pm2cd.html#pm2cd.PM2CD.status_all"><code
+                                                    class="docutils literal notranslate"><span class="pre">PM2CD.status_all()</span></code></a>
+                                            </li>
+                                            <li class="toctree-l4"><a class="reference internal"
+                                                                      href="../../api/pm2cd.html#pm2cd.PM2CD.stop"><code
+                                                    class="docutils literal notranslate"><span
+                                                    class="pre">PM2CD.stop()</span></code></a></li>
+                                            <li class="toctree-l4"><a class="reference internal"
+                                                                      href="../../api/pm2cd.html#pm2cd.PM2CD.stop_all"><code
+                                                    class="docutils literal notranslate"><span class="pre">PM2CD.stop_all()</span></code></a>
+                                            </li>
+                                            <li class="toctree-l4"><a class="reference internal"
+                                                                      href="../../api/pm2cd.html#pm2cd.PM2CD.ttl_output_start"><code
+                                                    class="docutils literal notranslate"><span class="pre">PM2CD.ttl_output_start()</span></code></a>
+                                            </li>
+                                            <li class="toctree-l4"><a class="reference internal"
+                                                                      href="../../api/pm2cd.html#pm2cd.PM2CD.ttl_output_stop"><code
+                                                    class="docutils literal notranslate"><span class="pre">PM2CD.ttl_output_stop()</span></code></a>
+                                            </li>
+                                            <li class="toctree-l4"><a class="reference internal"
+                                                                      href="../../api/pm2cd.html#pm2cd.PM2CD.ttl_status"><code
+                                                    class="docutils literal notranslate"><span class="pre">PM2CD.ttl_status()</span></code></a>
+                                            </li>
+                                            <li class="toctree-l4"><a class="reference internal"
+                                                                      href="../../api/pm2cd.html#pm2cd.PM2CD.version"><code
+                                                    class="docutils literal notranslate"><span class="pre">PM2CD.version()</span></code></a>
+                                            </li>
+                                            <li class="toctree-l4"><a class="reference internal"
+                                                                      href="../../api/pm2cd.html#pm2cd.PM2CD.wait_for_complete"><code
+                                                    class="docutils literal notranslate"><span class="pre">PM2CD.wait_for_complete()</span></code></a>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                    <li class="toctree-l3"><a class="reference internal"
+                                                              href="../../api/pm2cd.html#subpackages">Subpackages</a>
+                                        <ul>
+                                            <li class="toctree-l4"><a class="reference internal"
+                                                                      href="../../api/pm2cd.core.html">pm2cd.core
+                                                package</a></li>
+                                            <li class="toctree-l4"><a class="reference internal"
+                                                                      href="../../api/pm2cd.server_fastapi.html">pm2cd.server_fastapi
+                                                package</a></li>
+                                        </ul>
+                                    </li>
+                                    <li class="toctree-l3"><a class="reference internal"
+                                                              href="../../api/pm2cd.html#submodules">Submodules</a></li>
+                                    <li class="toctree-l3"><a class="reference internal"
+                                                              href="../../api/pm2cd.html#module-pm2cd.pm2cd_ctrl">pm2cd.pm2cd_ctrl
+                                        module</a>
+                                        <ul>
+                                            <li class="toctree-l4"><a class="reference internal"
+                                                                      href="../../api/pm2cd.html#pm2cd.pm2cd_ctrl.PM2CD"><code
+                                                    class="docutils literal notranslate"><span class="pre">PM2CD</span></code></a>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                    <li class="toctree-l3"><a class="reference internal"
+                                                              href="../../api/pm2cd.html#module-pm2cd.pm2cd_device">pm2cd.pm2cd_device
+                                        module</a>
+                                        <ul>
+                                            <li class="toctree-l4"><a class="reference internal"
+                                                                      href="../../api/pm2cd.html#pm2cd.pm2cd_device.PM2CDDevice"><code
+                                                    class="docutils literal notranslate"><span
+                                                    class="pre">PM2CDDevice</span></code></a></li>
+                                        </ul>
+                                    </li>
+                                    <li class="toctree-l3"><a class="reference internal"
+                                                              href="../../api/pm2cd.html#module-pm2cd.version_info">pm2cd.version_info
+                                        module</a>
+                                        <ul>
+                                            <li class="toctree-l4"><a class="reference internal"
+                                                                      href="../../api/pm2cd.html#pm2cd.version_info.VersionInfo"><code
+                                                    class="docutils literal notranslate"><span
+                                                    class="pre">VersionInfo</span></code></a></li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+
+            </div>
         </div>
-      </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../../index.html">Project</a>
-      </nav>
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+        <nav class="wy-nav-top" aria-label="Mobile navigation menu">
+            <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+            <a href="../../index.html">Project</a>
+        </nav>
 
-      <div class="wy-nav-content">
-        <div class="rst-content">
-          <div role="navigation" aria-label="Page navigation">
-  <ul class="wy-breadcrumbs">
-      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
-          <li class="breadcrumb-item"><a href="../index.html">モジュールコード</a></li>
-      <li class="breadcrumb-item active">pm2cd.pm2cd_device</li>
-      <li class="wy-breadcrumbs-aside">
-      </li>
-  </ul>
-  <hr/>
-</div>
-          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
-           <div itemprop="articleBody">
-             
-  <h1>pm2cd.pm2cd_device のソースコード</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+        <div class="wy-nav-content">
+            <div class="rst-content">
+                <div role="navigation" aria-label="Page navigation">
+                    <ul class="wy-breadcrumbs">
+                        <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+                        <li class="breadcrumb-item"><a href="../index.html">モジュールコード</a></li>
+                        <li class="breadcrumb-item active">pm2cd.pm2cd_device</li>
+                        <li class="wy-breadcrumbs-aside">
+                        </li>
+                    </ul>
+                    <hr/>
+                </div>
+                <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+                    <div itemprop="articleBody">
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">.core.communication_tcp</span><span class="w"> </span><span class="kn">import</span> <span class="n">Communication</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.core.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">RATE_TABLE</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.core.errors</span><span class="w"> </span><span class="kn">import</span> <span class="n">ProtocolError</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.core.motor_status</span><span class="w"> </span><span class="kn">import</span> <span class="n">MotorStatus</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.version_info</span><span class="w"> </span><span class="kn">import</span> <span class="n">VersionInfo</span>
+                        <h1>pm2cd.pm2cd_device のソースコード</h1>
+                        <div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span
+                                class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span
+                                class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.core.communication_tcp</span><span
+                                class="w"> </span><span class="kn">import</span> <span class="n">Communication</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.core.data</span><span class="w"> </span><span
+                                class="kn">import</span> <span class="n">RATE_TABLE</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.core.errors</span><span class="w"> </span><span
+                                class="kn">import</span> <span class="n">ProtocolError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.core.motor_status</span><span
+                                class="w"> </span><span class="kn">import</span> <span class="n">MotorStatus</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.version_info</span><span class="w"> </span><span
+                                class="kn">import</span> <span class="n">VersionInfo</span>
 
 
 <div class="viewcode-block" id="PM2CDDevice">
@@ -158,52 +335,90 @@
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">communication</span><span class="p">:</span> <span class="n">Communication</span><span class="p">,</span>
-        <span class="n">channel_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="n">communication</span><span class="p">:</span> <span class="n">Communication</span><span
+        class="p">,</span>
+        <span class="n">channel_count</span><span class="p">:</span> <span class="nb">int</span> <span
+        class="o">=</span> <span class="mi">2</span><span class="p">,</span>
         <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">log_level</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;INFO&quot;</span><span class="p">,</span>
+        <span class="n">log_level</span><span class="p">:</span> <span class="nb">str</span> <span
+        class="o">=</span> <span class="s2">&quot;INFO&quot;</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="k">if</span> <span class="n">channel_count</span> <span class="o">&lt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">channel_count</span> <span class="o">&gt;</span> <span class="mi">4</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;channel_countは1から4の範囲で指定してください&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">channel_count</span> <span class="o">&lt;</span> <span
+        class="mi">1</span> <span class="ow">or</span> <span class="n">channel_count</span> <span class="o">&gt;</span> <span
+        class="mi">4</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;channel_countは1から4の範囲で指定してください&quot;</span><span
+        class="p">)</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">logger</span><span class="p">:</span>
             <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 
-            <span class="n">log_level</span> <span class="o">=</span> <span class="n">log_level</span> <span class="ow">or</span> <span class="s2">&quot;INFO&quot;</span>
-            <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">log_level</span><span class="o">.</span><span class="n">upper</span><span class="p">())</span>
-            <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+            <span class="n">log_level</span> <span class="o">=</span> <span class="n">log_level</span> <span class="ow">or</span> <span
+        class="s2">&quot;INFO&quot;</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span
+        class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">log_level</span><span
+        class="o">.</span><span class="n">upper</span><span class="p">())</span>
+            <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span
+        class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span
+        class="p">)</span>
             <span class="c1"># logger = get_silent_logger())</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span> <span class="o">=</span> <span class="n">logger</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_communication</span> <span class="o">=</span> <span class="n">communication</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_channel_count</span> <span class="o">=</span> <span class="n">channel_count</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_version_info</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">VersionInfo</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span> <span
+        class="o">=</span> <span class="n">logger</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_communication</span> <span
+        class="o">=</span> <span class="n">communication</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_channel_count</span> <span
+        class="o">=</span> <span class="n">channel_count</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_version_info</span><span class="p">:</span> <span
+        class="n">Optional</span><span class="p">[</span><span class="n">VersionInfo</span><span
+        class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
 <div class="viewcode-block" id="PM2CDDevice.remote">
 <a class="viewcode-back" href="../../api/pm2cd.html#pm2cd.pm2cd_device.PM2CDDevice.remote">[ドキュメント]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">remote</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;== remote()&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_communication</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="s2">&quot;REM&quot;</span><span class="p">)</span></div>
+    <span class="k">def</span><span class="w"> </span><span class="nf">remote</span><span class="p">(</span><span
+        class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span
+        class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span
+        class="n">info</span><span class="p">(</span><span class="sa">f</span><span
+        class="s2">&quot;== remote()&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_communication</span><span
+        class="o">.</span><span class="n">send</span><span class="p">(</span><span
+        class="s2">&quot;REM&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PM2CDDevice.local">
 <a class="viewcode-back" href="../../api/pm2cd.html#pm2cd.pm2cd_device.PM2CDDevice.local">[ドキュメント]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">local</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;== local()&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_communication</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="s2">&quot;LOC&quot;</span><span class="p">)</span></div>
+    <span class="k">def</span><span class="w"> </span><span class="nf">local</span><span class="p">(</span><span
+        class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span
+        class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span
+        class="n">info</span><span class="p">(</span><span class="sa">f</span><span
+        class="s2">&quot;== local()&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_communication</span><span
+        class="o">.</span><span class="n">send</span><span class="p">(</span><span
+        class="s2">&quot;LOC&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PM2CDDevice.version">
 <a class="viewcode-back" href="../../api/pm2cd.html#pm2cd.pm2cd_device.PM2CDDevice.version">[ドキュメント]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">version</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">VersionInfo</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_version_info</span> <span class="o">=</span> <span class="n">VersionInfo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_communication</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;VER?&quot;</span><span class="p">))</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_version_info</span></div>
+    <span class="k">def</span><span class="w"> </span><span class="nf">version</span><span class="p">(</span><span
+        class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span
+        class="n">VersionInfo</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_version_info</span> <span
+        class="o">=</span> <span class="n">VersionInfo</span><span class="p">(</span><span class="bp">self</span><span
+        class="o">.</span><span class="n">_communication</span><span class="o">.</span><span class="n">query</span><span
+        class="p">(</span><span class="s2">&quot;VER?&quot;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span
+        class="n">_version_info</span></div>
 
 
 <div class="viewcode-block" id="PM2CDDevice.hardware_version">
 <a class="viewcode-back" href="../../api/pm2cd.html#pm2cd.pm2cd_device.PM2CDDevice.hardware_version">[ドキュメント]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">hardware_version</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_communication</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;VERH?&quot;</span><span class="p">)</span></div>
+    <span class="k">def</span><span class="w"> </span><span class="nf">hardware_version</span><span
+        class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span
+        class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span
+        class="n">_communication</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span
+        class="s2">&quot;VERH?&quot;</span><span class="p">)</span></div>
 
 
     <span class="c1"># ----------------</span>
@@ -224,32 +439,50 @@
 <span class="sd">        Raises:</span>
 <span class="sd">            ValueError: モータ番号または移動方向が無効な場合。</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;== jog(motor=</span><span class="si">{</span><span class="n">motor</span><span class="si">}</span><span class="s2">, direction=</span><span class="si">{</span><span class="n">direction</span><span class="si">!r}</span><span class="s2">)&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span
+        class="n">info</span><span class="p">(</span><span class="sa">f</span><span
+        class="s2">&quot;== jog(motor=</span><span class="si">{</span><span class="n">motor</span><span
+        class="si">}</span><span class="s2">, direction=</span><span class="si">{</span><span class="n">direction</span><span
+        class="si">!r}</span><span class="s2">)&quot;</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_check_motor</span><span class="p">(</span><span class="n">motor</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_motor</span><span
+        class="p">(</span><span class="n">motor</span><span class="p">)</span>
 
-        <span class="n">normalized_direction</span> <span class="o">=</span> <span class="n">direction</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="n">normalized_direction</span> <span class="o">=</span> <span class="n">direction</span><span
+        class="o">.</span><span class="n">lower</span><span class="p">()</span>
 
-        <span class="k">if</span> <span class="n">normalized_direction</span> <span class="o">==</span> <span class="s2">&quot;+&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">normalized_direction</span> <span class="o">==</span> <span
+        class="s2">&quot;+&quot;</span><span class="p">:</span>
             <span class="n">direction_command</span> <span class="o">=</span> <span class="s2">&quot;+&quot;</span>
-        <span class="k">elif</span> <span class="n">normalized_direction</span> <span class="o">==</span> <span class="s2">&quot;cw&quot;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">normalized_direction</span> <span class="o">==</span> <span
+        class="s2">&quot;cw&quot;</span><span class="p">:</span>
             <span class="n">direction_command</span> <span class="o">=</span> <span class="s2">&quot;+&quot;</span>
-        <span class="k">elif</span> <span class="n">normalized_direction</span> <span class="o">==</span> <span class="s2">&quot;-&quot;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">normalized_direction</span> <span class="o">==</span> <span
+        class="s2">&quot;-&quot;</span><span class="p">:</span>
             <span class="n">direction_command</span> <span class="o">=</span> <span class="s2">&quot;-&quot;</span>
-        <span class="k">elif</span> <span class="n">normalized_direction</span> <span class="o">==</span> <span class="s2">&quot;ccw&quot;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">normalized_direction</span> <span class="o">==</span> <span
+        class="s2">&quot;ccw&quot;</span><span class="p">:</span>
             <span class="n">direction_command</span> <span class="o">=</span> <span class="s2">&quot;-&quot;</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="s2">&quot;directionは&#39;+&#39;、&#39;-&#39;、&#39;cw&#39;、&#39;ccw&#39;のいずれかで指定してください&quot;</span>
             <span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_communication</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;JOG</span><span class="si">{</span><span class="n">direction_command</span><span class="si">}{</span><span class="n">motor</span><span class="si">:</span><span class="s2">X</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_communication</span><span
+        class="o">.</span><span class="n">send</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;JOG</span><span
+        class="si">{</span><span class="n">direction_command</span><span class="si">}{</span><span
+        class="n">motor</span><span class="si">:</span><span class="s2">X</span><span class="si">}</span><span
+        class="s2">&quot;</span><span class="p">)</span>
 
 <div class="viewcode-block" id="PM2CDDevice.jog_stop">
 <a class="viewcode-back" href="../../api/pm2cd.html#pm2cd.pm2cd_device.PM2CDDevice.jog_stop">[ドキュメント]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">jog_stop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">motor</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">jog_stop</span><span class="p">(</span><span
+        class="bp">self</span><span class="p">,</span> <span class="n">motor</span><span class="p">:</span> <span
+        class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span
+        class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;JOG移動を停止します（通常のstopと同じコマンドにマッピング）。&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">(</span><span class="n">motor</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">(</span><span
+        class="n">motor</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PM2CDDevice.move">
@@ -258,11 +491,20 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">motor</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">pulse</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-        <span class="n">backlash</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">backlash</span><span class="p">:</span> <span class="n">Union</span><span
+        class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span
+        class="p">]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">suffix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backlash_suffix</span><span class="p">(</span><span class="n">backlash</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_check_motor</span><span class="p">(</span><span class="n">motor</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_communication</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ABS</span><span class="si">{</span><span class="n">motor</span><span class="si">:</span><span class="s2">X</span><span class="si">}{</span><span class="n">suffix</span><span class="si">}{</span><span class="n">pulse</span><span class="si">:</span><span class="s2">+d</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+        <span class="n">suffix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span
+        class="n">_backlash_suffix</span><span class="p">(</span><span class="n">backlash</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_motor</span><span
+        class="p">(</span><span class="n">motor</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_communication</span><span
+        class="o">.</span><span class="n">send</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ABS</span><span
+        class="si">{</span><span class="n">motor</span><span class="si">:</span><span class="s2">X</span><span
+        class="si">}{</span><span class="n">suffix</span><span class="si">}{</span><span class="n">pulse</span><span
+        class="si">:</span><span class="s2">+d</span><span class="si">}</span><span class="s2">&quot;</span><span
+        class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PM2CDDevice.move_relative">
@@ -271,11 +513,20 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">motor</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">pulse</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-        <span class="n">backlash</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">backlash</span><span class="p">:</span> <span class="n">Union</span><span
+        class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span
+        class="p">]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">suffix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backlash_suffix</span><span class="p">(</span><span class="n">backlash</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_check_motor</span><span class="p">(</span><span class="n">motor</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_communication</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;REL</span><span class="si">{</span><span class="n">motor</span><span class="si">:</span><span class="s2">X</span><span class="si">}{</span><span class="n">suffix</span><span class="si">}{</span><span class="n">pulse</span><span class="si">:</span><span class="s2">+d</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+        <span class="n">suffix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span
+        class="n">_backlash_suffix</span><span class="p">(</span><span class="n">backlash</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_motor</span><span
+        class="p">(</span><span class="n">motor</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_communication</span><span
+        class="o">.</span><span class="n">send</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;REL</span><span
+        class="si">{</span><span class="n">motor</span><span class="si">:</span><span class="s2">X</span><span
+        class="si">}{</span><span class="n">suffix</span><span class="si">}{</span><span class="n">pulse</span><span
+        class="si">:</span><span class="s2">+d</span><span class="si">}</span><span class="s2">&quot;</span><span
+        class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PM2CDDevice.scan">
@@ -285,27 +536,39 @@
         <span class="n">motor</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">direction</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">direction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_direction</span><span class="p">(</span><span class="n">direction</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="s2">&quot;cw&quot;</span><span class="p">:</span>
+        <span class="n">direction</span> <span class="o">=</span> <span class="bp">self</span><span
+        class="o">.</span><span class="n">_normalize_direction</span><span class="p">(</span><span
+        class="n">direction</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="s2">&quot;cw&quot;</span><span
+        class="p">:</span>
             <span class="n">command</span> <span class="o">=</span> <span class="s2">&quot;SCANP&quot;</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">command</span> <span class="o">=</span> <span class="s2">&quot;SCANN&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_send_motor_command</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">motor</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_send_motor_command</span><span
+        class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">motor</span><span
+        class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PM2CDDevice.constant_speed_scan">
-<a class="viewcode-back" href="../../api/pm2cd.html#pm2cd.pm2cd_device.PM2CDDevice.constant_speed_scan">[ドキュメント]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">constant_speed_scan</span><span class="p">(</span>
+<a class="viewcode-back"
+   href="../../api/pm2cd.html#pm2cd.pm2cd_device.PM2CDDevice.constant_speed_scan">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">constant_speed_scan</span><span
+        class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">motor</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">direction</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">direction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_direction</span><span class="p">(</span><span class="n">direction</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="s2">&quot;cw&quot;</span><span class="p">:</span>
+        <span class="n">direction</span> <span class="o">=</span> <span class="bp">self</span><span
+        class="o">.</span><span class="n">_normalize_direction</span><span class="p">(</span><span
+        class="n">direction</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="s2">&quot;cw&quot;</span><span
+        class="p">:</span>
             <span class="n">command</span> <span class="o">=</span> <span class="s2">&quot;CSCANP&quot;</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">command</span> <span class="o">=</span> <span class="s2">&quot;CSCANN&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_send_motor_command</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">motor</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_send_motor_command</span><span
+        class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">motor</span><span
+        class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PM2CDDevice.jog">
@@ -315,12 +578,17 @@
         <span class="n">motor</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">direction</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">direction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_direction</span><span class="p">(</span><span class="n">direction</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="s2">&quot;cw&quot;</span><span class="p">:</span>
+        <span class="n">direction</span> <span class="o">=</span> <span class="bp">self</span><span
+        class="o">.</span><span class="n">_normalize_direction</span><span class="p">(</span><span
+        class="n">direction</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="s2">&quot;cw&quot;</span><span
+        class="p">:</span>
             <span class="n">command</span> <span class="o">=</span> <span class="s2">&quot;JOGP&quot;</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">command</span> <span class="o">=</span> <span class="s2">&quot;JOGN&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_send_motor_command</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">motor</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_send_motor_command</span><span
+        class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">motor</span><span
+        class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PM2CDDevice.home">
@@ -329,7 +597,9 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">motor</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_send_motor_command</span><span class="p">(</span><span class="s2">&quot;GTHP&quot;</span><span class="p">,</span> <span class="n">motor</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_send_motor_command</span><span
+        class="p">(</span><span class="s2">&quot;GTHP&quot;</span><span class="p">,</span> <span
+        class="n">motor</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PM2CDDevice.find_home">
@@ -338,7 +608,9 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">motor</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_send_motor_command</span><span class="p">(</span><span class="s2">&quot;FDHP&quot;</span><span class="p">,</span> <span class="n">motor</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_send_motor_command</span><span
+        class="p">(</span><span class="s2">&quot;FDHP&quot;</span><span class="p">,</span> <span
+        class="n">motor</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PM2CDDevice.stop">
@@ -347,13 +619,19 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">motor</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_send_motor_command</span><span class="p">(</span><span class="s2">&quot;SSTP&quot;</span><span class="p">,</span> <span class="n">motor</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_send_motor_command</span><span
+        class="p">(</span><span class="s2">&quot;SSTP&quot;</span><span class="p">,</span> <span
+        class="n">motor</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PM2CDDevice.stop_all">
 <a class="viewcode-back" href="../../api/pm2cd.html#pm2cd.pm2cd_device.PM2CDDevice.stop_all">[ドキュメント]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">stop_all</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_communication</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="s2">&quot;ASSTP&quot;</span><span class="p">)</span></div>
+    <span class="k">def</span><span class="w"> </span><span class="nf">stop_all</span><span class="p">(</span><span
+        class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span
+        class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_communication</span><span
+        class="o">.</span><span class="n">send</span><span class="p">(</span><span
+        class="s2">&quot;ASSTP&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PM2CDDevice.emergency_stop">
@@ -362,13 +640,20 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">motor</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_send_motor_command</span><span class="p">(</span><span class="s2">&quot;ESTP&quot;</span><span class="p">,</span> <span class="n">motor</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_send_motor_command</span><span
+        class="p">(</span><span class="s2">&quot;ESTP&quot;</span><span class="p">,</span> <span
+        class="n">motor</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PM2CDDevice.emergency_stop_all">
-<a class="viewcode-back" href="../../api/pm2cd.html#pm2cd.pm2cd_device.PM2CDDevice.emergency_stop_all">[ドキュメント]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">emergency_stop_all</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_communication</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="s2">&quot;AESTP&quot;</span><span class="p">)</span></div>
+<a class="viewcode-back"
+   href="../../api/pm2cd.html#pm2cd.pm2cd_device.PM2CDDevice.emergency_stop_all">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">emergency_stop_all</span><span class="p">(</span><span
+        class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span
+        class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_communication</span><span
+        class="o">.</span><span class="n">send</span><span class="p">(</span><span
+        class="s2">&quot;AESTP&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PM2CDDevice.status">
@@ -377,16 +662,27 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">motor</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MotorStatus</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_check_motor</span><span class="p">(</span><span class="n">motor</span><span class="p">)</span>
-        <span class="n">raw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_communication</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;STS?&quot;</span><span class="p">)</span>
-        <span class="n">statuses</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_status_all</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">statuses</span><span class="p">[</span><span class="n">motor</span><span class="p">]</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_motor</span><span
+        class="p">(</span><span class="n">motor</span><span class="p">)</span>
+        <span class="n">raw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span
+        class="n">_communication</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span
+        class="s2">&quot;STS?&quot;</span><span class="p">)</span>
+        <span class="n">statuses</span> <span class="o">=</span> <span class="bp">self</span><span
+        class="o">.</span><span class="n">_parse_status_all</span><span class="p">(</span><span
+        class="n">raw</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">statuses</span><span class="p">[</span><span
+        class="n">motor</span><span class="p">]</span></div>
 
 
 <div class="viewcode-block" id="PM2CDDevice.status_all">
 <a class="viewcode-back" href="../../api/pm2cd.html#pm2cd.pm2cd_device.PM2CDDevice.status_all">[ドキュメント]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">status_all</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">MotorStatus</span><span class="p">]:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_status_all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_communication</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;STS?&quot;</span><span class="p">))</span></div>
+    <span class="k">def</span><span class="w"> </span><span class="nf">status_all</span><span class="p">(</span><span
+        class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span
+        class="p">[</span><span class="n">MotorStatus</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_status_all</span><span
+        class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_communication</span><span
+        class="o">.</span><span class="n">query</span><span class="p">(</span><span
+        class="s2">&quot;STS?&quot;</span><span class="p">))</span></div>
 
 
     <span class="c1"># ----------------------</span>
@@ -397,7 +693,8 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">set_motor_free</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">motor</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-        <span class="n">free</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">free</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span
+        class="kc">True</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;モータの励磁状態を設定します。</span>
 
@@ -409,23 +706,39 @@
 <span class="sd">        Raises:</span>
 <span class="sd">            ValueError: モータ番号が範囲外の場合。</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;== set_motor_free(motor=</span><span class="si">{</span><span class="n">motor</span><span class="si">!r}</span><span class="s2">, free=</span><span class="si">{</span><span class="n">free</span><span class="si">!r}</span><span class="s2">)&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_check_motor</span><span class="p">(</span><span class="n">motor</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span
+        class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;== set_motor_free(motor=</span><span
+        class="si">{</span><span class="n">motor</span><span class="si">!r}</span><span class="s2">, free=</span><span
+        class="si">{</span><span class="n">free</span><span class="si">!r}</span><span class="s2">)&quot;</span><span
+        class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_motor</span><span
+        class="p">(</span><span class="n">motor</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">free</span><span class="p">:</span>
             <span class="n">mode</span> <span class="o">=</span> <span class="s2">&quot;OFF&quot;</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">mode</span> <span class="o">=</span> <span class="s2">&quot;ON&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_communication</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;HOLD</span><span class="si">{</span><span class="n">motor</span><span class="si">:</span><span class="s2">X</span><span class="si">}{</span><span class="n">mode</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_communication</span><span
+        class="o">.</span><span class="n">send</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;HOLD</span><span
+        class="si">{</span><span class="n">motor</span><span class="si">:</span><span class="s2">X</span><span
+        class="si">}{</span><span class="n">mode</span><span class="si">}</span><span class="s2">&quot;</span><span
+        class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PM2CDDevice.zero_position">
 <a class="viewcode-back" href="../../api/pm2cd.html#pm2cd.pm2cd_device.PM2CDDevice.zero_position">[ドキュメント]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">zero_position</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">motor</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">zero_position</span><span class="p">(</span><span
+        class="bp">self</span><span class="p">,</span> <span class="n">motor</span><span class="p">:</span> <span
+        class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span
+        class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;指定軸の現在位置カウンタを 0 にリセットします。&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;== zero_position(motor=</span><span class="si">{</span><span class="n">motor</span><span class="si">!r}</span><span class="s2">)&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_position</span><span class="p">(</span><span class="n">motor</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span
+        class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;== zero_position(motor=</span><span
+        class="si">{</span><span class="n">motor</span><span class="si">!r}</span><span class="s2">)&quot;</span><span
+        class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_position</span><span
+        class="p">(</span><span class="n">motor</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PM2CDDevice.position">
@@ -434,7 +747,10 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">motor</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_query_motor_command</span><span class="p">(</span><span class="s2">&quot;PS?&quot;</span><span class="p">,</span> <span class="n">motor</span><span class="p">))</span></div>
+        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span
+        class="bp">self</span><span class="o">.</span><span class="n">_query_motor_command</span><span
+        class="p">(</span><span class="s2">&quot;PS?&quot;</span><span class="p">,</span> <span
+        class="n">motor</span><span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="PM2CDDevice.set_position">
@@ -444,7 +760,10 @@
         <span class="n">motor</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">pulse</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_send_motor_value</span><span class="p">(</span><span class="s2">&quot;PS&quot;</span><span class="p">,</span> <span class="n">motor</span><span class="p">,</span> <span class="n">pulse</span><span class="p">,</span> <span class="n">signed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_send_motor_value</span><span
+        class="p">(</span><span class="s2">&quot;PS&quot;</span><span class="p">,</span> <span
+        class="n">motor</span><span class="p">,</span> <span class="n">pulse</span><span class="p">,</span> <span
+        class="n">signed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PM2CDDevice.set_speed_profile">
@@ -457,11 +776,27 @@
         <span class="n">high_speed</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;低速(L)・中速(M)・高速(H)のパラメータを個別に一括設定します。&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;== set_speed_profile(motor=</span><span class="si">{</span><span class="n">motor</span><span class="si">!r}</span><span class="s2">, &quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_check_motor</span><span class="p">(</span><span class="n">motor</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_communication</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;SPDL</span><span class="si">{</span><span class="n">motor</span><span class="si">:</span><span class="s2">X</span><span class="si">}{</span><span class="n">low_speed</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_communication</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;SPDM</span><span class="si">{</span><span class="n">motor</span><span class="si">:</span><span class="s2">X</span><span class="si">}{</span><span class="n">mid_speed</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_communication</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;SPDH</span><span class="si">{</span><span class="n">motor</span><span class="si">:</span><span class="s2">X</span><span class="si">}{</span><span class="n">high_speed</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span
+        class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;== set_speed_profile(motor=</span><span
+        class="si">{</span><span class="n">motor</span><span class="si">!r}</span><span class="s2">, &quot;</span><span
+        class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_motor</span><span
+        class="p">(</span><span class="n">motor</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_communication</span><span
+        class="o">.</span><span class="n">send</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;SPDL</span><span
+        class="si">{</span><span class="n">motor</span><span class="si">:</span><span class="s2">X</span><span
+        class="si">}{</span><span class="n">low_speed</span><span class="si">}</span><span class="s2">&quot;</span><span
+        class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_communication</span><span
+        class="o">.</span><span class="n">send</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;SPDM</span><span
+        class="si">{</span><span class="n">motor</span><span class="si">:</span><span class="s2">X</span><span
+        class="si">}{</span><span class="n">mid_speed</span><span class="si">}</span><span class="s2">&quot;</span><span
+        class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_communication</span><span
+        class="o">.</span><span class="n">send</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;SPDH</span><span
+        class="si">{</span><span class="n">motor</span><span class="si">:</span><span class="s2">X</span><span
+        class="si">}{</span><span class="n">high_speed</span><span class="si">}</span><span
+        class="s2">&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PM2CDDevice.set_speed">
@@ -471,10 +806,22 @@
         <span class="n">motor</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">speed</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;== set_speed(motor=</span><span class="si">{</span><span class="n">motor</span><span class="si">}</span><span class="s2">, speed=</span><span class="si">{</span><span class="n">speed</span><span class="si">!r}</span><span class="s2">)&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_high_speed</span><span class="p">(</span><span class="n">motor</span><span class="p">,</span> <span class="n">speed</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_middle_speed</span><span class="p">(</span><span class="n">motor</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">speed</span> <span class="o">//</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_low_speed</span><span class="p">(</span><span class="n">motor</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">speed</span> <span class="o">//</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span
+        class="n">info</span><span class="p">(</span><span class="sa">f</span><span
+        class="s2">&quot;== set_speed(motor=</span><span class="si">{</span><span class="n">motor</span><span
+        class="si">}</span><span class="s2">, speed=</span><span class="si">{</span><span class="n">speed</span><span
+        class="si">!r}</span><span class="s2">)&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_high_speed</span><span
+        class="p">(</span><span class="n">motor</span><span class="p">,</span> <span class="n">speed</span><span
+        class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_middle_speed</span><span
+        class="p">(</span><span class="n">motor</span><span class="p">,</span> <span class="nb">max</span><span
+        class="p">(</span><span class="n">speed</span> <span class="o">//</span> <span class="mi">3</span><span
+        class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_low_speed</span><span class="p">(</span><span
+        class="n">motor</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span
+        class="n">speed</span> <span class="o">//</span> <span class="mi">10</span><span class="p">,</span> <span
+        class="mi">5</span><span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="PM2CDDevice.high_speed">
@@ -483,7 +830,10 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">motor</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_query_motor_command</span><span class="p">(</span><span class="s2">&quot;SPDH?&quot;</span><span class="p">,</span> <span class="n">motor</span><span class="p">))</span></div>
+        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span
+        class="bp">self</span><span class="o">.</span><span class="n">_query_motor_command</span><span
+        class="p">(</span><span class="s2">&quot;SPDH?&quot;</span><span class="p">,</span> <span class="n">motor</span><span
+        class="p">))</span></div>
 
 
 <div class="viewcode-block" id="PM2CDDevice.set_high_speed">
@@ -493,8 +843,14 @@
         <span class="n">motor</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">speed</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;== set_high_speed(motor=</span><span class="si">{</span><span class="n">motor</span><span class="si">}</span><span class="s2">, speed=</span><span class="si">{</span><span class="n">speed</span><span class="si">!r}</span><span class="s2">)&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_send_motor_value</span><span class="p">(</span><span class="s2">&quot;SPDH&quot;</span><span class="p">,</span> <span class="n">motor</span><span class="p">,</span> <span class="n">speed</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span
+        class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;== set_high_speed(motor=</span><span
+        class="si">{</span><span class="n">motor</span><span class="si">}</span><span class="s2">, speed=</span><span
+        class="si">{</span><span class="n">speed</span><span class="si">!r}</span><span class="s2">)&quot;</span><span
+        class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_send_motor_value</span><span
+        class="p">(</span><span class="s2">&quot;SPDH&quot;</span><span class="p">,</span> <span
+        class="n">motor</span><span class="p">,</span> <span class="n">speed</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PM2CDDevice.middle_speed">
@@ -503,7 +859,10 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">motor</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_query_motor_command</span><span class="p">(</span><span class="s2">&quot;SPDM?&quot;</span><span class="p">,</span> <span class="n">motor</span><span class="p">))</span></div>
+        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span
+        class="bp">self</span><span class="o">.</span><span class="n">_query_motor_command</span><span
+        class="p">(</span><span class="s2">&quot;SPDM?&quot;</span><span class="p">,</span> <span class="n">motor</span><span
+        class="p">))</span></div>
 
 
 <div class="viewcode-block" id="PM2CDDevice.set_middle_speed">
@@ -513,8 +872,14 @@
         <span class="n">motor</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">speed</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;== set_middle_speed(motor=</span><span class="si">{</span><span class="n">motor</span><span class="si">}</span><span class="s2">, speed=</span><span class="si">{</span><span class="n">speed</span><span class="si">!r}</span><span class="s2">)&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_send_motor_value</span><span class="p">(</span><span class="s2">&quot;SPDM&quot;</span><span class="p">,</span> <span class="n">motor</span><span class="p">,</span> <span class="n">speed</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span
+        class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;== set_middle_speed(motor=</span><span
+        class="si">{</span><span class="n">motor</span><span class="si">}</span><span class="s2">, speed=</span><span
+        class="si">{</span><span class="n">speed</span><span class="si">!r}</span><span class="s2">)&quot;</span><span
+        class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_send_motor_value</span><span
+        class="p">(</span><span class="s2">&quot;SPDM&quot;</span><span class="p">,</span> <span
+        class="n">motor</span><span class="p">,</span> <span class="n">speed</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PM2CDDevice.low_speed">
@@ -523,7 +888,10 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">motor</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_query_motor_command</span><span class="p">(</span><span class="s2">&quot;SPDL?&quot;</span><span class="p">,</span> <span class="n">motor</span><span class="p">))</span></div>
+        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span
+        class="bp">self</span><span class="o">.</span><span class="n">_query_motor_command</span><span
+        class="p">(</span><span class="s2">&quot;SPDL?&quot;</span><span class="p">,</span> <span class="n">motor</span><span
+        class="p">))</span></div>
 
 
 <div class="viewcode-block" id="PM2CDDevice.set_low_speed">
@@ -533,8 +901,14 @@
         <span class="n">motor</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">speed</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;== set_low_speed(motor=</span><span class="si">{</span><span class="n">motor</span><span class="si">}</span><span class="s2">, speed=</span><span class="si">{</span><span class="n">speed</span><span class="si">!r}</span><span class="s2">)&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_send_motor_value</span><span class="p">(</span><span class="s2">&quot;SPDL&quot;</span><span class="p">,</span> <span class="n">motor</span><span class="p">,</span> <span class="n">speed</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span
+        class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;== set_low_speed(motor=</span><span
+        class="si">{</span><span class="n">motor</span><span class="si">}</span><span class="s2">, speed=</span><span
+        class="si">{</span><span class="n">speed</span><span class="si">!r}</span><span class="s2">)&quot;</span><span
+        class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_send_motor_value</span><span
+        class="p">(</span><span class="s2">&quot;SPDL&quot;</span><span class="p">,</span> <span
+        class="n">motor</span><span class="p">,</span> <span class="n">speed</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PM2CDDevice.speed_mode">
@@ -543,7 +917,9 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">motor</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_motor_command</span><span class="p">(</span><span class="s2">&quot;SPD?&quot;</span><span class="p">,</span> <span class="n">motor</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_motor_command</span><span
+        class="p">(</span><span class="s2">&quot;SPD?&quot;</span><span class="p">,</span> <span
+        class="n">motor</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PM2CDDevice.set_speed_mode">
@@ -551,19 +927,42 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">set_speed_mode</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">motor</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-        <span class="n">mode</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
+        <span class="n">mode</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span
+        class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;== set_speed_mode(motor=</span><span class="si">{</span><span class="n">motor</span><span class="si">}</span><span class="s2">, mode=</span><span class="si">{</span><span class="n">mode</span><span class="si">!r}</span><span class="s2">)&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_check_motor</span><span class="p">(</span><span class="n">motor</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mode</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
-            <span class="n">values</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="s2">&quot;L&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="s2">&quot;M&quot;</span><span class="p">,</span> <span class="mi">3</span><span class="p">:</span> <span class="s2">&quot;H&quot;</span><span class="p">}</span>
-            <span class="k">if</span> <span class="n">mode</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">values</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;modeは1(L), 2(M), 3(H)で指定してください&quot;</span><span class="p">)</span>
-            <span class="n">mode</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="n">mode</span><span class="p">]</span>
-        <span class="n">mode</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">mode</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">mode</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;L&quot;</span><span class="p">,</span> <span class="s2">&quot;M&quot;</span><span class="p">,</span> <span class="s2">&quot;H&quot;</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;modeは&#39;L&#39;, &#39;M&#39;, &#39;H&#39;で指定してください&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_communication</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;SPD</span><span class="si">{</span><span class="n">mode</span><span class="si">}{</span><span class="n">motor</span><span class="si">:</span><span class="s2">X</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span
+        class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;== set_speed_mode(motor=</span><span
+        class="si">{</span><span class="n">motor</span><span class="si">}</span><span class="s2">, mode=</span><span
+        class="si">{</span><span class="n">mode</span><span class="si">!r}</span><span class="s2">)&quot;</span><span
+        class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_motor</span><span
+        class="p">(</span><span class="n">motor</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span
+        class="n">mode</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="p">{</span><span
+        class="mi">1</span><span class="p">:</span> <span class="s2">&quot;L&quot;</span><span class="p">,</span> <span
+        class="mi">2</span><span class="p">:</span> <span class="s2">&quot;M&quot;</span><span class="p">,</span> <span
+        class="mi">3</span><span class="p">:</span> <span class="s2">&quot;H&quot;</span><span class="p">}</span>
+            <span class="k">if</span> <span class="n">mode</span> <span class="ow">not</span> <span class="ow">in</span> <span
+        class="n">values</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;modeは1(L), 2(M), 3(H)で指定してください&quot;</span><span
+        class="p">)</span>
+            <span class="n">mode</span> <span class="o">=</span> <span class="n">values</span><span
+        class="p">[</span><span class="n">mode</span><span class="p">]</span>
+        <span class="n">mode</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span
+        class="n">mode</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span
+        class="p">()</span>
+        <span class="k">if</span> <span class="n">mode</span> <span class="ow">not</span> <span
+        class="ow">in</span> <span class="p">(</span><span class="s2">&quot;L&quot;</span><span class="p">,</span> <span
+        class="s2">&quot;M&quot;</span><span class="p">,</span> <span class="s2">&quot;H&quot;</span><span
+        class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;modeは&#39;L&#39;, &#39;M&#39;, &#39;H&#39;で指定してください&quot;</span><span
+        class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_communication</span><span
+        class="o">.</span><span class="n">send</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;SPD</span><span
+        class="si">{</span><span class="n">mode</span><span class="si">}{</span><span class="n">motor</span><span
+        class="si">:</span><span class="s2">X</span><span class="si">}</span><span class="s2">&quot;</span><span
+        class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PM2CDDevice.rate_number">
@@ -572,8 +971,14 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">motor</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;== rate_number(motor=</span><span class="si">{</span><span class="n">motor</span><span class="si">!r}</span><span class="s2">)&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_query_motor_command</span><span class="p">(</span><span class="s2">&quot;RTE?&quot;</span><span class="p">,</span> <span class="n">motor</span><span class="p">))</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span
+        class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;== rate_number(motor=</span><span
+        class="si">{</span><span class="n">motor</span><span class="si">!r}</span><span class="s2">)&quot;</span><span
+        class="p">)</span>
+        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span
+        class="bp">self</span><span class="o">.</span><span class="n">_query_motor_command</span><span
+        class="p">(</span><span class="s2">&quot;RTE?&quot;</span><span class="p">,</span> <span
+        class="n">motor</span><span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="PM2CDDevice.set_rate_number">
@@ -583,8 +988,14 @@
         <span class="n">motor</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">number</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;== set_rate_number(motor=</span><span class="si">{</span><span class="n">motor</span><span class="si">}</span><span class="s2">, number=</span><span class="si">{</span><span class="n">number</span><span class="si">!r}</span><span class="s2">)&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_send_motor_value</span><span class="p">(</span><span class="s2">&quot;RTE&quot;</span><span class="p">,</span> <span class="n">motor</span><span class="p">,</span> <span class="n">number</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span
+        class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;== set_rate_number(motor=</span><span
+        class="si">{</span><span class="n">motor</span><span class="si">}</span><span class="s2">, number=</span><span
+        class="si">{</span><span class="n">number</span><span class="si">!r}</span><span class="s2">)&quot;</span><span
+        class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_send_motor_value</span><span
+        class="p">(</span><span class="s2">&quot;RTE&quot;</span><span class="p">,</span> <span
+        class="n">motor</span><span class="p">,</span> <span class="n">number</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PM2CDDevice.backlash">
@@ -593,8 +1004,13 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">motor</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_check_motor</span><span class="p">(</span><span class="n">motor</span><span class="p">)</span>
-        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_communication</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;B?</span><span class="si">{</span><span class="n">motor</span><span class="si">:</span><span class="s2">X</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">))</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_motor</span><span
+        class="p">(</span><span class="n">motor</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span
+        class="bp">self</span><span class="o">.</span><span class="n">_communication</span><span class="o">.</span><span
+        class="n">query</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;B?</span><span
+        class="si">{</span><span class="n">motor</span><span class="si">:</span><span class="s2">X</span><span
+        class="si">}</span><span class="s2">&quot;</span><span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="PM2CDDevice.set_backlash">
@@ -604,9 +1020,17 @@
         <span class="n">motor</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">backlash</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;== set_backlash(motor=</span><span class="si">{</span><span class="n">motor</span><span class="si">}</span><span class="s2">, backlash=</span><span class="si">{</span><span class="n">backlash</span><span class="si">!r}</span><span class="s2">)&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_check_motor</span><span class="p">(</span><span class="n">motor</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_send_motor_value</span><span class="p">(</span><span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="n">motor</span><span class="p">,</span> <span class="n">backlash</span><span class="p">,</span> <span class="n">signed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span
+        class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;== set_backlash(motor=</span><span
+        class="si">{</span><span class="n">motor</span><span class="si">}</span><span class="s2">, backlash=</span><span
+        class="si">{</span><span class="n">backlash</span><span class="si">!r}</span><span
+        class="s2">)&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_motor</span><span
+        class="p">(</span><span class="n">motor</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_send_motor_value</span><span
+        class="p">(</span><span class="s2">&quot;B&quot;</span><span class="p">,</span> <span
+        class="n">motor</span><span class="p">,</span> <span class="n">backlash</span><span class="p">,</span> <span
+        class="n">signed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PM2CDDevice.limit">
@@ -616,15 +1040,27 @@
         <span class="n">motor</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">side</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;== limit(motor=</span><span class="si">{</span><span class="n">motor</span><span class="si">}</span><span class="s2">, side=</span><span class="si">{</span><span class="n">side</span><span class="si">!r}</span><span class="s2">)&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_check_motor</span><span class="p">(</span><span class="n">motor</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span
+        class="n">info</span><span class="p">(</span><span class="sa">f</span><span
+        class="s2">&quot;== limit(motor=</span><span class="si">{</span><span class="n">motor</span><span
+        class="si">}</span><span class="s2">, side=</span><span class="si">{</span><span class="n">side</span><span
+        class="si">!r}</span><span class="s2">)&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_motor</span><span
+        class="p">(</span><span class="n">motor</span><span class="p">)</span>
 
-        <span class="n">side</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_side</span><span class="p">(</span><span class="n">side</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">side</span> <span class="o">==</span> <span class="s2">&quot;cw&quot;</span><span class="p">:</span>
+        <span class="n">side</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span
+        class="n">_normalize_side</span><span class="p">(</span><span class="n">side</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">side</span> <span class="o">==</span> <span
+        class="s2">&quot;cw&quot;</span><span class="p">:</span>
             <span class="n">command</span> <span class="o">=</span> <span class="s2">&quot;FL?&quot;</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">command</span> <span class="o">=</span> <span class="s2">&quot;BL?&quot;</span>
-        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_communication</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">command</span><span class="si">}{</span><span class="n">motor</span><span class="si">:</span><span class="s2">X</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">))</span></div>
+        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span
+        class="bp">self</span><span class="o">.</span><span class="n">_communication</span><span class="o">.</span><span
+        class="n">query</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span
+        class="si">{</span><span class="n">command</span><span class="si">}{</span><span class="n">motor</span><span
+        class="si">:</span><span class="s2">X</span><span class="si">}</span><span class="s2">&quot;</span><span
+        class="p">))</span></div>
 
 
 <div class="viewcode-block" id="PM2CDDevice.set_limit">
@@ -635,38 +1071,68 @@
         <span class="n">side</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">pulse</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;== set_limit(motor=</span><span class="si">{</span><span class="n">motor</span><span class="si">}</span><span class="s2">, side=</span><span class="si">{</span><span class="n">side</span><span class="si">!r}</span><span class="s2">, pulse=</span><span class="si">{</span><span class="n">pulse</span><span class="si">!r}</span><span class="s2">)&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span
+        class="n">info</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;== set_limit(motor=</span><span class="si">{</span><span
+        class="n">motor</span><span class="si">}</span><span class="s2">, side=</span><span class="si">{</span><span
+        class="n">side</span><span class="si">!r}</span><span class="s2">, pulse=</span><span class="si">{</span><span
+        class="n">pulse</span><span class="si">!r}</span><span class="s2">)&quot;</span>
         <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_check_motor</span><span class="p">(</span><span class="n">motor</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_motor</span><span
+        class="p">(</span><span class="n">motor</span><span class="p">)</span>
 
-        <span class="n">side</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_side</span><span class="p">(</span><span class="n">side</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">side</span> <span class="o">==</span> <span class="s2">&quot;cw&quot;</span><span class="p">:</span>
+        <span class="n">side</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span
+        class="n">_normalize_side</span><span class="p">(</span><span class="n">side</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">side</span> <span class="o">==</span> <span
+        class="s2">&quot;cw&quot;</span><span class="p">:</span>
             <span class="n">command</span> <span class="o">=</span> <span class="s2">&quot;FL&quot;</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">command</span> <span class="o">=</span> <span class="s2">&quot;BL&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_communication</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">command</span><span class="si">}{</span><span class="n">motor</span><span class="si">:</span><span class="s2">X</span><span class="si">}{</span><span class="n">pulse</span><span class="si">:</span><span class="s2">+d</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_communication</span><span
+        class="o">.</span><span class="n">send</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span
+        class="si">{</span><span class="n">command</span><span class="si">}{</span><span class="n">motor</span><span
+        class="si">:</span><span class="s2">X</span><span class="si">}{</span><span class="n">pulse</span><span
+        class="si">:</span><span class="s2">+d</span><span class="si">}</span><span class="s2">&quot;</span><span
+        class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PM2CDDevice.pause">
 <a class="viewcode-back" href="../../api/pm2cd.html#pm2cd.pm2cd_device.PM2CDDevice.pause">[ドキュメント]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">pause</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;== pause()&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_communication</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="s2">&quot;PAUSE ON&quot;</span><span class="p">)</span></div>
+    <span class="k">def</span><span class="w"> </span><span class="nf">pause</span><span class="p">(</span><span
+        class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span
+        class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span
+        class="n">info</span><span class="p">(</span><span class="s2">&quot;== pause()&quot;</span><span
+        class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_communication</span><span
+        class="o">.</span><span class="n">send</span><span class="p">(</span><span
+        class="s2">&quot;PAUSE ON&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PM2CDDevice.resume">
 <a class="viewcode-back" href="../../api/pm2cd.html#pm2cd.pm2cd_device.PM2CDDevice.resume">[ドキュメント]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">resume</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;== resume()&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_communication</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="s2">&quot;PAUSE OFF&quot;</span><span class="p">)</span></div>
+    <span class="k">def</span><span class="w"> </span><span class="nf">resume</span><span class="p">(</span><span
+        class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span
+        class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span
+        class="n">info</span><span class="p">(</span><span class="s2">&quot;== resume()&quot;</span><span
+        class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_communication</span><span
+        class="o">.</span><span class="n">send</span><span class="p">(</span><span
+        class="s2">&quot;PAUSE OFF&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PM2CDDevice.pause_status">
 <a class="viewcode-back" href="../../api/pm2cd.html#pm2cd.pm2cd_device.PM2CDDevice.pause_status">[ドキュメント]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">pause_status</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;== pause_status()&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_communication</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;PAUSE?&quot;</span><span class="p">)</span></div>
+    <span class="k">def</span><span class="w"> </span><span class="nf">pause_status</span><span class="p">(</span><span
+        class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span
+        class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span
+        class="n">info</span><span class="p">(</span><span class="s2">&quot;== pause_status()&quot;</span><span
+        class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span
+        class="n">_communication</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span
+        class="s2">&quot;PAUSE?&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PM2CDDevice.hold">
@@ -675,8 +1141,13 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">motor</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;== hold(motor=</span><span class="si">{</span><span class="n">motor</span><span class="si">!r}</span><span class="s2">)&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_motor_command</span><span class="p">(</span><span class="s2">&quot;HOLD?&quot;</span><span class="p">,</span> <span class="n">motor</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span
+        class="n">info</span><span class="p">(</span><span class="sa">f</span><span
+        class="s2">&quot;== hold(motor=</span><span class="si">{</span><span class="n">motor</span><span
+        class="si">!r}</span><span class="s2">)&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_motor_command</span><span
+        class="p">(</span><span class="s2">&quot;HOLD?&quot;</span><span class="p">,</span> <span class="n">motor</span><span
+        class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PM2CDDevice.set_hold">
@@ -686,13 +1157,22 @@
         <span class="n">motor</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">enabled</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;== set_hold(motor=</span><span class="si">{</span><span class="n">motor</span><span class="si">!r}</span><span class="s2">, enabled=</span><span class="si">{</span><span class="n">enabled</span><span class="si">!r}</span><span class="s2">)&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_check_motor</span><span class="p">(</span><span class="n">motor</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span
+        class="n">info</span><span class="p">(</span><span class="sa">f</span><span
+        class="s2">&quot;== set_hold(motor=</span><span class="si">{</span><span class="n">motor</span><span class="si">!r}</span><span
+        class="s2">, enabled=</span><span class="si">{</span><span class="n">enabled</span><span
+        class="si">!r}</span><span class="s2">)&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_motor</span><span
+        class="p">(</span><span class="n">motor</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">enabled</span><span class="p">:</span>
             <span class="n">mode</span> <span class="o">=</span> <span class="s2">&quot;ON&quot;</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">mode</span> <span class="o">=</span> <span class="s2">&quot;OFF&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_communication</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;HOLD</span><span class="si">{</span><span class="n">motor</span><span class="si">:</span><span class="s2">X</span><span class="si">}{</span><span class="n">mode</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_communication</span><span
+        class="o">.</span><span class="n">send</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;HOLD</span><span
+        class="si">{</span><span class="n">motor</span><span class="si">:</span><span class="s2">X</span><span
+        class="si">}{</span><span class="n">mode</span><span class="si">}</span><span class="s2">&quot;</span><span
+        class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PM2CDDevice.ttl_output_start">
@@ -701,8 +1181,13 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">motor</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;== ttl_output_start(motor=</span><span class="si">{</span><span class="n">motor</span><span class="si">!r}</span><span class="s2">), TMGR&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_send_motor_command</span><span class="p">(</span><span class="s2">&quot;TMGR&quot;</span><span class="p">,</span> <span class="n">motor</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span
+        class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;== ttl_output_start(motor=</span><span
+        class="si">{</span><span class="n">motor</span><span class="si">!r}</span><span
+        class="s2">), TMGR&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_send_motor_command</span><span
+        class="p">(</span><span class="s2">&quot;TMGR&quot;</span><span class="p">,</span> <span
+        class="n">motor</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PM2CDDevice.ttl_output_stop">
@@ -711,8 +1196,13 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">motor</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;== ttl_output_stop(motor=</span><span class="si">{</span><span class="n">motor</span><span class="si">!r}</span><span class="s2">), TMGC&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_send_motor_command</span><span class="p">(</span><span class="s2">&quot;TMGC&quot;</span><span class="p">,</span> <span class="n">motor</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span
+        class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;== ttl_output_stop(motor=</span><span
+        class="si">{</span><span class="n">motor</span><span class="si">!r}</span><span
+        class="s2">), TMGC&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_send_motor_command</span><span
+        class="p">(</span><span class="s2">&quot;TMGC&quot;</span><span class="p">,</span> <span
+        class="n">motor</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PM2CDDevice.ttl_status">
@@ -721,13 +1211,22 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">motor</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;== ttl_status(motor=</span><span class="si">{</span><span class="n">motor</span><span class="si">!r}</span><span class="s2">), TMGR?&quot;</span><span class="p">)</span>
-        <span class="n">raw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_motor_command</span><span class="p">(</span><span class="s2">&quot;TMGR?&quot;</span><span class="p">,</span> <span class="n">motor</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">raw</span> <span class="o">==</span> <span class="s2">&quot;YES&quot;</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span
+        class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;== ttl_status(motor=</span><span
+        class="si">{</span><span class="n">motor</span><span class="si">!r}</span><span class="s2">), TMGR?&quot;</span><span
+        class="p">)</span>
+        <span class="n">raw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span
+        class="n">_query_motor_command</span><span class="p">(</span><span class="s2">&quot;TMGR?&quot;</span><span
+        class="p">,</span> <span class="n">motor</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">raw</span> <span class="o">==</span> <span
+        class="s2">&quot;YES&quot;</span><span class="p">:</span>
             <span class="k">return</span> <span class="mi">1</span>
-        <span class="k">if</span> <span class="n">raw</span> <span class="o">==</span> <span class="s2">&quot;NO&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">raw</span> <span class="o">==</span> <span
+        class="s2">&quot;NO&quot;</span><span class="p">:</span>
             <span class="k">return</span> <span class="mi">0</span>
-        <span class="k">raise</span> <span class="n">ProtocolError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;TTL状態応答を解釈できません: </span><span class="si">{</span><span class="n">raw</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+        <span class="k">raise</span> <span class="n">ProtocolError</span><span class="p">(</span><span
+        class="sa">f</span><span class="s2">&quot;TTL状態応答を解釈できません: </span><span class="si">{</span><span
+        class="n">raw</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
 
     <span class="c1"># -------------</span>
@@ -737,22 +1236,35 @@
 <div class="viewcode-block" id="PM2CDDevice.number_to_rate">
 <a class="viewcode-back" href="../../api/pm2cd.html#pm2cd.pm2cd_device.PM2CDDevice.number_to_rate">[ドキュメント]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">number_to_rate</span><span class="p">(</span><span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">number_to_rate</span><span
+        class="p">(</span><span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span
+        class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">RATE_TABLE</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
-        <span class="k">except</span> <span class="ne">IndexError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;レート番号が範囲外です&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span></div>
+            <span class="k">return</span> <span class="n">RATE_TABLE</span><span class="p">[</span><span
+        class="n">index</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">IndexError</span> <span class="k">as</span> <span
+        class="n">exc</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;レート番号が範囲外です&quot;</span><span
+        class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span></div>
 
 
 <div class="viewcode-block" id="PM2CDDevice.rate_to_number">
 <a class="viewcode-back" href="../../api/pm2cd.html#pm2cd.pm2cd_device.PM2CDDevice.rate_to_number">[ドキュメント]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">rate_to_number</span><span class="p">(</span><span class="n">rate</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rate_to_number</span><span
+        class="p">(</span><span class="n">rate</span><span class="p">:</span> <span class="nb">float</span><span
+        class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="n">error</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.0001</span>
-        <span class="k">for</span> <span class="n">number</span><span class="p">,</span> <span class="n">table_rate</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">RATE_TABLE</span><span class="p">):</span>
-            <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">rate</span><span class="p">)</span> <span class="o">-</span> <span class="nb">abs</span><span class="p">(</span><span class="n">table_rate</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">error</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">number</span><span class="p">,</span> <span
+        class="n">table_rate</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span
+        class="n">RATE_TABLE</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span
+        class="n">rate</span><span class="p">)</span> <span class="o">-</span> <span class="nb">abs</span><span
+        class="p">(</span><span class="n">table_rate</span><span class="p">)</span> <span class="o">&gt;=</span> <span
+        class="n">error</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">number</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;レートが範囲外です&quot;</span><span class="p">)</span></div>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;レートが範囲外です&quot;</span><span
+        class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PM2CDDevice._parse_status_all">
@@ -760,41 +1272,75 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">_parse_status_all</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">raw</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">MotorStatus</span><span class="p">]:</span>
-        <span class="n">parts</span> <span class="o">=</span> <span class="n">raw</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">4</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_channel_count</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">ProtocolError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;STS?応答が不正です: </span><span class="si">{</span><span class="n">raw</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="n">header</span> <span class="o">=</span> <span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">directions</span> <span class="o">=</span> <span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-        <span class="n">limits</span> <span class="o">=</span> <span class="n">parts</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
-        <span class="n">positions</span> <span class="o">=</span> <span class="n">parts</span><span class="p">[</span><span class="mi">4</span> <span class="p">:</span> <span class="mi">4</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_channel_count</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span
+        class="n">MotorStatus</span><span class="p">]:</span>
+        <span class="n">parts</span> <span class="o">=</span> <span class="n">raw</span><span class="o">.</span><span
+        class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span
+        class="p">)</span> <span class="o">&lt;</span> <span class="mi">4</span> <span class="o">+</span> <span
+        class="bp">self</span><span class="o">.</span><span class="n">_channel_count</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ProtocolError</span><span class="p">(</span><span
+        class="sa">f</span><span class="s2">&quot;STS?応答が不正です: </span><span class="si">{</span><span class="n">raw</span><span
+        class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">header</span> <span class="o">=</span> <span class="n">parts</span><span class="p">[</span><span
+        class="mi">0</span><span class="p">]</span>
+        <span class="n">directions</span> <span class="o">=</span> <span class="n">parts</span><span
+        class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">limits</span> <span class="o">=</span> <span class="n">parts</span><span class="p">[</span><span
+        class="mi">2</span><span class="p">]</span>
+        <span class="n">positions</span> <span class="o">=</span> <span class="n">parts</span><span
+        class="p">[</span><span class="mi">4</span> <span class="p">:</span> <span class="mi">4</span> <span
+        class="o">+</span> <span class="bp">self</span><span class="o">.</span><span
+        class="n">_channel_count</span><span class="p">]</span>
         <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">motor</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_channel_count</span><span class="p">):</span>
-                <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="k">for</span> <span class="n">motor</span> <span class="ow">in</span> <span
+        class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span
+        class="n">_channel_count</span><span class="p">):</span>
+                <span class="n">result</span><span class="o">.</span><span class="n">append</span><span
+        class="p">(</span>
                     <span class="n">MotorStatus</span><span class="p">(</span>
                         <span class="n">motor</span><span class="o">=</span><span class="n">motor</span><span class="p">,</span>
-                        <span class="n">raw</span><span class="o">=</span><span class="n">raw</span><span class="p">,</span>
-                        <span class="n">remote_local</span><span class="o">=</span><span class="n">header</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                        <span class="n">direction</span><span class="o">=</span><span class="n">directions</span><span class="p">[</span><span class="n">motor</span><span class="p">],</span>
-                        <span class="n">ls_status</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">limits</span><span class="p">[</span><span class="n">motor</span><span class="p">],</span> <span class="mi">16</span><span class="p">),</span>
-                        <span class="n">position</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">positions</span><span class="p">[</span><span class="n">motor</span><span class="p">]),</span>
+                        <span class="n">raw</span><span class="o">=</span><span class="n">raw</span><span
+        class="p">,</span>
+                        <span class="n">remote_local</span><span class="o">=</span><span class="n">header</span><span
+        class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                        <span class="n">direction</span><span class="o">=</span><span class="n">directions</span><span
+        class="p">[</span><span class="n">motor</span><span class="p">],</span>
+                        <span class="n">ls_status</span><span class="o">=</span><span class="nb">int</span><span
+        class="p">(</span><span class="n">limits</span><span class="p">[</span><span class="n">motor</span><span
+        class="p">],</span> <span class="mi">16</span><span class="p">),</span>
+                        <span class="n">position</span><span class="o">=</span><span class="nb">int</span><span
+        class="p">(</span><span class="n">positions</span><span class="p">[</span><span class="n">motor</span><span
+        class="p">]),</span>
                     <span class="p">)</span>
                 <span class="p">)</span>
-        <span class="k">except</span> <span class="p">(</span><span class="ne">IndexError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">)</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">ProtocolError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;STS?応答を解析できません: </span><span class="si">{</span><span class="n">raw</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">IndexError</span><span class="p">,</span> <span
+        class="ne">ValueError</span><span class="p">)</span> <span class="k">as</span> <span class="n">exc</span><span
+        class="p">:</span>
+            <span class="k">raise</span> <span class="n">ProtocolError</span><span class="p">(</span><span
+        class="sa">f</span><span class="s2">&quot;STS?応答を解析できません: </span><span class="si">{</span><span
+        class="n">raw</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span> <span
+        class="kn">from</span><span class="w"> </span><span class="nn">exc</span>
         <span class="k">return</span> <span class="n">result</span></div>
 
 
 <div class="viewcode-block" id="PM2CDDevice._send_motor_command">
-<a class="viewcode-back" href="../../api/pm2cd.html#pm2cd.pm2cd_device.PM2CDDevice._send_motor_command">[ドキュメント]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_send_motor_command</span><span class="p">(</span>
+<a class="viewcode-back"
+   href="../../api/pm2cd.html#pm2cd.pm2cd_device.PM2CDDevice._send_motor_command">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_send_motor_command</span><span
+        class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">command</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">motor</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_check_motor</span><span class="p">(</span><span class="n">motor</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_communication</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">command</span><span class="si">}{</span><span class="n">motor</span><span class="si">:</span><span class="s2">X</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_motor</span><span
+        class="p">(</span><span class="n">motor</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_communication</span><span
+        class="o">.</span><span class="n">send</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span
+        class="si">{</span><span class="n">command</span><span class="si">}{</span><span class="n">motor</span><span
+        class="si">:</span><span class="s2">X</span><span class="si">}</span><span class="s2">&quot;</span><span
+        class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PM2CDDevice._send_motor_value">
@@ -804,25 +1350,41 @@
         <span class="n">command</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">motor</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-        <span class="n">signed</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">signed</span><span class="p">:</span> <span class="nb">bool</span> <span
+        class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_check_motor</span><span class="p">(</span><span class="n">motor</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_motor</span><span
+        class="p">(</span><span class="n">motor</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">signed</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">value</span><span class="si">:</span><span class="s2">+d</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span
+        class="si">{</span><span class="n">value</span><span class="si">:</span><span class="s2">+d</span><span
+        class="si">}</span><span class="s2">&quot;</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_communication</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">command</span><span class="si">}{</span><span class="n">motor</span><span class="si">:</span><span class="s2">X</span><span class="si">}{</span><span class="n">text</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+            <span class="n">text</span> <span class="o">=</span> <span class="nb">str</span><span
+        class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_communication</span><span
+        class="o">.</span><span class="n">send</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span
+        class="si">{</span><span class="n">command</span><span class="si">}{</span><span class="n">motor</span><span
+        class="si">:</span><span class="s2">X</span><span class="si">}{</span><span class="n">text</span><span
+        class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PM2CDDevice._query_motor_command">
-<a class="viewcode-back" href="../../api/pm2cd.html#pm2cd.pm2cd_device.PM2CDDevice._query_motor_command">[ドキュメント]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_query_motor_command</span><span class="p">(</span>
+<a class="viewcode-back"
+   href="../../api/pm2cd.html#pm2cd.pm2cd_device.PM2CDDevice._query_motor_command">[ドキュメント]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_query_motor_command</span><span
+        class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">command</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">motor</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_check_motor</span><span class="p">(</span><span class="n">motor</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_communication</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">command</span><span class="si">}{</span><span class="n">motor</span><span class="si">:</span><span class="s2">X</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_motor</span><span
+        class="p">(</span><span class="n">motor</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span
+        class="n">_communication</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span
+        class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">command</span><span
+        class="si">}{</span><span class="n">motor</span><span class="si">:</span><span class="s2">X</span><span
+        class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PM2CDDevice._check_motor">
@@ -831,78 +1393,111 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">motor</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">motor</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">motor</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_channel_count</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">motor</span> <span class="o">&lt;</span> <span
+        class="mi">0</span> <span class="ow">or</span> <span class="n">motor</span> <span class="o">&gt;=</span> <span
+        class="bp">self</span><span class="o">.</span><span class="n">_channel_count</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;motorは0から</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_channel_count</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">の範囲で指定してください&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;motorは0から</span><span class="si">{</span><span
+        class="bp">self</span><span class="o">.</span><span class="n">_channel_count</span><span class="w"> </span><span
+        class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">の範囲で指定してください&quot;</span>
             <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PM2CDDevice._normalize_direction">
-<a class="viewcode-back" href="../../api/pm2cd.html#pm2cd.pm2cd_device.PM2CDDevice._normalize_direction">[ドキュメント]</a>
+<a class="viewcode-back"
+   href="../../api/pm2cd.html#pm2cd.pm2cd_device.PM2CDDevice._normalize_direction">[ドキュメント]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_normalize_direction</span><span class="p">(</span><span class="n">direction</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="n">direction</span> <span class="o">=</span> <span class="n">direction</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_normalize_direction</span><span
+        class="p">(</span><span class="n">direction</span><span class="p">:</span> <span class="nb">str</span><span
+        class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">direction</span> <span class="o">=</span> <span class="n">direction</span><span
+        class="o">.</span><span class="n">lower</span><span class="p">()</span>
         <span class="n">aliases</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;+&quot;</span><span class="p">:</span> <span class="s2">&quot;cw&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;p&quot;</span><span class="p">:</span> <span class="s2">&quot;cw&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;cw&quot;</span><span class="p">:</span> <span class="s2">&quot;cw&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;-&quot;</span><span class="p">:</span> <span class="s2">&quot;ccw&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;n&quot;</span><span class="p">:</span> <span class="s2">&quot;ccw&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;ccw&quot;</span><span class="p">:</span> <span class="s2">&quot;ccw&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;+&quot;</span><span class="p">:</span> <span class="s2">&quot;cw&quot;</span><span
+        class="p">,</span>
+            <span class="s2">&quot;p&quot;</span><span class="p">:</span> <span class="s2">&quot;cw&quot;</span><span
+        class="p">,</span>
+            <span class="s2">&quot;cw&quot;</span><span class="p">:</span> <span class="s2">&quot;cw&quot;</span><span
+        class="p">,</span>
+            <span class="s2">&quot;-&quot;</span><span class="p">:</span> <span class="s2">&quot;ccw&quot;</span><span
+        class="p">,</span>
+            <span class="s2">&quot;n&quot;</span><span class="p">:</span> <span class="s2">&quot;ccw&quot;</span><span
+        class="p">,</span>
+            <span class="s2">&quot;ccw&quot;</span><span class="p">:</span> <span class="s2">&quot;ccw&quot;</span><span
+        class="p">,</span>
         <span class="p">}</span>
-        <span class="k">if</span> <span class="n">direction</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">aliases</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;directionは&#39;cw&#39;または&#39;ccw&#39;で指定してください&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">aliases</span><span class="p">[</span><span class="n">direction</span><span class="p">]</span></div>
+        <span class="k">if</span> <span class="n">direction</span> <span class="ow">not</span> <span
+        class="ow">in</span> <span class="n">aliases</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;directionは&#39;cw&#39;または&#39;ccw&#39;で指定してください&quot;</span><span
+        class="p">)</span>
+        <span class="k">return</span> <span class="n">aliases</span><span class="p">[</span><span
+        class="n">direction</span><span class="p">]</span></div>
 
 
 <div class="viewcode-block" id="PM2CDDevice._normalize_side">
 <a class="viewcode-back" href="../../api/pm2cd.html#pm2cd.pm2cd_device.PM2CDDevice._normalize_side">[ドキュメント]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_normalize_side</span><span class="p">(</span><span class="n">side</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">PM2CDDevice</span><span class="o">.</span><span class="n">_normalize_direction</span><span class="p">(</span><span class="n">side</span><span class="p">)</span></div>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_normalize_side</span><span
+        class="p">(</span><span class="n">side</span><span class="p">:</span> <span class="nb">str</span><span
+        class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">PM2CDDevice</span><span class="o">.</span><span class="n">_normalize_direction</span><span
+        class="p">(</span><span class="n">side</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PM2CDDevice._backlash_suffix">
 <a class="viewcode-back" href="../../api/pm2cd.html#pm2cd.pm2cd_device.PM2CDDevice._backlash_suffix">[ドキュメント]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_backlash_suffix</span><span class="p">(</span><span class="n">backlash</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">backlash</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_backlash_suffix</span><span
+        class="p">(</span><span class="n">backlash</span><span class="p">:</span> <span class="n">Union</span><span
+        class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span
+        class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">backlash</span> <span class="ow">is</span> <span
+        class="kc">True</span><span class="p">:</span>
             <span class="k">return</span> <span class="s2">&quot;B&quot;</span>
-        <span class="k">if</span> <span class="n">backlash</span> <span class="ow">is</span> <span class="kc">False</span> <span class="ow">or</span> <span class="n">backlash</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">backlash</span> <span class="ow">is</span> <span
+        class="kc">False</span> <span class="ow">or</span> <span class="n">backlash</span> <span
+        class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="s2">&quot;&quot;</span>
-        <span class="n">value</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">backlash</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">value</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="s2">&quot;S&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;backlashはTrue, False, &#39;B&#39;, &#39;S&#39;で指定してください&quot;</span><span class="p">)</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span
+        class="n">backlash</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span
+        class="p">()</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">not</span> <span
+        class="ow">in</span> <span class="p">(</span><span class="s2">&quot;B&quot;</span><span class="p">,</span> <span
+        class="s2">&quot;S&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span
+        class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;backlashはTrue, False, &#39;B&#39;, &#39;S&#39;で指定してください&quot;</span><span
+        class="p">)</span>
         <span class="k">return</span> <span class="n">value</span></div>
 </div>
 
-</pre></div>
+</pre>
+                        </div>
 
-           </div>
-          </div>
-          <footer>
+                    </div>
+                </div>
+                <footer>
 
-  <hr/>
+                    <hr/>
 
-  <div role="contentinfo">
-    <p>&#169; Copyright .</p>
-  </div>
+                    <div role="contentinfo">
+                        <p>&#169; Copyright .</p>
+                    </div>
 
-  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    provided by <a href="https://readthedocs.org">Read the Docs</a>.
-   
+                    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+                    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+                    provided by <a href="https://readthedocs.org">Read the Docs</a>.
 
-</footer>
+
+                </footer>
+            </div>
         </div>
-      </div>
     </section>
-  </div>
-  <script>
-      jQuery(function () {
-          SphinxRtdTheme.Navigation.enable(true);
-      });
-  </script> 
+</div>
+<script>
+    jQuery(function () {
+        SphinxRtdTheme.Navigation.enable(true);
+    });
+</script>
 
 </body>
 </html>
