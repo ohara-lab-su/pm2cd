@@ -1,7 +1,7 @@
 import time
 
 from pm2cd.pm2cd_ctrl import PM2CD
-
+from x_logger import XLogger
 
 IP_ADDRESS = "10.170.10.62"
 PORT = 7777
@@ -9,9 +9,11 @@ MOTOR = 0
 
 
 def main() -> None:
+    logger = XLogger(log_level="DEBUG")
     pm2cd = PM2CD(
         ip_address=IP_ADDRESS,
         port=PORT,
+        logger=logger,
     )
 
     try:

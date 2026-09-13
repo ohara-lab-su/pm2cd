@@ -1,12 +1,24 @@
 from pm2cd.pm2cd_ctrl import PM2CD
-IP_ADDRESS = '10.170.10.62'
+from x_logger import XLogger
+
+IP_ADDRESS = "10.170.10.62"
 PORT = 7777
 TIMEOUT_SEC = 3.0
 MOTOR = 0
-ctrl = PM2CD(ip_address=IP_ADDRESS, port=PORT, timeout_sec=TIMEOUT_SEC)
+
+logger = XLogger(log_level="DEBUG")
+# ctrl = PM2CD(ip_address=IP_ADDRESS, port=PORT, timeout_sec=TIMEOUT_SEC)
+ctrl = PM2CD(
+    ip_address=IP_ADDRESS,
+    port=PORT,
+    timeout_sec=TIMEOUT_SEC,
+    logger=logger,
+)
 try:
     original = ctrl.get_home_status(MOTOR)
-    ctrl.set_home_status(MOTOR, original.found, original.found_direction, original.auto_start_direction)
+    ctrl.set_home_status(
+        MOTOR, original.found, original.found_direction, original.auto_start_direction
+    )
     actual = ctrl.get_home_status(MOTOR)
     print(f"[PASS] {'set_home_status'}: {actual}")
 finally:

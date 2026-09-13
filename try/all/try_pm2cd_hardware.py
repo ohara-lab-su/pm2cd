@@ -1,6 +1,7 @@
 import time
 
 from pm2cd.pm2cd_ctrl import PM2CD
+from x_logger import XLogger
 
 # PM2CD 実機確認用テスト。
 # このファイルだけは実際にモータを動かす試験を含むため、通常のライブラリ実行とは分離する。

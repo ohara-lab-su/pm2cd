@@ -1,5 +1,6 @@
 import time
 from pm2cd.pm2cd_ctrl import PM2CD
+from x_logger import XLogger
 
 IP_ADDRESS = "10.170.10.62"
 PORT = 7777
@@ -8,7 +9,14 @@ MOTOR = 0
 MOTION_TIMEOUT_SEC = 30.0
 ENABLE_HOME_TESTS = False
 
-ctrl = PM2CD(ip_address=IP_ADDRESS, port=PORT, timeout_sec=TIMEOUT_SEC)
+logger = XLogger(log_level="DEBUG")
+# ctrl = PM2CD(ip_address=IP_ADDRESS, port=PORT, timeout_sec=TIMEOUT_SEC)
+ctrl = PM2CD(
+    ip_address=IP_ADDRESS,
+    port=PORT,
+    timeout_sec=TIMEOUT_SEC,
+    logger=logger,
+)
 try:
     if not ENABLE_HOME_TESTS:
         print(f"[PASS] {'scan_home'}: {'SKIP'}")
