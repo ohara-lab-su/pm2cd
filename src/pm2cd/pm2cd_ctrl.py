@@ -3,9 +3,11 @@
 """PM2CD の multiprocessing 対応公開 I/F。"""
 
 from functools import partial
+from multiprocessing.managers import BaseManager
 from types import MethodType
 from typing import Any, List, Optional, Union
 
+from pm2cd.core.communication_tcp import Communication
 from pm2cd.core.controller_status import ControllerStatus
 from pm2cd.core.home_status import HomeStatus
 from pm2cd.core.motor_setting import MotorSetting
@@ -22,20 +24,41 @@ _SHARED_MOTOR_KEY = "__motor__"
 _DISPATCH_HANDLER = "__process_executor_dispatch__"
 
 
+class _CommunicationManager(BaseManager):
+    """単一の Communication を所有する manager。"""
+
+
+_CommunicationManager.register(
+    "Communication",
+    Communication,
+    exposed=(
+        "is_connected",
+        "connect",
+        "disconnect",
+        "send",
+        "receive",
+        "query",
+        "close",
+    ),
+)
+
+
 def _create_worker(
     context: SharedContext,
     ip_address: str,
     port: int,
     timeout_sec: float,
     channel_count: int,
+    communication: Any,
     log_level: str,
 ) -> PM2CDsingle:
-    """SharedContext を使用する PM2CDsingle worker を生成する。"""
+    """共有 Communication と SharedContext を使用する worker を生成する。"""
     worker = PM2CDsingle(
         ip_address=ip_address,
         port=port,
         timeout_sec=timeout_sec,
         channel_count=channel_count,
+        communication=communication,
         log_level=log_level,
     )
 
@@ -79,10 +102,21 @@ class PM2CD:
         port: int = 7777,
         timeout_sec: float = 3.0,
         channel_count: int = 2,
+        worker_count: int = 2,
         logger: Any = None,
         log_level: str = "INFO",
     ) -> None:
-        """インスタンスを初期化する。"""
+        """インスタンスを初期化する。
+
+        Args:
+            ip_address: PM2CD の IP アドレス。
+            port: PM2CD の TCP ポート番号。
+            timeout_sec: TCP 通信および待機処理のタイムアウト秒数。
+            channel_count: 制御対象チャンネル数。PM2CD では 2 固定。
+            worker_count: ProcessExecutor の worker process 数。
+            logger: 使用する logger。None の場合はこのモジュールで生成する。
+            log_level: logger を生成する場合のログレベル。
+        """
         if logger is None:
             logger = XLogger(
                 log_level=log_level,
@@ -95,21 +129,37 @@ class PM2CD:
         if hasattr(logger, "get_log_level"):
             worker_log_level = logger.get_log_level()
 
-        worker_factory = partial(
-            _create_worker,
-            ip_address=ip_address,
-            port=port,
-            timeout_sec=timeout_sec,
-            channel_count=channel_count,
-            log_level=worker_log_level,
-        )
+        self._communication_manager = _CommunicationManager()
+        self._communication_manager.start()
 
-        self._executor = ProcessExecutor(
-            worker_factory=worker_factory,
-            worker_count=1,
-            start_method="spawn",
-            logger=self._logger,
-        )
+        try:
+            self._communication = self._communication_manager.Communication(
+                ip_address=ip_address,
+                port=port,
+                timeout_sec=timeout_sec,
+                log_level=worker_log_level,
+            )
+
+            worker_factory = partial(
+                _create_worker,
+                ip_address=ip_address,
+                port=port,
+                timeout_sec=timeout_sec,
+                channel_count=channel_count,
+                communication=self._communication,
+                log_level=worker_log_level,
+            )
+
+            self._executor = ProcessExecutor(
+                worker_factory=worker_factory,
+                worker_count=worker_count,
+                start_method="spawn",
+                logger=self._logger,
+            )
+        except BaseException:
+            self._communication_manager.shutdown()
+            raise
+
         self._shared_context = self._executor.shared_context
 
         with self._shared_context.lock:
@@ -1330,12 +1380,16 @@ class PM2CD:
         )
 
     def close(self) -> bool:
-        """通信と ProcessExecutor を終了する。"""
+        """worker、共有通信、Communication manager を終了する。"""
         result = False
+
         try:
-            result = self._execute("close")
-        finally:
             self._executor.close()
+        finally:
+            try:
+                result = self._communication.close()
+            finally:
+                self._communication_manager.shutdown()
 
         return result
 
