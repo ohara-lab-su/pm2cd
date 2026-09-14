@@ -1,5 +1,219 @@
 # CHANGELOG
 
+## v0.1.0 --- 2026-09-14
+
+v0.0.3 までの `PM2CDsingle` を単一 process
+用の実制御クラスとして維持したまま、 利用者向け `PM2CD` を
+`ProcessExecutor` による multi-process facade として再構成した。
+
+今回の中心的な変更は、`worker_count=1` を前提としていた従来の
+multi-process 化を見直し、 **複数 worker process と単一の物理
+Communication / TCP connection を両立する構成** へ移行したことである。
+
+### Changed
+
+#### `PM2CD` を複数 worker 対応へ変更
+
+`PM2CD` constructor に `worker_count` を追加した。
+
+``` python
+ctrl = PM2CD(
+    ip_address="10.170.10.62",
+    port=7777,
+    timeout_sec=3.0,
+    worker_count=2,
+)
+```
+
+従来の `worker_count=1` 固定を廃止し、2以上の worker process
+を使用できるようにした。
+
+`PM2CDsingle` は引き続き各 worker process
+内で動作する実制御クラスであり、 `PM2CD` は公開 API を worker へ
+dispatch する facade として動作する。
+
+#### 物理 Communication を1本へ集約
+
+複数 worker がそれぞれ `PM2CDsingle` を生成すると、 そのままでは worker
+ごとに独立した `Communication` と TCP connection が生成される。
+
+PM2CD は一台の装置に対して要求と応答の順序を維持する必要があるため、
+この構成は採用しない。
+
+v0.1.0 では `BaseManager` 側に `Communication` を一つだけ生成し、 その
+proxy をすべての `PM2CDsingle` worker へ constructor injection
+する構成へ変更した。
+
+``` text
+PM2CD
+  |
+  +-- ProcessExecutor
+  |     |
+  |     +-- PM2CDsingle worker 1 --+
+  |     +-- PM2CDsingle worker 2 --+--> Communication proxy
+  |     +-- PM2CDsingle worker N --+
+  |
+  +-- CommunicationManager
+          |
+          +-- Communication x 1
+                    |
+                    +-- TCP connection x 1
+                            |
+                            +-- PM2CD / PM2C-06A
+```
+
+これにより、
+
+- controller worker は複数
+- `PM2CDsingle` instance は worker ごとに一つ
+- 物理 `Communication` は一つ
+- TCP connection は一つ
+
+という構成とした。
+
+`Communication.query()` が持つ send/receive の lock 範囲も一つの
+`Communication` instance に集約されるため、複数 worker からの要求を
+一つの物理通信経路上で直列化できる。
+
+#### worker 間の controller state を共有
+
+`PM2CDsingle` が持つ controller state のうち、worker
+をまたいで維持する必要がある状態を `ProcessExecutor` の `SharedContext`
+へ移した。
+
+対象は主に以下。
+
+- 現在選択されている `motor`
+- `move()` / `move_relative()` から `wait_for_complete()`
+  へ引き継ぐ移動コンテキスト
+    - target position
+    - backlash 指定
+    - backlash 有効状態
+    - backlash value
+
+`worker_factory(context)` で `PM2CDsingle` を生成し、
+`SharedContext.state` を worker
+間で共通の移動コンテキストとして使用する。
+
+これにより、例えば `move()` を worker 1 が処理し、 続く
+`wait_for_complete()` を worker 2 が処理した場合でも、
+バックラッシュ補正を含む直前の移動条件を引き継げる。
+
+shared state は実装詳細であり、利用者向けに shared 専用 API
+は追加していない。
+
+#### 公開 API を維持
+
+multi-process 化のために別系統のユーザー API を作らず、 `PM2CDsingle`
+で整理してきた公開 API を `PM2CD` 側でも維持した。
+
+`motor` property、移動、状態取得、速度、rate、backlash、limit、HOME、
+HOLD、停止モード等の既存 API
+を、利用側からは従来と同じ意味で呼び出せる。
+
+`PM2CD` 内部では各 API を `ProcessExecutor.submit()` / `wait()` により
+worker process へ dispatch する。
+
+#### `close()` の終了順序を変更
+
+共有 `Communication` を worker の一つから `close()` すると、 他の worker
+が利用している共通通信まで終了してしまう。
+
+そのため v0.1.0 の `PM2CD.close()` は worker へ `close` handler を
+dispatch せず、
+
+1. `ProcessExecutor` を終了
+2. owner 側で共有 `Communication` を一度だけ close
+3. `CommunicationManager` を shutdown
+
+の順で終了する構成へ変更した。
+
+### Server
+
+PM2CD の FastAPI server 起動モジュールを `worker_count` に対応させた。
+
+``` python
+create_server(worker_count=...)
+run(worker_count=...)
+```
+
+で worker 数を指定でき、`FastApiServer` の `device_kwargs` から
+`PM2CD(worker_count=...)` へ渡す。
+
+server process 自体の起動方法と、PM2CD 内部の worker process
+数は別の概念として扱う。
+
+example の server 起動スクリプトでは CLI option を使用せず、
+
+``` python
+WORKER_COUNT = 2
+```
+
+のようにコード側で設定し、
+
+``` python
+run(worker_count=WORKER_COUNT)
+```
+
+として起動する。
+
+### Architecture
+
+v0.1.0 での Python 版 PM2CD の主な責務分離は次の通り。
+
+``` text
+PM2CD
+    公開 I/F / multi-process facade
+        |
+        v
+ProcessExecutor
+    worker dispatch / SharedContext
+        |
+        +--> PM2CDsingle worker x N
+                 |
+                 v
+             PM2CDDevice
+                 |
+                 v
+       shared Communication proxy
+                 |
+                 v
+          Communication x 1
+                 |
+                 v
+        TCP + CRLF / PM2C-06A
+```
+
+`ProcessExecutor` は PM2CD protocol や TCP 通信を知らない。 単一
+Communication の ownership と injection は PM2CD
+側の責務として実装した。
+
+### Compatibility
+
+- `PM2CDsingle` は単一 process で直接使用する実制御クラスとして維持。
+- `PM2CDDevice` の装置コマンド生成・応答解析の責務は変更しない。
+- C版/MADOCA 由来の Device handler の意味と処理粒度は維持。
+- v0.0.3 で導入した frozen dataclass と parser 分離を維持。
+- FastAPI 完全自動ディスパッチは引き続き `ese774_frame v0.6.0`
+  以上を前提とする。
+- multi-process 実行には `worker_factory`、`SharedContext`、
+  `shared_context` を備えた `process_executor` を使用する。
+
+### Validation
+
+今回の実装作業では以下を確認した。
+
+- `pm2cd_ctrl.py` の Python 構文チェック。
+- `PM2CDsingle` と `PM2CD` の公開 API 一致。
+- `worker_count` が固定値ではなく constructor から `ProcessExecutor`
+  へ渡ること。
+- 全 worker に同一 `Communication` proxy が渡ること。
+- `_move_context` が `SharedContext.state` を使用すること。
+- `motor` が shared state を使用すること。
+- `close()` が共有 Communication を worker 側から閉じないこと。
+- server 起動モジュールから `worker_count` が `PM2CD` まで渡ること。
+- example server が CLI option を使用しないこと。
+
 ## v0.0.3 - 2026-09-14
 
 v0.0.2 以降、PM2CD の制御コード全体を見直し、単純な装置コマンドラッパーから、
