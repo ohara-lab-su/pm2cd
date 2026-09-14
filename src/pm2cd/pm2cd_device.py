@@ -2,14 +2,20 @@ import logging
 from typing import List, Optional, Union
 
 from pm2cd.core.communication_tcp import Communication
-from pm2cd.core.controller_status import ControllerStatus
+from pm2cd.core.controller_status import ControllerStatus, parse_controller_status
 from pm2cd.core.data import RATE_TABLE
-from pm2cd.core.home_status import HomeStatus
-from pm2cd.core.limit_status import LimitStatus
-from pm2cd.core.limit_switch_setting import LimitSwitchSetting
-from pm2cd.core.motor_setting import MotorSetting
-from pm2cd.core.motor_status import MotorStatus
-from pm2cd.core.stop_mode import StopMode
+from pm2cd.core.home_status import HomeStatus, parse_home_status
+from pm2cd.core.limit_status import LimitStatus, parse_limit_status_all
+from pm2cd.core.limit_switch_setting import (
+    LimitSwitchSetting,
+    parse_limit_switch_setting,
+    set_digital_limit,
+    set_hardware_limit,
+    set_hardware_limit_normally_closed,
+)
+from pm2cd.core.motor_setting import MotorSetting, parse_motor_setting
+from pm2cd.core.motor_status import MotorStatus, parse_motor_status_all
+from pm2cd.core.stop_mode import StopMode, parse_stop_mode
 from pm2cd.core.version_info import VersionInfo
 
 
@@ -147,8 +153,8 @@ class PM2CDDevice:
         if raw is None:
             return None
 
-        value = ControllerStatus(raw)
-        if not value.is_valid:
+        value = parse_controller_status(raw)
+        if value is None:
             self._logger.error(f'STQ?応答を解釈できません: {raw!r}')
             return None
 
@@ -448,7 +454,7 @@ class PM2CDDevice:
         if raw is None:
             return None
 
-        values = MotorStatus.parse_all(raw)
+        values = parse_motor_status_all(raw)
         if values is None:
             self._logger.error(f'STS?応答を解釈できません: {raw!r}')
             return None
@@ -967,7 +973,7 @@ class PM2CDDevice:
             return False
 
         if not setting.digital_limit_enabled:
-            changed = setting.with_digital_limit(True)
+            changed = set_digital_limit(setting, True)
             if changed is None:
                 return False
 
@@ -1007,7 +1013,7 @@ class PM2CDDevice:
         if raw is None:
             return None
 
-        values = LimitStatus.parse_all(raw)
+        values = parse_limit_status_all(raw)
         if values is None:
             self._logger.error(f'HDSTLS?応答を解釈できません: {raw!r}')
             return None
@@ -1030,7 +1036,7 @@ class PM2CDDevice:
         if setting is None:
             return False
 
-        changed = setting.with_digital_limit(enabled)
+        changed = set_digital_limit(setting, enabled)
         if changed is None:
             return False
 
@@ -1052,7 +1058,7 @@ class PM2CDDevice:
         if setting is None:
             return False
 
-        changed = setting.with_hardware_limit(enabled)
+        changed = set_hardware_limit(setting, enabled)
         if changed is None:
             return False
 
@@ -1071,7 +1077,8 @@ class PM2CDDevice:
         if setting is None:
             return False
 
-        changed = setting.with_hardware_limit_normally_closed(
+        changed = set_hardware_limit_normally_closed(
+            setting,
             side,
             normally_closed,
         )
@@ -1256,8 +1263,8 @@ class PM2CDDevice:
         if raw is None:
             return None
 
-        value = HomeStatus(raw)
-        if not value.is_valid:
+        value = parse_home_status(raw)
+        if value is None:
             self._logger.error(f'SETHP?応答を解釈できません: {raw!r}')
             return None
 
@@ -1508,8 +1515,8 @@ class PM2CDDevice:
         if raw is None:
             return None
 
-        value = LimitSwitchSetting(raw)
-        if not value.is_valid:
+        value = parse_limit_switch_setting(raw)
+        if value is None:
             self._logger.error(f'SETLS?応答を解釈できません: {raw!r}')
             return None
 
@@ -1553,8 +1560,8 @@ class PM2CDDevice:
         if motor_text is None:
             return False
 
-        parsed = LimitSwitchSetting(setting)
-        if not parsed.is_valid:
+        parsed = parse_limit_switch_setting(setting)
+        if parsed is None:
             self._logger.error(f'SETLS設定値を解釈できません: {setting!r}')
             return False
 
@@ -1582,8 +1589,8 @@ class PM2CDDevice:
         if raw is None:
             return None
 
-        value = MotorSetting(raw)
-        if not value.is_valid:
+        value = parse_motor_setting(raw)
+        if value is None:
             self._logger.error(f'SETMT?応答を解釈できません: {raw!r}')
             return None
 
@@ -1656,8 +1663,8 @@ class PM2CDDevice:
         if raw is None:
             return None
 
-        value = StopMode(raw)
-        if not value.is_valid:
+        value = parse_stop_mode(raw)
+        if value is None:
             self._logger.error(f'STOPMD?応答を解釈できません: {raw!r}')
             return None
 

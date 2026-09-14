@@ -1,5 +1,297 @@
 # CHANGELOG
 
+## v0.0.3 - 2026-09-14
+
+v0.0.2 以降、PM2CD の制御コード全体を見直し、単純な装置コマンドラッパーから、
+上位制御・装置固有処理・通信処理を分離した構成へ整理した。
+
+今回の変更では、特に状態・設定値を返すクラスの設計を見直し、
+`ese774_frame v0.6.0` の完全自動ディスパッチでそのままサーバー・クライアント間を
+転送できる構成へ移行した。
+
+### Framework dependency
+
+FastAPI の完全自動ディスパッチを使用する場合は、**ese774_frame v0.6.0 以上が必要**。
+
+PM2CD は `api_spec=None` の完全自動ディスパッチを使用する。
+状態・設定値の戻り値に dataclass を使用するため、戻り値アノテーションから型情報を取得し、
+dataclass を JSON 化してクライアント側で元の型へ復元する機能が必要となる。
+
+この機能は `ese774_frame v0.6.0` で追加された。
+
+旧 Framework では `MotorStatus` などの独自クラスを返した場合、
+
+`Object of type MotorStatus is not JSON serializable`
+
+となり、完全自動ディスパッチでは状態オブジェクトを転送できなかった。
+
+`ese774_frame v0.6.0` ではこの制限が解消され、
+`Optional[MotorStatus]` や `Optional[List[MotorStatus]]` などの戻り値を
+メソッドのアノテーションに基づいて自動転送・復元できる。
+
+PM2CD についても `ese774_frame v0.6.0` を使用した完全自動ディスパッチで
+複数 API の動作確認を実施済み。
+
+### Changed
+
+#### 制御層の責務分離
+
+PM2CD の制御を、主に以下の層へ整理した。
+
+- `PM2CDsingle`
+    - 利用側へ公開する高水準の制御 I/F。
+    - 既定モーターの管理、待機処理、状態判定など上位制御を担当。
+- `PM2CDDevice`
+    - PM2CD / PMXC-06A 固有コマンドの生成、応答取得、値の検証を担当。
+- `Communication`
+    - TCP 接続、送信、受信を担当。
+- `core`
+    - 装置状態・設定値を表すデータ型と応答解析処理を保持。
+
+装置通信、装置固有プロトコル、公開制御 I/F の責務を分離した。
+
+#### 公開 I/F の整理
+
+`PM2CDsingle` を公開制御 I/F として整理した。
+
+- `motor` プロパティを追加し、モーター番号を省略できる API を整備。
+- `connect()` / `disconnect()` / `close()` / `is_connected()` を整理。
+- context manager (`__enter__` / `__exit__`) に対応。
+- `get_xxx()` / `set_xxx()` を中心とした読み取り・設定 API を整理。
+- PM2CD 固有条件として `channel_count=2` を公開層で明示的に検証。
+
+#### 戻り値とエラー処理の整理
+
+v0.0.2 では装置コマンドを直接発行し、失敗時に例外となる処理や、
+戻り値を持たない処理が多かった。
+
+現在は装置制御 API の戻り値を整理し、
+
+- 操作成功/失敗: `bool`
+- 値取得成功: 値
+- 値取得失敗: `None`
+
+を基本とする構成へ変更した。
+
+多くの取得 API は `Optional[...]` を戻り値アノテーションとして持つ。
+
+入力値についても `PM2CDDevice` 側で検証し、不正値を装置へ送らない構成へ整理した。
+
+### Added
+
+#### 状態取得・状態判定
+
+状態取得機能を大幅に拡張した。
+
+- コントローラ状態取得
+- モーター状態取得
+- 全モーター状態取得
+- 回転状態取得
+- BUSY 判定
+- 動作完了待機
+- リミット状態取得
+- HOME 状態取得
+- PAUSE 状態取得
+- HOLD 状態取得
+
+`wait_for_complete()` を追加し、単純な BUSY ビットだけではなく、
+DRIVE 状態や回転方向も含めて動作中かどうかを判定するようにした。
+
+位置決め時には直近の移動条件を保持し、バックラッシュ補正を使用した移動についても
+途中停止と最終停止を区別できるようにした。
+
+#### モーション制御
+
+既存の基本移動に加えて制御 API を整理・拡張した。
+
+- 絶対位置移動
+- 相対位置移動
+- SCAN
+- constant speed SCAN
+- JOG
+- HOME
+- FIND HOME
+- HOME 方向スキャン
+- STOP / STOP ALL
+- EMERGENCY STOP / EMERGENCY STOP ALL
+
+#### 位置・速度・レート設定
+
+以下の取得・設定 API を整理・追加した。
+
+- 現在位置
+- 現在位置の書き換え
+- ゼロ位置設定
+- HIGH / MIDDLE / LOW speed
+- 速度プロファイル
+- speed mode
+- rate number
+- rate 値と rate number の変換
+- backlash
+
+`set_speed()` だけでなく、LOW / MIDDLE / HIGH を個別またはまとめて扱えるようにした。
+
+#### リミット関連
+
+リミット関連の取得・設定を拡張した。
+
+- software limit
+- hardware limit status
+- digital limit enable
+- hardware limit enable
+- hardware limit normally-open / normally-closed 設定
+- limit switch setting
+
+#### HOME 関連
+
+HOME 関連の設定・取得を拡張した。
+
+- HOME 検出状態
+- HOME 検出方向
+- HOME 自動開始方向
+- HOME position
+- HOME offset
+- preset position
+- JOG pulse
+
+#### モーター・停止モード設定
+
+以下の装置設定を取得・設定できるようにした。
+
+- motor setting
+- drive enable
+- hold mode
+- output mode
+- stop mode
+- panel stop mode
+- limit stop mode
+- HOLD ON time
+- HOLD OFF time
+
+### Core data model redesign
+
+状態・設定値を表すクラスの役割を全面的に見直した。
+
+従来は通常クラス自身が、
+
+- 生の装置応答を保持する
+- 応答を解析する
+- 値を保持する
+- 派生状態を property で計算する
+
+といった複数の責務を持っていた。
+
+現在は「データ」と「解析」を分離した。
+
+以下の状態・設定値型を `@dataclass(frozen=True)` とした。
+
+- `MotorStatus`
+- `ControllerStatus`
+- `HomeStatus`
+- `LimitStatus`
+- `MotorSetting`
+- `LimitSwitchSetting`
+- `StopMode`
+
+dataclass は装置状態・設定値を保持する純粋なデータオブジェクトとして扱う。
+
+応答解析は、
+
+- `parse_motor_status_all()`
+- `parse_controller_status()`
+- `parse_home_status()`
+- `parse_limit_status_all()`
+- `parse_motor_setting()`
+- `parse_limit_switch_setting()`
+- `parse_stop_mode()`
+
+などの独立した parser 関数へ分離した。
+
+解析できない応答については、不正な状態のオブジェクトを生成するのではなく
+`None` を返す方針へ変更した。
+
+#### MotorStatus の拡張
+
+`MotorStatus` は従来の位置・方向・リミット情報に加え、
+PM2CD の `STS?` 応答に含まれる MCC status を解析するよう拡張した。
+
+主な保持情報:
+
+- motor
+- channel
+- remote/local
+- direction
+- limit status
+- MCC status
+- position
+- BUSY
+- DRIVE
+- accelerating
+- decelerating
+- command error
+- limit stop received
+- slow stop received
+- emergency stop received
+- CW / CCW / HP limit
+- hold off
+- rotation state
+
+これにより、上位制御側が生の `STS?` 応答を再解析する必要をなくした。
+
+### FastAPI / complete auto dispatch
+
+PM2CD 用の FastAPI server と同期・非同期 client を追加・整理した。
+
+server は、
+
+- `FastApiServer`
+- `api_spec=None`
+- `object_name="pm2cd"`
+
+を使用し、完全自動ディスパッチで `PM2CD` の公開 API を提供する。
+
+client は、
+
+- `SyncPM2CDClient`
+- `AsyncPM2CDClient`
+
+を用意し、`SyncDeviceClient` / `AsyncDeviceClient` を利用する。
+
+初期実装に残っていた別装置由来の `object_name` 指定を修正し、
+server/client とも `pm2cd` に統一した。
+
+完全自動ディスパッチでは、個別の `ApiSpec` や Pydantic model を
+PM2CD 側で定義しなくても公開メソッドをネットワーク越しに呼び出せる。
+
+### Compatibility / design notes
+
+今回の core dataclass 化では、`PM2CDDevice` が parser と dataclass の違いを吸収するため、
+通常の利用経路である `PM2CDsingle` から見た装置制御 API は極力維持している。
+
+一方、core クラスを直接生成したり、旧 `parse_all()` などを直接使用していたコードは
+新しい parser 関数を使用する必要がある。
+
+`ControllerStatus.is_remote` や `HomeStatus.found` など、
+状態そのものを表す値はメソッドではなく dataclass のフィールドとして扱う。
+
+dataclass は `frozen=True` とし、取得した装置状態を後から書き換えない設計とした。
+
+### Tested
+
+- PM2CD 実機との TCP 通信を確認。
+- `PM2CDsingle` / `PM2CDDevice` の基本制御を確認。
+- 状態取得を含むローカル制御を確認。
+- FastAPI server/client の接続を確認。
+- `ese774_frame v0.6.0` の完全自動ディスパッチを使用し、PM2CD の複数 API を動作確認済み。
+- dataclass を戻り値とする API は `ese774_frame v0.6.0` の型付き自動転送を前提とする。
+
+### Important
+
+PM2CD の現在版で FastAPI 完全自動ディスパッチを使用する場合、
+**ese774_frame v0.6.0 以上を使用すること。**
+
+v0.5.1 以前の Framework では、PM2CD が返す dataclass の完全自動転送には対応していない。
+
 ## 2026.09.13, v0.0.2, nakada
 
 **PM2CD Ctrl API の拡張・整理と位置決め完了判定の改良**

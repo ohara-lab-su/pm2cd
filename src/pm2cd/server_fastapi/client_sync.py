@@ -20,7 +20,7 @@ class SyncPM2CDClient(SyncDeviceClient):
         super().__init__(
             server_ip=server_ip,
             server_port=server_port,
-            object_name="pm16c16",
+            object_name="pm2cd",
             api_spec=None,
             logger=logger,
             log_level=log_level,
