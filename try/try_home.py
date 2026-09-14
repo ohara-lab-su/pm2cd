@@ -21,7 +21,8 @@ try:
     if not ENABLE_HOME_TESTS:
         print(f"[PASS] {'home'}: {'SKIP'}")
     else:
-        ctrl.emergency_stop_all()
+        # ctrl.emergency_stop_all()
+        ctrl.stop()
         time.sleep(0.05)
         ctrl.remote()
         status = ctrl.get_status(MOTOR)

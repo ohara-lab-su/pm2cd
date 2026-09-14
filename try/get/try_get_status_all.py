@@ -20,6 +20,7 @@ try:
     print(f"[PASS] {'get_status_all'}: {values}")
 finally:
     try:
-        ctrl.emergency_stop_all()
+        # ctrl.emergency_stop_all()
+        ctrl.stop()
     finally:
         ctrl.close()

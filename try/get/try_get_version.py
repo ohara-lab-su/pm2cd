@@ -20,6 +20,7 @@ try:
     print(f"[PASS] {'get_version'}: {value.raw}")
 finally:
     try:
-        ctrl.emergency_stop_all()
+        # ctrl.emergency_stop_all()
+        ctrl.stop()
     finally:
         ctrl.close()

@@ -19,6 +19,7 @@ try:
     print(f"[PASS] {'is_busy'}: {value}")
 finally:
     try:
-        ctrl.emergency_stop_all()
+        # ctrl.emergency_stop_all()
+        ctrl.stop()
     finally:
         ctrl.close()

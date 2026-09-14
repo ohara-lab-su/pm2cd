@@ -19,7 +19,8 @@ ctrl = PM2CD(
     logger=logger,
 )
 try:
-    ctrl.emergency_stop_all()
+    # ctrl.emergency_stop_all()
+    ctrl.stop()
     time.sleep(0.05)
     ctrl.remote()
     status = ctrl.get_status(MOTOR)
@@ -61,6 +62,7 @@ try:
 
 finally:
     try:
-        ctrl.emergency_stop_all()
+        # ctrl.emergency_stop_all()
+        ctrl.stop()
     finally:
         ctrl.close()

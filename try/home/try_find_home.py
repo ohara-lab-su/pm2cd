@@ -21,9 +21,11 @@ try:
     if not ENABLE_HOME_TESTS:
         print(f"[PASS] {'find_home'}: {'SKIP'}")
     else:
-        ctrl.emergency_stop_all()
+        # ctrl.emergency_stop_all()
+        ctrl.stop()
         time.sleep(0.05)
         ctrl.remote()
+
         status = ctrl.get_status(MOTOR)
         if status is None:
             raise AssertionError("STS?応答を取得できません")
@@ -36,6 +38,7 @@ try:
         print(f"[PASS] {'find_home'}: {'OK'}")
 finally:
     try:
-        ctrl.emergency_stop_all()
+        # ctrl.emergency_stop_all()
+        ctrl.stop()
     finally:
         ctrl.close()

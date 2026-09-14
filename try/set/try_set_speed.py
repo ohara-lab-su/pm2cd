@@ -33,6 +33,7 @@ try:
         ctrl.set_speed_profile(MOTOR, original_low, original_middle, original_high)
 finally:
     try:
-        ctrl.emergency_stop_all()
+        # ctrl.emergency_stop_all()
+        ctrl.stop()
     finally:
         ctrl.close()

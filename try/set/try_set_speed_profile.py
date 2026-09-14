@@ -22,6 +22,7 @@ try:
     print(f"[PASS] {'set_speed_profile'}: {(low, middle, high)}")
 finally:
     try:
-        ctrl.emergency_stop_all()
+        # ctrl.emergency_stop_all()
+        ctrl.stop()
     finally:
         ctrl.close()

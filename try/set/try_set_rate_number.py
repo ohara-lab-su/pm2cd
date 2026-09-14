@@ -23,6 +23,7 @@ try:
     print(f"[PASS] {'set_rate_number'}: {actual}")
 finally:
     try:
-        ctrl.emergency_stop_all()
+        # ctrl.emergency_stop_all()
+        ctrl.stop()
     finally:
         ctrl.close()

@@ -21,7 +21,8 @@ try:
     if not ENABLE_HOME_TESTS:
         print(f"[PASS] {'scan_home'}: {'SKIP'}")
     else:
-        ctrl.emergency_stop_all()
+        # ctrl.emergency_stop_all()
+        ctrl.stop()
         time.sleep(0.05)
         ctrl.remote()
         status = ctrl.get_status(MOTOR)
@@ -36,6 +37,7 @@ try:
         print(f"[PASS] {'scan_home'}: {'OK'}")
 finally:
     try:
-        ctrl.emergency_stop_all()
+        # ctrl.emergency_stop_all()
+        ctrl.stop()
     finally:
         ctrl.close()
