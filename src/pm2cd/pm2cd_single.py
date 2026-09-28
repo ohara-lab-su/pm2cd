@@ -174,14 +174,15 @@ class PM2CDsingle:
         motor: int,
         target_position: Optional[int],
         backlash: Union[str, bool, None],
-        backlash_value: Optional[int],
     ) -> None:
-        """直近の位置決め移動条件を保存する。"""
+        """wait_for_complete() に必要な最小限の移動条件を保存する。
+
+        バックラッシュ補正点は装置内部の動作であり、Python 側では予測しない。
+        保存するのは最終目標位置と、B/S 補正を要求したかどうかだけとする。
+        """
         self._move_context[motor] = {
             "target_position": target_position,
-            "backlash": backlash,
             "backlash_enabled": self._backlash_enabled(backlash),
-            "backlash_value": backlash_value,
         }
 
     def _clear_move_context(
@@ -331,10 +332,6 @@ class PM2CDsingle:
             if current_position is not None:
                 target_position = current_position + target
 
-        backlash_value = None
-        if self._backlash_enabled(backlash):
-            backlash_value = self.get_backlash(motor)
-
         if relative:
             result = self._device.move_relative(motor, target, backlash)
         else:
@@ -345,7 +342,6 @@ class PM2CDsingle:
                 motor=motor,
                 target_position=target_position,
                 backlash=backlash,
-                backlash_value=backlash_value,
             )
 
         return result
@@ -653,39 +649,31 @@ class PM2CDsingle:
         target_position: Optional[int] = None,
         show_position: bool = False,
     ) -> Optional[MotorStatus]:
-        """指定モーターの位置決め移動または停止完了を待つ。
+        """指定モーターの最終停止を待つ。
 
-        backlash=False の位置決めでは、目標位置で inactive になった時点を完了と
-        する。短距離移動では active を観測できないことがあるため、active の観測
-        自体は完了条件にしない。
+        位置決め移動では move() が保存した最終目標位置を使用する。
+        backlash=False の場合は、目標位置で inactive になれば完了とする。
 
-        backlash=B/S の位置決めでは、装置は目標位置を一度通過・停止した後、
-        バックラッシュ点へ移動し、最後に目標位置へ戻ることがある。そのため最初の
-        「目標位置 + inactive」を最終完了とは扱わない。
+        B/S バックラッシュ補正では、最初の ``目標位置 + inactive`` が
+        補正途中か最終停止かを一回の観測だけでは区別できない。このため、
+        最初の到達は保留し、次の観測で active または目標位置外を観測した
+        場合は補正軌跡が継続中と判断する。その後、再び目標位置で inactive
+        になれば完了とする。補正軌跡が短くポーリング間で観測できない場合は、
+        ``目標位置 + inactive`` を2回連続して確認した時点で完了とする。
 
-        バックラッシュ距離が十分長い場合は、
-        目標位置(inactive) -> active -> バックラッシュ点(inactive)
-        -> active -> 目標位置(inactive)
-        の状態遷移を追跡する。
+        装置内部のバックラッシュ補正点は、補正値の符号、移動方向、B/S の
+        条件で変化するため、Python 側では計算・予測しない。
 
-        バックラッシュ距離が短い場合は途中の active/inactive がポーリング間で
-        縮退して観測できるため、途中状態の観測を必須にはしない。最初の目標位置
-        inactive を中間到達として保持し、その後に再度目標位置 inactive を観測
-        した時点を最終到達とする。最初の中間到達自体を観測できず、補正動作全体が
-        ポーリング間で終了した場合も、最終位置が安定して再観測されれば完了できる。
-
-        move()/move_relative() の直後であれば、保存された目標位置・backlash 指定・
-        backlash 値を自動的に使用する。target_position が明示された場合はその値を
-        優先する。位置決めコンテキストがない場合は、stop() 後などの単純な停止待ち
-        として inactive を連続して確認する。
+        位置決めコンテキストがない場合は、stop() 後などの単純な停止待ち
+        として inactive を2回連続して確認する。
 
         Args:
-            motor: モーター番号。0 または 1。None の場合は motor プロパティを使用する。
+            motor: モーター番号。None の場合は motor プロパティを使用する。
             timeout_sec: 待機処理のタイムアウト秒数。
             interval_sec: 状態確認のポーリング間隔秒数。
-            target_position: 完了判定に使う目標位置。None の場合は直前の
-                move()/move_relative() の目標位置を使用する。
-            show_position: True の場合はポーリングごとの現在位置を表示する。
+            target_position: 完了判定に使う絶対目標位置。明示指定した場合は
+                move() が保存した値より優先する。
+            show_position: True の場合は各ポーリングの現在位置を表示する。
 
         Returns:
             完了条件を満たした最後の MotorStatus。状態取得失敗または
@@ -696,31 +684,14 @@ class PM2CDsingle:
 
         context = self._move_context.get(motor)
         backlash_enabled = False
-        backlash_value = None
 
         if context is not None:
             if target_position is None:
                 target_position = context.get("target_position")
-
             backlash_enabled = bool(context.get("backlash_enabled"))
-            backlash_value = context.get("backlash_value")
 
-        # backlash 値が 0 の場合には補正移動距離がないため通常移動として扱う。
-        if backlash_value == 0:
-            backlash_enabled = False
-
-        backlash_point = None
-        if target_position is not None:
-            if backlash_value is not None:
-                backlash_point = target_position + backlash_value
-
-        # 位置決めコンテキストがない stop() 後などでは、通信タイミングによる
-        # 一時的な inactive を避けるため2回連続で停止状態を確認する。
         plain_inactive_count = 0
-
-        # backlash 補正では「最初の目標位置」と「最終目標位置」を区別する。
         target_inactive_seen = False
-        correction_progress_seen = False
 
         while True:
             status = self.get_status(motor)
@@ -732,62 +703,33 @@ class PM2CDsingle:
 
             active = self._motion_active(status)
 
-            # 位置決めではない単純な停止待ち。
             if target_position is None:
                 if active:
                     plain_inactive_count = 0
                 else:
                     plain_inactive_count += 1
+                    if plain_inactive_count >= 2:
+                        return status
 
-                if plain_inactive_count >= 2:
+            elif not backlash_enabled:
+                if not active and status.position == target_position:
+                    self._clear_move_context(motor)
                     return status
 
-            # backlash なしの位置決め。
-            elif not backlash_enabled:
-                if not active:
-                    if status.position == target_position:
+            else:
+                at_target = status.position == target_position
+
+                if target_inactive_seen:
+                    if not active and at_target:
+                        # 補正軌跡を観測できた場合は戻り先の目標位置。
+                        # 観測できなかった場合は目標位置での2回目の停止確認。
                         self._clear_move_context(motor)
                         return status
 
-            # backlash ありの位置決め。
-            else:
-                at_target = status.position == target_position
-                at_backlash_point = False
-
-                if backlash_point is not None:
-                    at_backlash_point = status.position == backlash_point
-
-                if target_inactive_seen:
-                    # 最初の目標位置到達後に active、目標位置外、または
-                    # backlash 点を観測できれば補正動作の進行を直接確認できる。
-                    if active:
-                        correction_progress_seen = True
-                    elif not at_target:
-                        correction_progress_seen = True
-                    elif at_backlash_point:
-                        correction_progress_seen = True
-
-                if not active:
-                    if at_target:
-                        if target_inactive_seen:
-                            # 十分長い補正では途中状態を追跡した後の最終目標位置。
-                            # 短い補正では途中状態が縮退するため、目標位置 inactive
-                            # の再観測を最終到達として扱う。
-                            self._clear_move_context(motor)
-                            return status
-
-                        if correction_progress_seen:
-                            # 最初の目標位置を取り逃したが backlash 側の状態を
-                            # 観測できた場合、この目標位置は最終到達である。
-                            self._clear_move_context(motor)
-                            return status
-
-                        target_inactive_seen = True
-
-                    elif at_backlash_point:
-                        correction_progress_seen = True
-                    elif target_inactive_seen:
-                        correction_progress_seen = True
+                    # active または目標位置外なら補正軌跡が続いている。
+                    # 補正点そのものは予測せず、目標位置へ戻るまで観測する。
+                elif not active and at_target:
+                    target_inactive_seen = True
 
             if time.monotonic() >= deadline:
                 if target_position is None:
@@ -801,7 +743,6 @@ class PM2CDsingle:
                             target_position,
                         )
                     )
-
                 return None
 
             time.sleep(interval_sec)

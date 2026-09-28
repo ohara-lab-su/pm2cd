@@ -21,7 +21,63 @@ from x_logger import XLogger
 
 
 _SHARED_MOTOR_KEY = "__motor__"
+_MOVE_CONTEXT_PREFIX = "__move_context__:"
 _DISPATCH_HANDLER = "__process_executor_dispatch__"
+_MOTION_START_METHODS = {
+    "move",
+    "move_relative",
+    "scan",
+    "constant_speed_scan",
+    "jog",
+    "scan_home",
+    "home",
+    "find_home",
+}
+
+
+class _SharedMoveContext:
+    """SharedContext.state 内の move context だけを mapping として公開する。
+
+    PM2CDsingle は通常の dict と同じ ``get/set/del/clear`` だけを使用する。
+    ctrl 層では motor など他の共有状態と名前空間を分離し、全 worker から
+    同じ移動条件を参照できるようにする。
+    """
+
+    def __init__(self, context: SharedContext) -> None:
+        self._state = context.state
+        self._lock = context.lock
+
+    def _key(self, motor: int) -> str:
+        return f"{_MOVE_CONTEXT_PREFIX}{motor}"
+
+    def get(self, motor: int, default: Any = None) -> Any:
+        with self._lock:
+            value = self._state.get(self._key(motor), default)
+            if isinstance(value, dict):
+                return dict(value)
+            return value
+
+    def __setitem__(self, motor: int, value: Any) -> None:
+        with self._lock:
+            self._state[self._key(motor)] = value
+
+    def __delitem__(self, motor: int) -> None:
+        with self._lock:
+            del self._state[self._key(motor)]
+
+    def __contains__(self, motor: int) -> bool:
+        with self._lock:
+            return self._key(motor) in self._state
+
+    def clear(self) -> None:
+        with self._lock:
+            keys = [
+                key
+                for key in self._state.keys()
+                if isinstance(key, str) and key.startswith(_MOVE_CONTEXT_PREFIX)
+            ]
+            for key in keys:
+                del self._state[key]
 
 
 class _CommunicationManager(BaseManager):
@@ -62,9 +118,10 @@ def _create_worker(
         log_level=log_level,
     )
 
-    # move()/move_relative() と wait_for_complete() の間で使用する
-    # 移動条件を全 worker で共有する。
-    worker._move_context = context.state
+    # move() と wait_for_complete() が別 worker で実行されても、
+    # 完了判定に必要な最小限の移動条件を共有できるようにする。
+    # SharedContext.state 全体を直接渡さず、専用 namespace だけを公開する。
+    worker._move_context = _SharedMoveContext(context)
 
     def dispatch(
         instance: PM2CDsingle,
@@ -78,6 +135,14 @@ def _create_worker(
 
         try:
             handler = getattr(instance, method)
+
+            # 移動開始処理だけを短時間直列化する。REL の場合は
+            # 「現在位置取得 -> REL送信 -> move context保存」を一続きに扱う。
+            # wait/status/stop はこの lock の対象にせず、別 worker から実行できる。
+            if method in _MOTION_START_METHODS:
+                with context.lock:
+                    return handler(*args, **kwargs)
+
             return handler(*args, **kwargs)
         finally:
             # stop_all()/emergency_stop_all() は _move_context.clear() を行うため、
@@ -503,43 +568,21 @@ class PM2CD:
         target_position: Optional[int] = None,
         show_position: bool = False,
     ) -> Optional[MotorStatus]:
-        """指定モーターの位置決め移動または停止完了を待つ。
+        """指定モーターの最終停止を待つ。
 
-        backlash=False の位置決めでは、目標位置で inactive になった時点を完了と
-        する。短距離移動では active を観測できないことがあるため、active の観測
-        自体は完了条件にしない。
-
-        backlash=B/S の位置決めでは、装置は目標位置を一度通過・停止した後、
-        バックラッシュ点へ移動し、最後に目標位置へ戻ることがある。そのため最初の
-        「目標位置 + inactive」を最終完了とは扱わない。
-
-        バックラッシュ距離が十分長い場合は、
-        目標位置(inactive) -> active -> バックラッシュ点(inactive)
-        -> active -> 目標位置(inactive)
-        の状態遷移を追跡する。
-
-        バックラッシュ距離が短い場合は途中の active/inactive がポーリング間で
-        縮退して観測できるため、途中状態の観測を必須にはしない。最初の目標位置
-        inactive を中間到達として保持し、その後に再度目標位置 inactive を観測
-        した時点を最終到達とする。最初の中間到達自体を観測できず、補正動作全体が
-        ポーリング間で終了した場合も、最終位置が安定して再観測されれば完了できる。
-
-        move()/move_relative() の直後であれば、保存された目標位置・backlash 指定・
-        backlash 値を自動的に使用する。target_position が明示された場合はその値を
-        優先する。位置決めコンテキストがない場合は、stop() 後などの単純な停止待ち
-        として inactive を連続して確認する。
+        完了判定は PM2CDsingle.wait_for_complete() に委譲する。
+        move() と wait_for_complete() が別 worker で実行されても、ctrl 層の
+        SharedContext に保存した move context を参照できる。
 
         Args:
-            motor: モーター番号。0 または 1。None の場合は motor プロパティを使用する。
+            motor: モーター番号。None の場合は motor プロパティを使用する。
             timeout_sec: 待機処理のタイムアウト秒数。
             interval_sec: 状態確認のポーリング間隔秒数。
-            target_position: 完了判定に使う目標位置。None の場合は直前の
-                move()/move_relative() の目標位置を使用する。
-            show_position: True の場合はポーリングごとの現在位置を表示する。
+            target_position: 完了判定に使う絶対目標位置。
+            show_position: True の場合は各ポーリングの現在位置を表示する。
 
         Returns:
-            完了条件を満たした最後の MotorStatus。状態取得失敗または
-            タイムアウト時は None。
+            完了条件を満たした最後の MotorStatus。失敗時は None。
         """
         return self._execute(
             "wait_for_complete",
