@@ -290,101 +290,56 @@ class PM2CDsingle:
     def controller_status(
         self,
     ) -> Optional[ControllerStatus]:
-        """コントローラー全体の状態を取得する。
+        """コントローラー全体の状態を取得する互換メソッド。
 
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        return self._device.controller_status()
+        return self.get_controller_status()
 
     # --- モータ動作 ------------------------------------------------------------
     def move(
         self,
+        target: int,
         motor: Optional[int] = None,
-        pulse: Optional[int] = None,
         backlash: Union[str, bool, None] = True,
+        relative: bool = False,
     ) -> bool:
-        """指定モーターを絶対位置へ移動する。
+        """指定モーターを絶対位置または相対量で移動する。
 
         motor を省略した場合は motor プロパティを使用する。
+        relative=False の場合は target を絶対目標位置として扱い、
+        relative=True の場合は target を現在位置からの相対移動量として扱う。
         wait_for_complete() がバックラッシュ補正を含む位置決め完了を判定できるよう、
-        コマンド送信成功時に目標位置とバックラッシュ条件を保存する。
+        コマンド送信成功時に最終的な絶対目標位置とバックラッシュ条件を保存する。
 
         Args:
+            target: 絶対目標位置。relative=True の場合は相対移動量。
             motor: モーター番号。0 または 1。None の場合は motor プロパティを使用する。
-            pulse: 絶対目標位置。
             backlash: バックラッシュ補正指定。
+            relative: True の場合は相対移動、False の場合は絶対移動。
 
         Returns:
             処理に成功した場合は True、失敗した場合は False。
         """
-        if pulse is None:
-            if motor is None:
-                raise TypeError("move() の引数が不足しています")
-            pulse = motor
-            motor = None
-
-        if pulse is None:
-            raise TypeError("move() の pulse を指定してください")
-
         motor = self._resolve_motor(motor)
+
+        target_position = target
+        if relative:
+            current_position = self.get_position(motor)
+            target_position = None
+            if current_position is not None:
+                target_position = current_position + target
 
         backlash_value = None
         if self._backlash_enabled(backlash):
             backlash_value = self.get_backlash(motor)
 
-        result = self._device.move(motor, pulse, backlash)
-        if result:
-            self._set_move_context(
-                motor=motor,
-                target_position=pulse,
-                backlash=backlash,
-                backlash_value=backlash_value,
-            )
+        if relative:
+            result = self._device.move_relative(motor, target, backlash)
+        else:
+            result = self._device.move(motor, target, backlash)
 
-        return result
-
-    def move_relative(
-        self,
-        motor: Optional[int] = None,
-        pulse: Optional[int] = None,
-        backlash: Union[str, bool, None] = True,
-    ) -> bool:
-        """指定モーターを現在位置から相対移動する。
-
-        motor を省略した場合は motor プロパティを使用する。
-        相対移動では wait_for_complete() の最終位置判定に必要なため、送信前の現在位置
-        から絶対目標位置を求めて保存する。
-
-        Args:
-            motor: モーター番号。0 または 1。None の場合は motor プロパティを使用する。
-            pulse: 相対移動量。
-            backlash: バックラッシュ補正指定。
-
-        Returns:
-            処理に成功した場合は True、失敗した場合は False。
-        """
-        if pulse is None:
-            if motor is None:
-                raise TypeError("move_relative() の引数が不足しています")
-            pulse = motor
-            motor = None
-
-        if pulse is None:
-            raise TypeError("move_relative() の pulse を指定してください")
-
-        motor = self._resolve_motor(motor)
-
-        current_position = self.get_position(motor)
-        target_position = None
-        if current_position is not None:
-            target_position = current_position + pulse
-
-        backlash_value = None
-        if self._backlash_enabled(backlash):
-            backlash_value = self.get_backlash(motor)
-
-        result = self._device.move_relative(motor, pulse, backlash)
         if result:
             self._set_move_context(
                 motor=motor,
@@ -394,6 +349,31 @@ class PM2CDsingle:
             )
 
         return result
+
+    def move_relative(
+        self,
+        target: int,
+        motor: Optional[int] = None,
+        backlash: Union[str, bool, None] = True,
+    ) -> bool:
+        """指定モーターを現在位置から相対移動する。
+
+        move(..., relative=True) と同じ動作をする互換メソッド。
+
+        Args:
+            target: 相対移動量。
+            motor: モーター番号。0 または 1。None の場合は motor プロパティを使用する。
+            backlash: バックラッシュ補正指定。
+
+        Returns:
+            処理に成功した場合は True、失敗した場合は False。
+        """
+        return self.move(
+            target=target,
+            motor=motor,
+            backlash=backlash,
+            relative=True,
+        )
 
     def scan(
         self,
@@ -624,12 +604,12 @@ class PM2CDsingle:
     def status_all(
         self,
     ) -> Optional[List[MotorStatus]]:
-        """全モーターの状態を取得する。
+        """全モーターの状態を取得する互換メソッド。
 
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        return self._device.status_all()
+        return self.get_status_all()
 
     def get_rotate(
         self,
@@ -671,6 +651,7 @@ class PM2CDsingle:
         timeout_sec: float = 30.0,
         interval_sec: float = 0.1,
         target_position: Optional[int] = None,
+        show_position: bool = False,
     ) -> Optional[MotorStatus]:
         """指定モーターの位置決め移動または停止完了を待つ。
 
@@ -704,6 +685,7 @@ class PM2CDsingle:
             interval_sec: 状態確認のポーリング間隔秒数。
             target_position: 完了判定に使う目標位置。None の場合は直前の
                 move()/move_relative() の目標位置を使用する。
+            show_position: True の場合はポーリングごとの現在位置を表示する。
 
         Returns:
             完了条件を満たした最後の MotorStatus。状態取得失敗または
@@ -744,6 +726,9 @@ class PM2CDsingle:
             status = self.get_status(motor)
             if status is None:
                 return None
+
+            if show_position:
+                print(status.position, flush=True)
 
             active = self._motion_active(status)
 
@@ -2161,7 +2146,7 @@ def main2() -> None:
             print("PM2CD へ接続できませんでした")
             return
         ctrl.remote()
-        ctrl.move(0, 1000)
+        ctrl.move(1000, motor=0)
         ctrl.wait_for_complete()
         ret = ctrl.get_position()
         print(ret)

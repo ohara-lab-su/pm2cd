@@ -279,48 +279,57 @@ class PM2CD:
 
     def move(
         self,
+        target: int,
         motor: Optional[int] = None,
-        pulse: Optional[int] = None,
         backlash: Union[str, bool, None] = True,
+        relative: bool = False,
     ) -> bool:
-        """指定モーターを絶対位置へ移動する。
+        """指定モーターを絶対位置または相対量で移動する。
 
-        motor を省略した場合は motor プロパティを使用する。
-        wait_for_complete() がバックラッシュ補正を含む位置決め完了を判定できるよう、
-        コマンド送信成功時に目標位置とバックラッシュ条件を保存する。
+        motor を省略した場合は worker 側の motor プロパティを使用する。
+        relative=False の場合は target を絶対目標位置として扱い、
+        relative=True の場合は target を現在位置からの相対移動量として扱う。
 
         Args:
+            target: 絶対目標位置。relative=True の場合は相対移動量。
             motor: モーター番号。0 または 1。None の場合は motor プロパティを使用する。
-            pulse: 絶対目標位置。
             backlash: バックラッシュ補正指定。
-
-        Returns:
-            処理に成功した場合は True、失敗した場合は False。
-        """
-        return self._execute("move", motor=motor, pulse=pulse, backlash=backlash)
-
-    def move_relative(
-        self,
-        motor: Optional[int] = None,
-        pulse: Optional[int] = None,
-        backlash: Union[str, bool, None] = True,
-    ) -> bool:
-        """指定モーターを現在位置から相対移動する。
-
-        motor を省略した場合は motor プロパティを使用する。
-        相対移動では wait_for_complete() の最終位置判定に必要なため、送信前の現在位置
-        から絶対目標位置を求めて保存する。
-
-        Args:
-            motor: モーター番号。0 または 1。None の場合は motor プロパティを使用する。
-            pulse: 相対移動量。
-            backlash: バックラッシュ補正指定。
+            relative: True の場合は相対移動、False の場合は絶対移動。
 
         Returns:
             処理に成功した場合は True、失敗した場合は False。
         """
         return self._execute(
-            "move_relative", motor=motor, pulse=pulse, backlash=backlash
+            "move",
+            target=target,
+            motor=motor,
+            backlash=backlash,
+            relative=relative,
+        )
+
+    def move_relative(
+        self,
+        target: int,
+        motor: Optional[int] = None,
+        backlash: Union[str, bool, None] = True,
+    ) -> bool:
+        """指定モーターを現在位置から相対移動する。
+
+        move(..., relative=True) と同じ動作をする互換メソッド。
+
+        Args:
+            target: 相対移動量。
+            motor: モーター番号。0 または 1。None の場合は motor プロパティを使用する。
+            backlash: バックラッシュ補正指定。
+
+        Returns:
+            処理に成功した場合は True、失敗した場合は False。
+        """
+        return self.move(
+            target=target,
+            motor=motor,
+            backlash=backlash,
+            relative=True,
         )
 
     def scan(
@@ -457,12 +466,12 @@ class PM2CD:
         return self._execute("get_status_all")
 
     def status_all(self) -> Optional[List[MotorStatus]]:
-        """全モーターの状態を取得する。
+        """全モーターの状態を取得する互換メソッド。
 
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        return self._execute("status_all")
+        return self.get_status_all()
 
     def get_rotate(self, motor: Optional[int] = None) -> Optional[bool]:
         """指定モーターが回転中か確認する。
@@ -492,6 +501,7 @@ class PM2CD:
         timeout_sec: float = 30.0,
         interval_sec: float = 0.1,
         target_position: Optional[int] = None,
+        show_position: bool = False,
     ) -> Optional[MotorStatus]:
         """指定モーターの位置決め移動または停止完了を待つ。
 
@@ -525,6 +535,7 @@ class PM2CD:
             interval_sec: 状態確認のポーリング間隔秒数。
             target_position: 完了判定に使う目標位置。None の場合は直前の
                 move()/move_relative() の目標位置を使用する。
+            show_position: True の場合はポーリングごとの現在位置を表示する。
 
         Returns:
             完了条件を満たした最後の MotorStatus。状態取得失敗または
@@ -536,6 +547,7 @@ class PM2CD:
             timeout_sec=timeout_sec,
             interval_sec=interval_sec,
             target_position=target_position,
+            show_position=show_position,
         )
 
     def get_position(self, motor: Optional[int] = None) -> Optional[int]:
