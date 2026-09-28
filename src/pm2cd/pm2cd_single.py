@@ -2132,5 +2132,45 @@ def main() -> None:
         ctrl.close()
 
 
+def main1() -> None:
+    ip_address = "10.170.10.62"
+    port = 7777
+
+    ctrl = PM2CDsingle(ip_address=ip_address, port=port)
+    ctrl.remote()
+
+    try:
+        if not ctrl.is_connected():
+            print("PM2CD へ接続できませんでした")
+            return
+
+        version = ctrl.version()
+        print(f"version: {version}")
+
+    finally:
+        ctrl.close()
+
+
+def main2() -> None:
+    ip_address = "10.170.10.62"
+    port = 7777
+
+    ctrl = PM2CDsingle(ip_address=ip_address, port=port)
+    try:
+        if not ctrl.is_connected():
+            print("PM2CD へ接続できませんでした")
+            return
+        ctrl.remote()
+        ctrl.move(0, 1000)
+        ctrl.wait_for_complete()
+        ret = ctrl.get_position()
+        print(ret)
+
+    finally:
+        ctrl.close()
+
+
 if __name__ == "__main__":
-    main()
+    # main()
+    # main1()
+    main2()
