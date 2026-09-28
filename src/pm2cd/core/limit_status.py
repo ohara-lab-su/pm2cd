@@ -17,6 +17,16 @@ class LimitStatus:
     soft_cw: bool
     soft_ccw: bool
 
+    @property
+    def hard(self) -> List[bool]:
+        """ハードウェアLS現在状態を ``[CW, CCW, HP]`` で返す。"""
+        return [self.hard_cw, self.hard_ccw, self.hard_hp]
+
+    @property
+    def soft(self) -> List[bool]:
+        """ソフトウェアLS現在状態を ``[CW, CCW]`` で返す。"""
+        return [self.soft_cw, self.soft_ccw]
+
 
 def parse_limit_status_all(raw: str) -> Optional[List[LimitStatus]]:
     """``HDSTLS?`` の ``abcdHHHHSSSS`` 応答を解析する。"""

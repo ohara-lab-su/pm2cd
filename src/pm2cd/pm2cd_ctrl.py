@@ -19,7 +19,6 @@ from process_executor import ProcessExecutor
 from process_executor.shared_context import SharedContext
 from x_logger import XLogger
 
-
 _SHARED_MOTOR_KEY = "__motor__"
 _MOVE_CONTEXT_PREFIX = "__move_context__:"
 _DISPATCH_HANDLER = "__process_executor_dispatch__"
@@ -276,6 +275,7 @@ class PM2CD:
 
     def connect(self) -> bool:
         """PM2CD へ TCP 接続する。
+
 
         Returns:
             処理に成功した場合は True、失敗した場合は False。
@@ -934,7 +934,7 @@ class PM2CD:
     def get_hard_limit_enabled(
         self, motor: Optional[int] = None
     ) -> Optional[List[bool]]:
-        """ハードウェアリミット enable 設定を ``[CW, CCW, HP]`` で取得する。"""
+        """CW/CCW ハードウェアLSの enable 設定を ``[CW, CCW]`` で取得する。"""
         return self._execute("get_hard_limit_enabled", motor=motor)
 
     def set_hard_limit_enabled(

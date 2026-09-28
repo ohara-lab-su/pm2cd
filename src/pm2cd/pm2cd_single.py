@@ -1334,13 +1334,16 @@ class PM2CDsingle:
         self,
         motor: Optional[int] = None,
     ) -> Optional[List[bool]]:
-        """ハードウェアリミット enable 設定を ``[CW, CCW, HP]`` で取得する。"""
+        """CW/CCW ハードウェアLSの enable 設定を ``[CW, CCW]`` で取得する。
+
+        HP LS は PM2C/PM4C-06A では常時 enable のため返さない。
+        """
         motor = self._resolve_motor(motor)
         setting = self._device.limit_switch_setting(motor)
         if setting is None:
             return None
 
-        return [setting.cw_enabled, setting.ccw_enabled, setting.hp_enabled]
+        return [setting.cw_enabled, setting.ccw_enabled]
 
     def set_hard_limit_enabled(
         self,
@@ -1799,8 +1802,9 @@ class PM2CDsingle:
         """リミット設定を意味値のリストで取得する。
 
         Returns:
-            ``[software_enable, CW_enable, CCW_enable, HP_enable,
+            ``[digital_limit_enable, CW_enable, CCW_enable,
             CW_normally_closed, CCW_normally_closed, HP_normally_closed]``。
+            HP LS は常時 enable のため enable 値には含めない。
             取得に失敗した場合は None。
         """
         motor = self._resolve_motor(motor)
@@ -1812,7 +1816,6 @@ class PM2CDsingle:
             setting.digital_limit_enabled,
             setting.cw_enabled,
             setting.ccw_enabled,
-            setting.hp_enabled,
             setting.cw_nc,
             setting.ccw_nc,
             setting.hp_nc,

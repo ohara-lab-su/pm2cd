@@ -1565,7 +1565,11 @@ class PM2CDDevice:
             self._logger.error(f'SETLS設定値を解釈できません: {setting!r}')
             return False
 
-        return self._communication.send(f'SETLS{motor_text}{parsed.raw}')
+        # SETLS? の応答形式は DYYY0yyy だが、PM□C-06 の書き込み形式は
+        # D1YY0yyy。HP LS enable を 1 に固定し、CCW の設定を CW にも
+        # 適用した canonical な書き込み値へ変換して送信する。
+        write_raw = parsed.to_write_raw()
+        return self._communication.send(f'SETLS{motor_text}{write_raw}')
 
     def motor_setting(
         self,
