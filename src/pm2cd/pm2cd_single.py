@@ -699,7 +699,7 @@ class PM2CDsingle:
                 return None
 
             if show_position:
-                self._logger.info(status.position, flush=True)
+                self._logger.info(f"motor = {motor}, {status.position}")
 
             active = self._motion_active(status)
 
@@ -2090,7 +2090,7 @@ def main2() -> None:
             print("PM2CD へ接続できませんでした")
             return
         ctrl.remote()
-        ctrl.move(0, motor=0)
+        ctrl.move(0, motor=1)
         ctrl.wait_for_complete()
         ret = ctrl.get_position()
         print(ret)

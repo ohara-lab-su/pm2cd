@@ -1,13 +1,14 @@
 import time
 
-from pm2cd.pm2cd_ctrl import PM2CD
+# from pm2cd.pm2cd_ctrl import PM2CD
+from pm2cd.pm2cd_single import PM2CDsingle as PM2CD
 from x_logger import XLogger
 
 IP_ADDRESS = "10.170.10.62"
 PORT = 7777
 TIMEOUT_SEC = 3.0
 MOTION_TIMEOUT_SEC = 30.0
-TARGET = 0
+TARGET = 2000
 
 
 def main():
