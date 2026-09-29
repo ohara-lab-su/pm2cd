@@ -10,19 +10,20 @@ MOTOR = 0
 TARGET = 1000
 
 
+def wait_motion(ctrl: PM2CD, wait_result: dict) -> None:
+    wait_result["status"] = ctrl.wait_for_complete(show_position=False)
+
+
 def main() -> None:
     ctrl = PM2CD(IP_ADDRESS, worker_count=2)
     wait_result = {}
-
-    def wait_motion() -> None:
-        wait_result["status"] = ctrl.wait_for_complete(show_position=False)
 
     try:
         ctrl.remote()
         ctrl.motor = MOTOR
         print("move:", ctrl.move(TARGET, backlash=True))
 
-        thread = threading.Thread(target=wait_motion)
+        thread = threading.Thread(target=wait_motion, args=(ctrl, wait_result))
         thread.start()
 
         while thread.is_alive():

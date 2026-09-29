@@ -647,7 +647,7 @@ class PM2CDsingle:
         timeout_sec: float = 30.0,
         interval_sec: float = 0.1,
         target_position: Optional[int] = None,
-        show_position: bool = False,
+        show_position: bool = True,
     ) -> Optional[MotorStatus]:
         """指定モーターの最終停止を待つ。
 
@@ -699,7 +699,7 @@ class PM2CDsingle:
                 return None
 
             if show_position:
-                print(status.position, flush=True)
+                self._logger.info(status.position, flush=True)
 
             active = self._motion_active(status)
 
@@ -2090,7 +2090,7 @@ def main2() -> None:
             print("PM2CD へ接続できませんでした")
             return
         ctrl.remote()
-        ctrl.move(1000, motor=0)
+        ctrl.move(0, motor=0)
         ctrl.wait_for_complete()
         ret = ctrl.get_position()
         print(ret)

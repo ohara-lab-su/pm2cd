@@ -229,6 +229,8 @@ class PM2CD:
         with self._shared_context.lock:
             self._shared_context.state[_SHARED_MOTOR_KEY] = 0
 
+        self._closed = False
+
     @property
     def motor(self) -> int:
         """引数省略時に使用するモーター番号を取得する。"""
@@ -271,6 +273,8 @@ class PM2CD:
         Returns:
             接続中の場合は True、それ以外は False。
         """
+        if self._closed:
+            return False
         return self._execute("is_connected")
 
     def connect(self) -> bool:
@@ -1321,6 +1325,10 @@ class PM2CD:
 
     def close(self) -> bool:
         """worker、共有通信、Communication manager を終了する。"""
+        if self._closed:
+            return True
+
+        self._closed = True
         result = False
 
         try:

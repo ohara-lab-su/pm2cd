@@ -1,31 +1,5 @@
 # CHANGELOG
 
-## 2026-09-28 — SETLS / limit core 修正
-
-### Fixed
-
-- `SETLS?x` の応答 `DYYY0yyy` を、各文字の意味を保持したまま解析するよう
-  `LimitSwitchSetting` を修正した。
-    - `D`: digital limit enable
-    - 3個の `Y`: HP / CCW / CW LS enable
-    - 固定 `0`
-    - 3個の `y`: HP / CCW / CW LS の接点仕様（1=N.C., 0=N.O.）
-- PM□C-06 の書き込み仕様 `D1YY0yyy` を `DYYY0yyy` の読み出し形式と分離した。
-  書き込み時は HP LS enable を常に `1` とし、CCW LS の enable 設定を
-  CW LS にも適用する。
-- PM□C-06 では CCW LS と CW LS の接点仕様が同一になるため、
-  CW/CCW の接点設定を同じ値として書き込むよう修正した。
-- `LimitSwitchSetting` は読み出し生値を `raw_*` として保持しつつ、
-  `hp_enabled` / `cw_enabled` / `ccw_enabled` および
-  `cw_nc` / `ccw_nc` では PM□C-06 における実効値を返すようにした。
-- `set_limit_switch_setting_raw()` は読み出し形式をそのまま送信せず、
-  PM□C-06 用の canonical な `D1YY0yyy` に変換してから `SETLSx...`
-  を送信するよう修正した。
-- `HDSTLS?` の現在状態を保持する `LimitStatus` に、既存の
-  `PM2CDsingle.get_limit_status*()` が使用する `soft` property と
-  `get_hard_limit_status*()` が使用する `hard` property を追加した。
-- `SETLS?` の設定値と `HDSTLS?` の現在状態は別の情報として扱う。
-
 ## v0.1.0 --- 2026-09-14
 
 v0.0.3 までの `PM2CDsingle` を単一 process
