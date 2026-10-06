@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+# p !/usr/bin/env python
 # coding: utf-8
 """PM2CD の multiprocessing 対応公開 I/F。"""
 
@@ -19,9 +19,64 @@ from process_executor import ProcessExecutor
 from process_executor.shared_context import SharedContext
 from x_logger import XLogger
 
-
 _SHARED_MOTOR_KEY = "__motor__"
+_MOVE_CONTEXT_PREFIX = "__move_context__:"
 _DISPATCH_HANDLER = "__process_executor_dispatch__"
+_MOTION_START_METHODS = {
+    "move",
+    "move_relative",
+    "scan",
+    "constant_speed_scan",
+    "jog",
+    "scan_home",
+    "home",
+    "find_home",
+}
+
+
+class _SharedMoveContext:
+    """SharedContext.state 内の move context だけを mapping として公開する。
+
+    PM2CDsingle は通常の dict と同じ ``get/set/del/clear`` だけを使用する。
+    ctrl 層では motor など他の共有状態と名前空間を分離し、全 worker から
+    同じ移動条件を参照できるようにする。
+    """
+
+    def __init__(self, context: SharedContext) -> None:
+        self._state = context.state
+        self._lock = context.lock
+
+    def _key(self, motor: int) -> str:
+        return f"{_MOVE_CONTEXT_PREFIX}{motor}"
+
+    def get(self, motor: int, default: Any = None) -> Any:
+        with self._lock:
+            value = self._state.get(self._key(motor), default)
+            if isinstance(value, dict):
+                return dict(value)
+            return value
+
+    def __setitem__(self, motor: int, value: Any) -> None:
+        with self._lock:
+            self._state[self._key(motor)] = value
+
+    def __delitem__(self, motor: int) -> None:
+        with self._lock:
+            del self._state[self._key(motor)]
+
+    def __contains__(self, motor: int) -> bool:
+        with self._lock:
+            return self._key(motor) in self._state
+
+    def clear(self) -> None:
+        with self._lock:
+            keys = [
+                key
+                for key in self._state.keys()
+                if isinstance(key, str) and key.startswith(_MOVE_CONTEXT_PREFIX)
+            ]
+            for key in keys:
+                del self._state[key]
 
 
 class _CommunicationManager(BaseManager):
@@ -62,9 +117,10 @@ def _create_worker(
         log_level=log_level,
     )
 
-    # move()/move_relative() と wait_for_complete() の間で使用する
-    # 移動条件を全 worker で共有する。
-    worker._move_context = context.state
+    # move() と wait_for_complete() が別 worker で実行されても、
+    # 完了判定に必要な最小限の移動条件を共有できるようにする。
+    # SharedContext.state 全体を直接渡さず、専用 namespace だけを公開する。
+    worker._move_context = _SharedMoveContext(context)
 
     def dispatch(
         instance: PM2CDsingle,
@@ -78,6 +134,14 @@ def _create_worker(
 
         try:
             handler = getattr(instance, method)
+
+            # 移動開始処理だけを短時間直列化する。REL の場合は
+            # 「現在位置取得 -> REL送信 -> move context保存」を一続きに扱う。
+            # wait/status/stop はこの lock の対象にせず、別 worker から実行できる。
+            if method in _MOTION_START_METHODS:
+                with context.lock:
+                    return handler(*args, **kwargs)
+
             return handler(*args, **kwargs)
         finally:
             # stop_all()/emergency_stop_all() は _move_context.clear() を行うため、
@@ -165,6 +229,8 @@ class PM2CD:
         with self._shared_context.lock:
             self._shared_context.state[_SHARED_MOTOR_KEY] = 0
 
+        self._closed = False
+
     @property
     def motor(self) -> int:
         """引数省略時に使用するモーター番号を取得する。"""
@@ -207,10 +273,13 @@ class PM2CD:
         Returns:
             接続中の場合は True、それ以外は False。
         """
+        if self._closed:
+            return False
         return self._execute("is_connected")
 
     def connect(self) -> bool:
         """PM2CD へ TCP 接続する。
+
 
         Returns:
             処理に成功した場合は True、失敗した場合は False。
@@ -277,51 +346,64 @@ class PM2CD:
         """
         return self._execute("controller_status")
 
-    def move(self, motor: Optional[int]=None, pulse: Optional[int]=None, backlash: Union[str, bool, None]=True) -> bool:
-        """指定モーターを絶対位置へ移動する。
+    def move(
+        self,
+        target: int,
+        motor: Optional[int] = None,
+        backlash: Union[str, bool, None] = True,
+        relative: bool = False,
+    ) -> bool:
+        """指定モーターを絶対位置または相対量で移動する。
 
-        motor を省略した場合は motor プロパティを使用する。
-        wait_for_complete() がバックラッシュ補正を含む位置決め完了を判定できるよう、
-        コマンド送信成功時に目標位置とバックラッシュ条件を保存する。
+        motor を省略した場合は worker 側の motor プロパティを使用する。
+        relative=False の場合は target を絶対目標位置として扱い、
+        relative=True の場合は target を現在位置からの相対移動量として扱う。
 
         Args:
+            target: 絶対目標位置。relative=True の場合は相対移動量。
             motor: モーター番号。0 または 1。None の場合は motor プロパティを使用する。
-            pulse: 絶対目標位置。
             backlash: バックラッシュ補正指定。
+            relative: True の場合は相対移動、False の場合は絶対移動。
 
         Returns:
             処理に成功した場合は True、失敗した場合は False。
         """
         return self._execute(
             "move",
+            target=target,
             motor=motor,
-            pulse=pulse,
-            backlash=backlash
+            backlash=backlash,
+            relative=relative,
         )
 
-    def move_relative(self, motor: Optional[int]=None, pulse: Optional[int]=None, backlash: Union[str, bool, None]=True) -> bool:
+    def move_relative(
+        self,
+        target: int,
+        motor: Optional[int] = None,
+        backlash: Union[str, bool, None] = True,
+    ) -> bool:
         """指定モーターを現在位置から相対移動する。
 
-        motor を省略した場合は motor プロパティを使用する。
-        相対移動では wait_for_complete() の最終位置判定に必要なため、送信前の現在位置
-        から絶対目標位置を求めて保存する。
+        move(..., relative=True) と同じ動作をする互換メソッド。
 
         Args:
+            target: 相対移動量。
             motor: モーター番号。0 または 1。None の場合は motor プロパティを使用する。
-            pulse: 相対移動量。
             backlash: バックラッシュ補正指定。
 
         Returns:
             処理に成功した場合は True、失敗した場合は False。
         """
-        return self._execute(
-            "move_relative",
+        return self.move(
+            target=target,
             motor=motor,
-            pulse=pulse,
-            backlash=backlash
+            backlash=backlash,
+            relative=True,
         )
 
-    def scan(self, motor: Optional[int]=None, direction: Optional[str]=None) -> bool:
+    def scan(
+        self, motor: Optional[int] = None, direction: Optional[str] = None
+    ) -> bool:
         """指定方向へ連続スキャン動作を開始する。
 
         Args:
@@ -331,13 +413,11 @@ class PM2CD:
         Returns:
             処理に成功した場合は True、失敗した場合は False。
         """
-        return self._execute(
-            "scan",
-            motor=motor,
-            direction=direction
-        )
+        return self._execute("scan", motor=motor, direction=direction)
 
-    def constant_speed_scan(self, motor: Optional[int]=None, direction: Optional[str]=None) -> bool:
+    def constant_speed_scan(
+        self, motor: Optional[int] = None, direction: Optional[str] = None
+    ) -> bool:
         """指定方向へ定速スキャン動作を開始する。
 
         Args:
@@ -347,13 +427,9 @@ class PM2CD:
         Returns:
             処理に成功した場合は True、失敗した場合は False。
         """
-        return self._execute(
-            "constant_speed_scan",
-            motor=motor,
-            direction=direction
-        )
+        return self._execute("constant_speed_scan", motor=motor, direction=direction)
 
-    def jog(self, motor: Optional[int]=None, direction: Optional[str]=None) -> bool:
+    def jog(self, motor: Optional[int] = None, direction: Optional[str] = None) -> bool:
         """指定方向へ JOG 動作する。
 
         Args:
@@ -363,13 +439,11 @@ class PM2CD:
         Returns:
             処理に成功した場合は True、失敗した場合は False。
         """
-        return self._execute(
-            "jog",
-            motor=motor,
-            direction=direction
-        )
+        return self._execute("jog", motor=motor, direction=direction)
 
-    def scan_home(self, motor: Optional[int]=None, direction: Optional[str]=None) -> bool:
+    def scan_home(
+        self, motor: Optional[int] = None, direction: Optional[str] = None
+    ) -> bool:
         """指定方向へ原点探索スキャンを開始する。
 
         Args:
@@ -379,13 +453,9 @@ class PM2CD:
         Returns:
             処理に成功した場合は True、失敗した場合は False。
         """
-        return self._execute(
-            "scan_home",
-            motor=motor,
-            direction=direction
-        )
+        return self._execute("scan_home", motor=motor, direction=direction)
 
-    def home(self, motor: Optional[int]=None) -> bool:
+    def home(self, motor: Optional[int] = None) -> bool:
         """記録済み原点位置へ移動する。
 
         Args:
@@ -394,12 +464,9 @@ class PM2CD:
         Returns:
             処理に成功した場合は True、失敗した場合は False。
         """
-        return self._execute(
-            "home",
-            motor=motor
-        )
+        return self._execute("home", motor=motor)
 
-    def find_home(self, motor: Optional[int]=None) -> bool:
+    def find_home(self, motor: Optional[int] = None) -> bool:
         """原点検出動作を開始する。
 
         Args:
@@ -408,12 +475,9 @@ class PM2CD:
         Returns:
             処理に成功した場合は True、失敗した場合は False。
         """
-        return self._execute(
-            "find_home",
-            motor=motor
-        )
+        return self._execute("find_home", motor=motor)
 
-    def stop(self, motor: Optional[int]=None) -> bool:
+    def stop(self, motor: Optional[int] = None) -> bool:
         """指定モーターを停止する。
 
         Args:
@@ -422,10 +486,7 @@ class PM2CD:
         Returns:
             処理に成功した場合は True、失敗した場合は False。
         """
-        return self._execute(
-            "stop",
-            motor=motor
-        )
+        return self._execute("stop", motor=motor)
 
     def stop_all(self) -> bool:
         """全モーターを停止する。
@@ -435,7 +496,7 @@ class PM2CD:
         """
         return self._execute("stop_all")
 
-    def emergency_stop(self, motor: Optional[int]=None) -> bool:
+    def emergency_stop(self, motor: Optional[int] = None) -> bool:
         """指定モーターを非常停止する。
 
         Args:
@@ -444,10 +505,7 @@ class PM2CD:
         Returns:
             処理に成功した場合は True、失敗した場合は False。
         """
-        return self._execute(
-            "emergency_stop",
-            motor=motor
-        )
+        return self._execute("emergency_stop", motor=motor)
 
     def emergency_stop_all(self) -> bool:
         """全モーターを非常停止する。
@@ -457,7 +515,7 @@ class PM2CD:
         """
         return self._execute("emergency_stop_all")
 
-    def get_status(self, motor: Optional[int]=None) -> Optional[MotorStatus]:
+    def get_status(self, motor: Optional[int] = None) -> Optional[MotorStatus]:
         """指定モーターの状態を取得する。
 
         Args:
@@ -466,10 +524,7 @@ class PM2CD:
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        return self._execute(
-            "get_status",
-            motor=motor
-        )
+        return self._execute("get_status", motor=motor)
 
     def get_status_all(self) -> Optional[List[MotorStatus]]:
         """全モーターの状態を取得する。
@@ -480,14 +535,14 @@ class PM2CD:
         return self._execute("get_status_all")
 
     def status_all(self) -> Optional[List[MotorStatus]]:
-        """全モーターの状態を取得する。
+        """全モーターの状態を取得する互換メソッド。
 
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        return self._execute("status_all")
+        return self.get_status_all()
 
-    def get_rotate(self, motor: Optional[int]=None) -> Optional[bool]:
+    def get_rotate(self, motor: Optional[int] = None) -> Optional[bool]:
         """指定モーターが回転中か確認する。
 
         Args:
@@ -496,12 +551,9 @@ class PM2CD:
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        return self._execute(
-            "get_rotate",
-            motor=motor
-        )
+        return self._execute("get_rotate", motor=motor)
 
-    def is_busy(self, motor: Optional[int]=None) -> Optional[bool]:
+    def is_busy(self, motor: Optional[int] = None) -> Optional[bool]:
         """指定モーターの BUSY 状態を取得する。
 
         Args:
@@ -510,58 +562,42 @@ class PM2CD:
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        return self._execute(
-            "is_busy",
-            motor=motor
-        )
+        return self._execute("is_busy", motor=motor)
 
-    def wait_for_complete(self, motor: Optional[int]=None, timeout_sec: float=30.0, interval_sec: float=0.1, target_position: Optional[int]=None) -> Optional[MotorStatus]:
-        """指定モーターの位置決め移動または停止完了を待つ。
+    def wait_for_complete(
+        self,
+        motor: Optional[int] = None,
+        timeout_sec: float = 30.0,
+        interval_sec: float = 0.1,
+        target_position: Optional[int] = None,
+        show_position: bool = True,
+    ) -> Optional[MotorStatus]:
+        """指定モーターの最終停止を待つ。
 
-        backlash=False の位置決めでは、目標位置で inactive になった時点を完了と
-        する。短距離移動では active を観測できないことがあるため、active の観測
-        自体は完了条件にしない。
-
-        backlash=B/S の位置決めでは、装置は目標位置を一度通過・停止した後、
-        バックラッシュ点へ移動し、最後に目標位置へ戻ることがある。そのため最初の
-        「目標位置 + inactive」を最終完了とは扱わない。
-
-        バックラッシュ距離が十分長い場合は、
-        目標位置(inactive) -> active -> バックラッシュ点(inactive)
-        -> active -> 目標位置(inactive)
-        の状態遷移を追跡する。
-
-        バックラッシュ距離が短い場合は途中の active/inactive がポーリング間で
-        縮退して観測できるため、途中状態の観測を必須にはしない。最初の目標位置
-        inactive を中間到達として保持し、その後に再度目標位置 inactive を観測
-        した時点を最終到達とする。最初の中間到達自体を観測できず、補正動作全体が
-        ポーリング間で終了した場合も、最終位置が安定して再観測されれば完了できる。
-
-        move()/move_relative() の直後であれば、保存された目標位置・backlash 指定・
-        backlash 値を自動的に使用する。target_position が明示された場合はその値を
-        優先する。位置決めコンテキストがない場合は、stop() 後などの単純な停止待ち
-        として inactive を連続して確認する。
+        完了判定は PM2CDsingle.wait_for_complete() に委譲する。
+        move() と wait_for_complete() が別 worker で実行されても、ctrl 層の
+        SharedContext に保存した move context を参照できる。
 
         Args:
-            motor: モーター番号。0 または 1。None の場合は motor プロパティを使用する。
+            motor: モーター番号。None の場合は motor プロパティを使用する。
             timeout_sec: 待機処理のタイムアウト秒数。
             interval_sec: 状態確認のポーリング間隔秒数。
-            target_position: 完了判定に使う目標位置。None の場合は直前の
-                move()/move_relative() の目標位置を使用する。
+            target_position: 完了判定に使う絶対目標位置。
+            show_position: True の場合は各ポーリングの現在位置を表示する。
 
         Returns:
-            完了条件を満たした最後の MotorStatus。状態取得失敗または
-            タイムアウト時は None。
+            完了条件を満たした最後の MotorStatus。失敗時は None。
         """
         return self._execute(
             "wait_for_complete",
             motor=motor,
             timeout_sec=timeout_sec,
             interval_sec=interval_sec,
-            target_position=target_position
+            target_position=target_position,
+            show_position=show_position,
         )
 
-    def get_position(self, motor: Optional[int]=None) -> Optional[int]:
+    def get_position(self, motor: Optional[int] = None) -> Optional[int]:
         """指定モーターの現在位置を取得する。
 
         Args:
@@ -570,12 +606,11 @@ class PM2CD:
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        return self._execute(
-            "get_position",
-            motor=motor
-        )
+        return self._execute("get_position", motor=motor)
 
-    def set_position(self, motor: Optional[int]=None, pulse: Optional[int]=None) -> bool:
+    def set_position(
+        self, motor: Optional[int] = None, pulse: Optional[int] = None
+    ) -> bool:
         """指定モーターの現在位置カウンタを設定する。
 
         Args:
@@ -585,13 +620,9 @@ class PM2CD:
         Returns:
             処理に成功した場合は True、失敗した場合は False。
         """
-        return self._execute(
-            "set_position",
-            motor=motor,
-            pulse=pulse
-        )
+        return self._execute("set_position", motor=motor, pulse=pulse)
 
-    def zero_position(self, motor: Optional[int]=None) -> bool:
+    def zero_position(self, motor: Optional[int] = None) -> bool:
         """指定モーターの現在位置カウンタを 0 にする。
 
         Args:
@@ -600,12 +631,9 @@ class PM2CD:
         Returns:
             処理に成功した場合は True、失敗した場合は False。
         """
-        return self._execute(
-            "zero_position",
-            motor=motor
-        )
+        return self._execute("zero_position", motor=motor)
 
-    def get_speed(self, motor: Optional[int]=None) -> Optional[int]:
+    def get_speed(self, motor: Optional[int] = None) -> Optional[int]:
         """set_speed() の基準となる高速設定値を取得する。
 
         Args:
@@ -614,12 +642,11 @@ class PM2CD:
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        return self._execute(
-            "get_speed",
-            motor=motor
-        )
+        return self._execute("get_speed", motor=motor)
 
-    def set_speed(self, motor: Optional[int]=None, speed: Optional[int]=None) -> bool:
+    def set_speed(
+        self, motor: Optional[int] = None, speed: Optional[int] = None
+    ) -> bool:
         """高速値を基準に低速・中速・高速を設定する。
 
         Args:
@@ -629,13 +656,9 @@ class PM2CD:
         Returns:
             処理に成功した場合は True、失敗した場合は False。
         """
-        return self._execute(
-            "set_speed",
-            motor=motor,
-            speed=speed
-        )
+        return self._execute("set_speed", motor=motor, speed=speed)
 
-    def get_speed_profile(self, motor: Optional[int]=None) -> Optional[List[int]]:
+    def get_speed_profile(self, motor: Optional[int] = None) -> Optional[List[int]]:
         """低速・中速・高速の設定値を取得する。
 
         Args:
@@ -644,12 +667,15 @@ class PM2CD:
         Returns:
             低速・中速・高速の順の設定値。取得に失敗した場合は None。
         """
-        return self._execute(
-            "get_speed_profile",
-            motor=motor
-        )
+        return self._execute("get_speed_profile", motor=motor)
 
-    def set_speed_profile(self, motor: Optional[int]=None, low_speed: Optional[int]=None, middle_speed: Optional[int]=None, high_speed: Optional[int]=None) -> bool:
+    def set_speed_profile(
+        self,
+        motor: Optional[int] = None,
+        low_speed: Optional[int] = None,
+        middle_speed: Optional[int] = None,
+        high_speed: Optional[int] = None,
+    ) -> bool:
         """低速・中速・高速を個別に設定する。
 
         Args:
@@ -666,10 +692,10 @@ class PM2CD:
             motor=motor,
             low_speed=low_speed,
             middle_speed=middle_speed,
-            high_speed=high_speed
+            high_speed=high_speed,
         )
 
-    def get_high_speed(self, motor: Optional[int]=None) -> Optional[int]:
+    def get_high_speed(self, motor: Optional[int] = None) -> Optional[int]:
         """高速設定値を取得する。
 
         Args:
@@ -678,12 +704,11 @@ class PM2CD:
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        return self._execute(
-            "get_high_speed",
-            motor=motor
-        )
+        return self._execute("get_high_speed", motor=motor)
 
-    def set_high_speed(self, motor: Optional[int]=None, speed: Optional[int]=None) -> bool:
+    def set_high_speed(
+        self, motor: Optional[int] = None, speed: Optional[int] = None
+    ) -> bool:
         """高速設定値を設定する。
 
         Args:
@@ -693,13 +718,9 @@ class PM2CD:
         Returns:
             処理に成功した場合は True、失敗した場合は False。
         """
-        return self._execute(
-            "set_high_speed",
-            motor=motor,
-            speed=speed
-        )
+        return self._execute("set_high_speed", motor=motor, speed=speed)
 
-    def get_middle_speed(self, motor: Optional[int]=None) -> Optional[int]:
+    def get_middle_speed(self, motor: Optional[int] = None) -> Optional[int]:
         """中速設定値を取得する。
 
         Args:
@@ -708,12 +729,11 @@ class PM2CD:
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        return self._execute(
-            "get_middle_speed",
-            motor=motor
-        )
+        return self._execute("get_middle_speed", motor=motor)
 
-    def set_middle_speed(self, motor: Optional[int]=None, speed: Optional[int]=None) -> bool:
+    def set_middle_speed(
+        self, motor: Optional[int] = None, speed: Optional[int] = None
+    ) -> bool:
         """中速設定値を設定する。
 
         Args:
@@ -723,13 +743,9 @@ class PM2CD:
         Returns:
             処理に成功した場合は True、失敗した場合は False。
         """
-        return self._execute(
-            "set_middle_speed",
-            motor=motor,
-            speed=speed
-        )
+        return self._execute("set_middle_speed", motor=motor, speed=speed)
 
-    def get_low_speed(self, motor: Optional[int]=None) -> Optional[int]:
+    def get_low_speed(self, motor: Optional[int] = None) -> Optional[int]:
         """低速設定値を取得する。
 
         Args:
@@ -738,12 +754,11 @@ class PM2CD:
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        return self._execute(
-            "get_low_speed",
-            motor=motor
-        )
+        return self._execute("get_low_speed", motor=motor)
 
-    def set_low_speed(self, motor: Optional[int]=None, speed: Optional[int]=None) -> bool:
+    def set_low_speed(
+        self, motor: Optional[int] = None, speed: Optional[int] = None
+    ) -> bool:
         """低速設定値を設定する。
 
         Args:
@@ -753,13 +768,9 @@ class PM2CD:
         Returns:
             処理に成功した場合は True、失敗した場合は False。
         """
-        return self._execute(
-            "set_low_speed",
-            motor=motor,
-            speed=speed
-        )
+        return self._execute("set_low_speed", motor=motor, speed=speed)
 
-    def get_speed_mode(self, motor: Optional[int]=None) -> Optional[str]:
+    def get_speed_mode(self, motor: Optional[int] = None) -> Optional[str]:
         """現在の速度モードを取得する。
 
         Args:
@@ -768,12 +779,11 @@ class PM2CD:
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        return self._execute(
-            "get_speed_mode",
-            motor=motor
-        )
+        return self._execute("get_speed_mode", motor=motor)
 
-    def set_speed_mode(self, motor: Optional[int]=None, mode: Optional[Union[int, str]]=None) -> bool:
+    def set_speed_mode(
+        self, motor: Optional[int] = None, mode: Optional[Union[int, str]] = None
+    ) -> bool:
         """速度モードを設定する。
 
         Args:
@@ -783,13 +793,9 @@ class PM2CD:
         Returns:
             処理に成功した場合は True、失敗した場合は False。
         """
-        return self._execute(
-            "set_speed_mode",
-            motor=motor,
-            mode=mode
-        )
+        return self._execute("set_speed_mode", motor=motor, mode=mode)
 
-    def get_rate_number(self, motor: Optional[int]=None) -> Optional[int]:
+    def get_rate_number(self, motor: Optional[int] = None) -> Optional[int]:
         """加減速レート番号を取得する。
 
         Args:
@@ -798,12 +804,11 @@ class PM2CD:
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        return self._execute(
-            "get_rate_number",
-            motor=motor
-        )
+        return self._execute("get_rate_number", motor=motor)
 
-    def set_rate_number(self, motor: Optional[int]=None, number: Optional[int]=None) -> bool:
+    def set_rate_number(
+        self, motor: Optional[int] = None, number: Optional[int] = None
+    ) -> bool:
         """加減速レート番号を設定する。
 
         Args:
@@ -813,13 +818,9 @@ class PM2CD:
         Returns:
             処理に成功した場合は True、失敗した場合は False。
         """
-        return self._execute(
-            "set_rate_number",
-            motor=motor,
-            number=number
-        )
+        return self._execute("set_rate_number", motor=motor, number=number)
 
-    def get_rate(self, motor: Optional[int]=None) -> Optional[float]:
+    def get_rate(self, motor: Optional[int] = None) -> Optional[float]:
         """加減速レートを取得する。
 
         Args:
@@ -828,12 +829,11 @@ class PM2CD:
         Returns:
             加減速レート。取得に失敗した場合は None。
         """
-        return self._execute(
-            "get_rate",
-            motor=motor
-        )
+        return self._execute("get_rate", motor=motor)
 
-    def set_rate(self, motor: Optional[int]=None, rate: Optional[float]=None) -> bool:
+    def set_rate(
+        self, motor: Optional[int] = None, rate: Optional[float] = None
+    ) -> bool:
         """加減速レートを設定する。
 
         指定値に最も近いレート番号を選択して設定する。
@@ -848,13 +848,9 @@ class PM2CD:
         Raises:
             TypeError: rate の型が不正な場合。
         """
-        return self._execute(
-            "set_rate",
-            motor=motor,
-            rate=rate
-        )
+        return self._execute("set_rate", motor=motor, rate=rate)
 
-    def get_backlash(self, motor: Optional[int]=None) -> Optional[int]:
+    def get_backlash(self, motor: Optional[int] = None) -> Optional[int]:
         """バックラッシュ補正量を取得する。
 
         Args:
@@ -863,12 +859,11 @@ class PM2CD:
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        return self._execute(
-            "get_backlash",
-            motor=motor
-        )
+        return self._execute("get_backlash", motor=motor)
 
-    def set_backlash(self, motor: Optional[int]=None, backlash: Optional[int]=None) -> bool:
+    def set_backlash(
+        self, motor: Optional[int] = None, backlash: Optional[int] = None
+    ) -> bool:
         """バックラッシュ補正量を設定する。
 
         Args:
@@ -878,13 +873,11 @@ class PM2CD:
         Returns:
             処理に成功した場合は True、失敗した場合は False。
         """
-        return self._execute(
-            "set_backlash",
-            motor=motor,
-            backlash=backlash
-        )
+        return self._execute("set_backlash", motor=motor, backlash=backlash)
 
-    def get_limit(self, motor: Optional[int]=None, side: Optional[str]=None) -> Optional[int]:
+    def get_limit(
+        self, motor: Optional[int] = None, side: Optional[str] = None
+    ) -> Optional[int]:
         """指定側のソフトウェアリミット位置を取得する。
 
         Args:
@@ -894,13 +887,14 @@ class PM2CD:
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        return self._execute(
-            "get_limit",
-            motor=motor,
-            side=side
-        )
+        return self._execute("get_limit", motor=motor, side=side)
 
-    def set_limit(self, motor: Optional[int]=None, side: Optional[str]=None, pulse: Optional[int]=None) -> bool:
+    def set_limit(
+        self,
+        motor: Optional[int] = None,
+        side: Optional[str] = None,
+        pulse: Optional[int] = None,
+    ) -> bool:
         """指定側のソフトウェアリミット位置を設定する。
 
         Args:
@@ -911,76 +905,63 @@ class PM2CD:
         Returns:
             処理に成功した場合は True、失敗した場合は False。
         """
-        return self._execute(
-            "set_limit",
-            motor=motor,
-            side=side,
-            pulse=pulse
-        )
+        return self._execute("set_limit", motor=motor, side=side, pulse=pulse)
 
-    def get_limit_status(self, motor: Optional[int]=None) -> Optional[List[bool]]:
+    def get_limit_status(self, motor: Optional[int] = None) -> Optional[List[bool]]:
         """ソフトウェアリミット状態を ``[CW, CCW]`` で取得する。"""
-        return self._execute(
-            "get_limit_status",
-            motor=motor
-        )
+        return self._execute("get_limit_status", motor=motor)
 
     def get_limit_status_all(self) -> Optional[List[List[bool]]]:
         """全モーターのソフトウェアリミット状態を ``[[CW, CCW], ...]`` で取得する。"""
         return self._execute("get_limit_status_all")
 
-    def get_hard_limit_status(self, motor: Optional[int]=None) -> Optional[List[bool]]:
+    def get_hard_limit_status(
+        self, motor: Optional[int] = None
+    ) -> Optional[List[bool]]:
         """ハードウェアリミット状態を ``[CW, CCW, HP]`` で取得する。"""
-        return self._execute(
-            "get_hard_limit_status",
-            motor=motor
-        )
+        return self._execute("get_hard_limit_status", motor=motor)
 
     def get_hard_limit_status_all(self) -> Optional[List[List[bool]]]:
         """全モーターのハードウェアリミット状態を ``[[CW, CCW, HP], ...]`` で取得する。"""
         return self._execute("get_hard_limit_status_all")
 
-    def get_limit_enabled(self, motor: Optional[int]=None) -> Optional[bool]:
+    def get_limit_enabled(self, motor: Optional[int] = None) -> Optional[bool]:
         """ソフトウェアリミットの有効/無効を取得する。"""
-        return self._execute(
-            "get_limit_enabled",
-            motor=motor
-        )
+        return self._execute("get_limit_enabled", motor=motor)
 
-    def set_limit_enabled(self, motor: Optional[int]=None, enabled: Optional[bool]=None) -> bool:
+    def set_limit_enabled(
+        self, motor: Optional[int] = None, enabled: Optional[bool] = None
+    ) -> bool:
         """ソフトウェアリミットを有効/無効にする。"""
-        return self._execute(
-            "set_limit_enabled",
-            motor=motor,
-            enabled=enabled
-        )
+        return self._execute("set_limit_enabled", motor=motor, enabled=enabled)
 
-    def get_hard_limit_enabled(self, motor: Optional[int]=None) -> Optional[List[bool]]:
-        """ハードウェアリミット enable 設定を ``[CW, CCW, HP]`` で取得する。"""
-        return self._execute(
-            "get_hard_limit_enabled",
-            motor=motor
-        )
+    def get_hard_limit_enabled(
+        self, motor: Optional[int] = None
+    ) -> Optional[List[bool]]:
+        """CW/CCW ハードウェアLSの enable 設定を ``[CW, CCW]`` で取得する。"""
+        return self._execute("get_hard_limit_enabled", motor=motor)
 
-    def set_hard_limit_enabled(self, motor: Optional[int]=None, enabled: Optional[bool]=None) -> bool:
+    def set_hard_limit_enabled(
+        self, motor: Optional[int] = None, enabled: Optional[bool] = None
+    ) -> bool:
         """CW/CCW ハードウェアリミットを有効/無効にする。"""
-        return self._execute(
-            "set_hard_limit_enabled",
-            motor=motor,
-            enabled=enabled
-        )
+        return self._execute("set_hard_limit_enabled", motor=motor, enabled=enabled)
 
-    def get_hard_limit_normally_closed(self, motor: Optional[int]=None) -> Optional[List[bool]]:
+    def get_hard_limit_normally_closed(
+        self, motor: Optional[int] = None
+    ) -> Optional[List[bool]]:
         """ハードウェアLS接点設定を ``[CW, CCW, HP]`` で取得する。
 
         True は normally closed、False は normally open を表す。
         """
-        return self._execute(
-            "get_hard_limit_normally_closed",
-            motor=motor
-        )
+        return self._execute("get_hard_limit_normally_closed", motor=motor)
 
-    def set_hard_limit_normally_closed(self, motor: Optional[int]=None, side: Optional[str]=None, normally_closed: Optional[bool]=None) -> bool:
+    def set_hard_limit_normally_closed(
+        self,
+        motor: Optional[int] = None,
+        side: Optional[str] = None,
+        normally_closed: Optional[bool] = None,
+    ) -> bool:
         """ハードウェアLSの接点仕様を設定する。
 
         Args:
@@ -993,7 +974,7 @@ class PM2CD:
             "set_hard_limit_normally_closed",
             motor=motor,
             side=side,
-            normally_closed=normally_closed
+            normally_closed=normally_closed,
         )
 
     def pause(self) -> bool:
@@ -1020,7 +1001,7 @@ class PM2CD:
         """
         return self._execute("get_pause_status")
 
-    def get_hold(self, motor: Optional[int]=None) -> Optional[str]:
+    def get_hold(self, motor: Optional[int] = None) -> Optional[str]:
         """指定モーターの HOLD 状態を取得する。
 
         Args:
@@ -1029,12 +1010,11 @@ class PM2CD:
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        return self._execute(
-            "get_hold",
-            motor=motor
-        )
+        return self._execute("get_hold", motor=motor)
 
-    def set_hold(self, motor: Optional[int]=None, enabled: Optional[bool]=None) -> bool:
+    def set_hold(
+        self, motor: Optional[int] = None, enabled: Optional[bool] = None
+    ) -> bool:
         """指定モーターの HOLD 状態を設定する。
 
         Args:
@@ -1044,13 +1024,9 @@ class PM2CD:
         Returns:
             処理に成功した場合は True、失敗した場合は False。
         """
-        return self._execute(
-            "set_hold",
-            motor=motor,
-            enabled=enabled
-        )
+        return self._execute("set_hold", motor=motor, enabled=enabled)
 
-    def get_hold_on_time(self, motor: Optional[int]=None) -> Optional[int]:
+    def get_hold_on_time(self, motor: Optional[int] = None) -> Optional[int]:
         """HOLD ON 時間を取得する。
 
         Args:
@@ -1059,12 +1035,11 @@ class PM2CD:
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        return self._execute(
-            "get_hold_on_time",
-            motor=motor
-        )
+        return self._execute("get_hold_on_time", motor=motor)
 
-    def set_hold_on_time(self, motor: Optional[int]=None, msec: Optional[int]=None) -> bool:
+    def set_hold_on_time(
+        self, motor: Optional[int] = None, msec: Optional[int] = None
+    ) -> bool:
         """HOLD ON 時間を設定する。
 
         Args:
@@ -1074,13 +1049,9 @@ class PM2CD:
         Returns:
             処理に成功した場合は True、失敗した場合は False。
         """
-        return self._execute(
-            "set_hold_on_time",
-            motor=motor,
-            msec=msec
-        )
+        return self._execute("set_hold_on_time", motor=motor, msec=msec)
 
-    def get_hold_off_time(self, motor: Optional[int]=None) -> Optional[int]:
+    def get_hold_off_time(self, motor: Optional[int] = None) -> Optional[int]:
         """HOLD OFF 時間を取得する。
 
         Args:
@@ -1089,12 +1060,11 @@ class PM2CD:
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        return self._execute(
-            "get_hold_off_time",
-            motor=motor
-        )
+        return self._execute("get_hold_off_time", motor=motor)
 
-    def set_hold_off_time(self, motor: Optional[int]=None, msec: Optional[int]=None) -> bool:
+    def set_hold_off_time(
+        self, motor: Optional[int] = None, msec: Optional[int] = None
+    ) -> bool:
         """HOLD OFF 時間を設定する。
 
         Args:
@@ -1104,13 +1074,9 @@ class PM2CD:
         Returns:
             処理に成功した場合は True、失敗した場合は False。
         """
-        return self._execute(
-            "set_hold_off_time",
-            motor=motor,
-            msec=msec
-        )
+        return self._execute("set_hold_off_time", motor=motor, msec=msec)
 
-    def get_home_status(self, motor: Optional[int]=None) -> Optional[HomeStatus]:
+    def get_home_status(self, motor: Optional[int] = None) -> Optional[HomeStatus]:
         """原点検出設定状態を取得する。
 
         Args:
@@ -1119,12 +1085,15 @@ class PM2CD:
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        return self._execute(
-            "get_home_status",
-            motor=motor
-        )
+        return self._execute("get_home_status", motor=motor)
 
-    def set_home_status(self, motor: Optional[int]=None, found: Optional[bool]=None, found_direction: Optional[str]=None, auto_start_direction: Optional[str]=None) -> bool:
+    def set_home_status(
+        self,
+        motor: Optional[int] = None,
+        found: Optional[bool] = None,
+        found_direction: Optional[str] = None,
+        auto_start_direction: Optional[str] = None,
+    ) -> bool:
         """原点検出設定状態を設定する。
 
         Args:
@@ -1141,10 +1110,10 @@ class PM2CD:
             motor=motor,
             found=found,
             found_direction=found_direction,
-            auto_start_direction=auto_start_direction
+            auto_start_direction=auto_start_direction,
         )
 
-    def get_home_position(self, motor: Optional[int]=None) -> Optional[int]:
+    def get_home_position(self, motor: Optional[int] = None) -> Optional[int]:
         """記録済み原点位置を取得する。
 
         Args:
@@ -1153,12 +1122,11 @@ class PM2CD:
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        return self._execute(
-            "get_home_position",
-            motor=motor
-        )
+        return self._execute("get_home_position", motor=motor)
 
-    def set_home_position(self, motor: Optional[int]=None, pulse: Optional[int]=None) -> bool:
+    def set_home_position(
+        self, motor: Optional[int] = None, pulse: Optional[int] = None
+    ) -> bool:
         """原点位置を設定する。
 
         Args:
@@ -1168,13 +1136,9 @@ class PM2CD:
         Returns:
             処理に成功した場合は True、失敗した場合は False。
         """
-        return self._execute(
-            "set_home_position",
-            motor=motor,
-            pulse=pulse
-        )
+        return self._execute("set_home_position", motor=motor, pulse=pulse)
 
-    def get_home_offset(self, motor: Optional[int]=None) -> Optional[int]:
+    def get_home_offset(self, motor: Optional[int] = None) -> Optional[int]:
         """原点オフセットを取得する。
 
         Args:
@@ -1183,12 +1147,11 @@ class PM2CD:
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        return self._execute(
-            "get_home_offset",
-            motor=motor
-        )
+        return self._execute("get_home_offset", motor=motor)
 
-    def set_home_offset(self, motor: Optional[int]=None, pulse: Optional[int]=None) -> bool:
+    def set_home_offset(
+        self, motor: Optional[int] = None, pulse: Optional[int] = None
+    ) -> bool:
         """原点オフセットを設定する。
 
         Args:
@@ -1198,13 +1161,9 @@ class PM2CD:
         Returns:
             処理に成功した場合は True、失敗した場合は False。
         """
-        return self._execute(
-            "set_home_offset",
-            motor=motor,
-            pulse=pulse
-        )
+        return self._execute("set_home_offset", motor=motor, pulse=pulse)
 
-    def get_preset_position(self, motor: Optional[int]=None) -> Optional[int]:
+    def get_preset_position(self, motor: Optional[int] = None) -> Optional[int]:
         """プリセット位置を取得する。
 
         Args:
@@ -1213,12 +1172,11 @@ class PM2CD:
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        return self._execute(
-            "get_preset_position",
-            motor=motor
-        )
+        return self._execute("get_preset_position", motor=motor)
 
-    def set_preset_position(self, motor: Optional[int]=None, pulse: Optional[int]=None) -> bool:
+    def set_preset_position(
+        self, motor: Optional[int] = None, pulse: Optional[int] = None
+    ) -> bool:
         """プリセット位置を設定する。
 
         Args:
@@ -1228,13 +1186,9 @@ class PM2CD:
         Returns:
             処理に成功した場合は True、失敗した場合は False。
         """
-        return self._execute(
-            "set_preset_position",
-            motor=motor,
-            pulse=pulse
-        )
+        return self._execute("set_preset_position", motor=motor, pulse=pulse)
 
-    def get_jog_pulse(self, motor: Optional[int]=None) -> Optional[int]:
+    def get_jog_pulse(self, motor: Optional[int] = None) -> Optional[int]:
         """JOG パルス数を取得する。
 
         Args:
@@ -1243,12 +1197,11 @@ class PM2CD:
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        return self._execute(
-            "get_jog_pulse",
-            motor=motor
-        )
+        return self._execute("get_jog_pulse", motor=motor)
 
-    def set_jog_pulse(self, motor: Optional[int]=None, pulse: Optional[int]=None) -> bool:
+    def set_jog_pulse(
+        self, motor: Optional[int] = None, pulse: Optional[int] = None
+    ) -> bool:
         """JOG パルス数を設定する。
 
         Args:
@@ -1258,13 +1211,11 @@ class PM2CD:
         Returns:
             処理に成功した場合は True、失敗した場合は False。
         """
-        return self._execute(
-            "set_jog_pulse",
-            motor=motor,
-            pulse=pulse
-        )
+        return self._execute("set_jog_pulse", motor=motor, pulse=pulse)
 
-    def get_limit_switch_setting(self, motor: Optional[int]=None) -> Optional[List[bool]]:
+    def get_limit_switch_setting(
+        self, motor: Optional[int] = None
+    ) -> Optional[List[bool]]:
         """リミット設定を意味値のリストで取得する。
 
         Returns:
@@ -1272,12 +1223,9 @@ class PM2CD:
             CW_normally_closed, CCW_normally_closed, HP_normally_closed]``。
             取得に失敗した場合は None。
         """
-        return self._execute(
-            "get_limit_switch_setting",
-            motor=motor
-        )
+        return self._execute("get_limit_switch_setting", motor=motor)
 
-    def get_motor_setting(self, motor: Optional[int]=None) -> Optional[MotorSetting]:
+    def get_motor_setting(self, motor: Optional[int] = None) -> Optional[MotorSetting]:
         """モーター設定を取得する。
 
         Args:
@@ -1286,12 +1234,15 @@ class PM2CD:
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        return self._execute(
-            "get_motor_setting",
-            motor=motor
-        )
+        return self._execute("get_motor_setting", motor=motor)
 
-    def set_motor_setting(self, motor: Optional[int]=None, drive_enabled: Optional[bool]=None, hold_mode: Optional[int]=None, output_mode: Optional[int]=None) -> bool:
+    def set_motor_setting(
+        self,
+        motor: Optional[int] = None,
+        drive_enabled: Optional[bool] = None,
+        hold_mode: Optional[int] = None,
+        output_mode: Optional[int] = None,
+    ) -> bool:
         """モーター設定を書き込む。
 
         Args:
@@ -1308,10 +1259,10 @@ class PM2CD:
             motor=motor,
             drive_enabled=drive_enabled,
             hold_mode=hold_mode,
-            output_mode=output_mode
+            output_mode=output_mode,
         )
 
-    def get_stop_mode(self, motor: Optional[int]=None) -> Optional[StopMode]:
+    def get_stop_mode(self, motor: Optional[int] = None) -> Optional[StopMode]:
         """停止モード設定を取得する。
 
         Args:
@@ -1320,12 +1271,14 @@ class PM2CD:
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        return self._execute(
-            "get_stop_mode",
-            motor=motor
-        )
+        return self._execute("get_stop_mode", motor=motor)
 
-    def set_stop_mode(self, motor: Optional[int]=None, panel_fast: Optional[bool]=None, limit_fast: Optional[bool]=None) -> bool:
+    def set_stop_mode(
+        self,
+        motor: Optional[int] = None,
+        panel_fast: Optional[bool] = None,
+        limit_fast: Optional[bool] = None,
+    ) -> bool:
         """停止モード設定を書き込む。
 
         Args:
@@ -1337,10 +1290,7 @@ class PM2CD:
             処理に成功した場合は True、失敗した場合は False。
         """
         return self._execute(
-            "set_stop_mode",
-            motor=motor,
-            panel_fast=panel_fast,
-            limit_fast=limit_fast
+            "set_stop_mode", motor=motor, panel_fast=panel_fast, limit_fast=limit_fast
         )
 
     def number_to_rate(self, index: int) -> Optional[float]:
@@ -1356,10 +1306,7 @@ class PM2CD:
             TypeError: 引数の型が不正な場合。
             ValueError: 変換可能な範囲外の場合。
         """
-        return self._execute(
-            "number_to_rate",
-            index=index
-        )
+        return self._execute("number_to_rate", index=index)
 
     def rate_to_number(self, rate: float) -> Optional[int]:
         """レート値を対応する RATE_TABLE の番号へ変換する。
@@ -1374,13 +1321,14 @@ class PM2CD:
             TypeError: 引数の型が不正な場合。
             ValueError: 変換可能な範囲外の場合。
         """
-        return self._execute(
-            "rate_to_number",
-            rate=rate
-        )
+        return self._execute("rate_to_number", rate=rate)
 
     def close(self) -> bool:
         """worker、共有通信、Communication manager を終了する。"""
+        if self._closed:
+            return True
+
+        self._closed = True
         result = False
 
         try:

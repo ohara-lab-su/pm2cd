@@ -17,25 +17,35 @@ class LimitStatus:
     soft_cw: bool
     soft_ccw: bool
 
+    @property
+    def hard(self) -> List[bool]:
+        """ハードウェアLS現在状態を ``[CW, CCW, HP]`` で返す。"""
+        return [self.hard_cw, self.hard_ccw, self.hard_hp]
+
+    @property
+    def soft(self) -> List[bool]:
+        """ソフトウェアLS現在状態を ``[CW, CCW]`` で返す。"""
+        return [self.soft_cw, self.soft_ccw]
+
 
 def parse_limit_status_all(raw: str) -> Optional[List[LimitStatus]]:
-    """``HDSTLS?`` の ``abcdHHHHSSSS`` 応答を解析する。"""
+    """PM2CD の ``HDSTLS?`` 2ch応答 ``abHHSS`` を解析する。"""
     if not isinstance(raw, str):
         return None
 
     text = raw.strip()
-    if len(text) != 12:
+    if len(text) != 6:
         return None
 
     try:
-        channels = [int(value, 16) for value in text[0:4]]
-        hard_values = [int(value, 16) for value in text[4:8]]
-        soft_values = [int(value, 16) for value in text[8:12]]
+        channels = [int(value, 16) for value in text[0:2]]
+        hard_values = [int(value, 16) for value in text[2:4]]
+        soft_values = [int(value, 16) for value in text[4:6]]
     except ValueError:
         return None
 
     values = []
-    for index in range(4):
+    for index in range(2):
         hard_status = hard_values[index]
         soft_status = soft_values[index]
         if hard_status & ~0x07:

@@ -174,14 +174,15 @@ class PM2CDsingle:
         motor: int,
         target_position: Optional[int],
         backlash: Union[str, bool, None],
-        backlash_value: Optional[int],
     ) -> None:
-        """直近の位置決め移動条件を保存する。"""
+        """wait_for_complete() に必要な最小限の移動条件を保存する。
+
+        バックラッシュ補正点は装置内部の動作であり、Python 側では予測しない。
+        保存するのは最終目標位置と、B/S 補正を要求したかどうかだけとする。
+        """
         self._move_context[motor] = {
             "target_position": target_position,
-            "backlash": backlash,
             "backlash_enabled": self._backlash_enabled(backlash),
-            "backlash_value": backlash_value,
         }
 
     def _clear_move_context(
@@ -290,110 +291,85 @@ class PM2CDsingle:
     def controller_status(
         self,
     ) -> Optional[ControllerStatus]:
-        """コントローラー全体の状態を取得する。
+        """コントローラー全体の状態を取得する互換メソッド。
 
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        return self._device.controller_status()
+        return self.get_controller_status()
 
     # --- モータ動作 ------------------------------------------------------------
     def move(
         self,
+        target: int,
         motor: Optional[int] = None,
-        pulse: Optional[int] = None,
         backlash: Union[str, bool, None] = True,
+        relative: bool = False,
     ) -> bool:
-        """指定モーターを絶対位置へ移動する。
+        """指定モーターを絶対位置または相対量で移動する。
 
         motor を省略した場合は motor プロパティを使用する。
+        relative=False の場合は target を絶対目標位置として扱い、
+        relative=True の場合は target を現在位置からの相対移動量として扱う。
         wait_for_complete() がバックラッシュ補正を含む位置決め完了を判定できるよう、
-        コマンド送信成功時に目標位置とバックラッシュ条件を保存する。
+        コマンド送信成功時に最終的な絶対目標位置とバックラッシュ条件を保存する。
 
         Args:
+            target: 絶対目標位置。relative=True の場合は相対移動量。
             motor: モーター番号。0 または 1。None の場合は motor プロパティを使用する。
-            pulse: 絶対目標位置。
             backlash: バックラッシュ補正指定。
+            relative: True の場合は相対移動、False の場合は絶対移動。
 
         Returns:
             処理に成功した場合は True、失敗した場合は False。
         """
-        if pulse is None:
-            if motor is None:
-                raise TypeError("move() の引数が不足しています")
-            pulse = motor
-            motor = None
-
-        if pulse is None:
-            raise TypeError("move() の pulse を指定してください")
-
         motor = self._resolve_motor(motor)
 
-        backlash_value = None
-        if self._backlash_enabled(backlash):
-            backlash_value = self.get_backlash(motor)
+        target_position = target
+        if relative:
+            current_position = self.get_position(motor)
+            target_position = None
+            if current_position is not None:
+                target_position = current_position + target
 
-        result = self._device.move(motor, pulse, backlash)
+        if relative:
+            result = self._device.move_relative(motor, target, backlash)
+        else:
+            result = self._device.move(motor, target, backlash)
+
         if result:
             self._set_move_context(
                 motor=motor,
-                target_position=pulse,
+                target_position=target_position,
                 backlash=backlash,
-                backlash_value=backlash_value,
             )
 
         return result
 
     def move_relative(
         self,
+        target: int,
         motor: Optional[int] = None,
-        pulse: Optional[int] = None,
         backlash: Union[str, bool, None] = True,
     ) -> bool:
         """指定モーターを現在位置から相対移動する。
 
-        motor を省略した場合は motor プロパティを使用する。
-        相対移動では wait_for_complete() の最終位置判定に必要なため、送信前の現在位置
-        から絶対目標位置を求めて保存する。
+        move(..., relative=True) と同じ動作をする互換メソッド。
 
         Args:
+            target: 相対移動量。
             motor: モーター番号。0 または 1。None の場合は motor プロパティを使用する。
-            pulse: 相対移動量。
             backlash: バックラッシュ補正指定。
 
         Returns:
             処理に成功した場合は True、失敗した場合は False。
         """
-        if pulse is None:
-            if motor is None:
-                raise TypeError("move_relative() の引数が不足しています")
-            pulse = motor
-            motor = None
-
-        if pulse is None:
-            raise TypeError("move_relative() の pulse を指定してください")
-
-        motor = self._resolve_motor(motor)
-
-        current_position = self.get_position(motor)
-        target_position = None
-        if current_position is not None:
-            target_position = current_position + pulse
-
-        backlash_value = None
-        if self._backlash_enabled(backlash):
-            backlash_value = self.get_backlash(motor)
-
-        result = self._device.move_relative(motor, pulse, backlash)
-        if result:
-            self._set_move_context(
-                motor=motor,
-                target_position=target_position,
-                backlash=backlash,
-                backlash_value=backlash_value,
-            )
-
-        return result
+        return self.move(
+            target=target,
+            motor=motor,
+            backlash=backlash,
+            relative=True,
+        )
 
     def scan(
         self,
@@ -624,12 +600,12 @@ class PM2CDsingle:
     def status_all(
         self,
     ) -> Optional[List[MotorStatus]]:
-        """全モーターの状態を取得する。
+        """全モーターの状態を取得する互換メソッド。
 
         Returns:
             取得または変換に成功した値。失敗した場合は None。
         """
-        return self._device.status_all()
+        return self.get_status_all()
 
     def get_rotate(
         self,
@@ -671,39 +647,33 @@ class PM2CDsingle:
         timeout_sec: float = 30.0,
         interval_sec: float = 0.1,
         target_position: Optional[int] = None,
+        show_position: bool = True,
     ) -> Optional[MotorStatus]:
-        """指定モーターの位置決め移動または停止完了を待つ。
+        """指定モーターの最終停止を待つ。
 
-        backlash=False の位置決めでは、目標位置で inactive になった時点を完了と
-        する。短距離移動では active を観測できないことがあるため、active の観測
-        自体は完了条件にしない。
+        位置決め移動では move() が保存した最終目標位置を使用する。
+        backlash=False の場合は、目標位置で inactive になれば完了とする。
 
-        backlash=B/S の位置決めでは、装置は目標位置を一度通過・停止した後、
-        バックラッシュ点へ移動し、最後に目標位置へ戻ることがある。そのため最初の
-        「目標位置 + inactive」を最終完了とは扱わない。
+        B/S バックラッシュ補正では、最初の ``目標位置 + inactive`` が
+        補正途中か最終停止かを一回の観測だけでは区別できない。このため、
+        最初の到達は保留し、次の観測で active または目標位置外を観測した
+        場合は補正軌跡が継続中と判断する。その後、再び目標位置で inactive
+        になれば完了とする。補正軌跡が短くポーリング間で観測できない場合は、
+        ``目標位置 + inactive`` を2回連続して確認した時点で完了とする。
 
-        バックラッシュ距離が十分長い場合は、
-        目標位置(inactive) -> active -> バックラッシュ点(inactive)
-        -> active -> 目標位置(inactive)
-        の状態遷移を追跡する。
+        装置内部のバックラッシュ補正点は、補正値の符号、移動方向、B/S の
+        条件で変化するため、Python 側では計算・予測しない。
 
-        バックラッシュ距離が短い場合は途中の active/inactive がポーリング間で
-        縮退して観測できるため、途中状態の観測を必須にはしない。最初の目標位置
-        inactive を中間到達として保持し、その後に再度目標位置 inactive を観測
-        した時点を最終到達とする。最初の中間到達自体を観測できず、補正動作全体が
-        ポーリング間で終了した場合も、最終位置が安定して再観測されれば完了できる。
-
-        move()/move_relative() の直後であれば、保存された目標位置・backlash 指定・
-        backlash 値を自動的に使用する。target_position が明示された場合はその値を
-        優先する。位置決めコンテキストがない場合は、stop() 後などの単純な停止待ち
-        として inactive を連続して確認する。
+        位置決めコンテキストがない場合は、stop() 後などの単純な停止待ち
+        として inactive を2回連続して確認する。
 
         Args:
-            motor: モーター番号。0 または 1。None の場合は motor プロパティを使用する。
+            motor: モーター番号。None の場合は motor プロパティを使用する。
             timeout_sec: 待機処理のタイムアウト秒数。
             interval_sec: 状態確認のポーリング間隔秒数。
-            target_position: 完了判定に使う目標位置。None の場合は直前の
-                move()/move_relative() の目標位置を使用する。
+            target_position: 完了判定に使う絶対目標位置。明示指定した場合は
+                move() が保存した値より優先する。
+            show_position: True の場合は各ポーリングの現在位置を表示する。
 
         Returns:
             完了条件を満たした最後の MotorStatus。状態取得失敗または
@@ -714,95 +684,52 @@ class PM2CDsingle:
 
         context = self._move_context.get(motor)
         backlash_enabled = False
-        backlash_value = None
 
         if context is not None:
             if target_position is None:
                 target_position = context.get("target_position")
-
             backlash_enabled = bool(context.get("backlash_enabled"))
-            backlash_value = context.get("backlash_value")
 
-        # backlash 値が 0 の場合には補正移動距離がないため通常移動として扱う。
-        if backlash_value == 0:
-            backlash_enabled = False
-
-        backlash_point = None
-        if target_position is not None:
-            if backlash_value is not None:
-                backlash_point = target_position + backlash_value
-
-        # 位置決めコンテキストがない stop() 後などでは、通信タイミングによる
-        # 一時的な inactive を避けるため2回連続で停止状態を確認する。
         plain_inactive_count = 0
-
-        # backlash 補正では「最初の目標位置」と「最終目標位置」を区別する。
         target_inactive_seen = False
-        correction_progress_seen = False
 
         while True:
             status = self.get_status(motor)
             if status is None:
                 return None
 
+            if show_position:
+                self._logger.info(f"motor = {motor}, {status.position}")
+
             active = self._motion_active(status)
 
-            # 位置決めではない単純な停止待ち。
             if target_position is None:
                 if active:
                     plain_inactive_count = 0
                 else:
                     plain_inactive_count += 1
+                    if plain_inactive_count >= 2:
+                        return status
 
-                if plain_inactive_count >= 2:
+            elif not backlash_enabled:
+                if not active and status.position == target_position:
+                    self._clear_move_context(motor)
                     return status
 
-            # backlash なしの位置決め。
-            elif not backlash_enabled:
-                if not active:
-                    if status.position == target_position:
+            else:
+                at_target = status.position == target_position
+
+                if target_inactive_seen:
+                    if not active and at_target:
+                        # 補正軌跡を観測できた場合は戻り先の目標位置。
+                        # 観測できなかった場合は目標位置での2回目の停止確認。
                         self._clear_move_context(motor)
                         return status
 
-            # backlash ありの位置決め。
-            else:
-                at_target = status.position == target_position
-                at_backlash_point = False
-
-                if backlash_point is not None:
-                    at_backlash_point = status.position == backlash_point
-
-                if target_inactive_seen:
-                    # 最初の目標位置到達後に active、目標位置外、または
-                    # backlash 点を観測できれば補正動作の進行を直接確認できる。
-                    if active:
-                        correction_progress_seen = True
-                    elif not at_target:
-                        correction_progress_seen = True
-                    elif at_backlash_point:
-                        correction_progress_seen = True
-
-                if not active:
-                    if at_target:
-                        if target_inactive_seen:
-                            # 十分長い補正では途中状態を追跡した後の最終目標位置。
-                            # 短い補正では途中状態が縮退するため、目標位置 inactive
-                            # の再観測を最終到達として扱う。
-                            self._clear_move_context(motor)
-                            return status
-
-                        if correction_progress_seen:
-                            # 最初の目標位置を取り逃したが backlash 側の状態を
-                            # 観測できた場合、この目標位置は最終到達である。
-                            self._clear_move_context(motor)
-                            return status
-
-                        target_inactive_seen = True
-
-                    elif at_backlash_point:
-                        correction_progress_seen = True
-                    elif target_inactive_seen:
-                        correction_progress_seen = True
+                    # active または目標位置外なら補正軌跡が続いている。
+                    # 補正点そのものは予測せず、目標位置へ戻るまで観測する。
+                elif not active and at_target:
+                    target_inactive_seen = True
 
             if time.monotonic() >= deadline:
                 if target_position is None:
@@ -816,7 +743,6 @@ class PM2CDsingle:
                             target_position,
                         )
                     )
-
                 return None
 
             time.sleep(interval_sec)
@@ -1408,13 +1334,16 @@ class PM2CDsingle:
         self,
         motor: Optional[int] = None,
     ) -> Optional[List[bool]]:
-        """ハードウェアリミット enable 設定を ``[CW, CCW, HP]`` で取得する。"""
+        """CW/CCW ハードウェアLSの enable 設定を ``[CW, CCW]`` で取得する。
+
+        HP LS は PM2C/PM4C-06A では常時 enable のため返さない。
+        """
         motor = self._resolve_motor(motor)
         setting = self._device.limit_switch_setting(motor)
         if setting is None:
             return None
 
-        return [setting.cw_enabled, setting.ccw_enabled, setting.hp_enabled]
+        return [setting.cw_enabled, setting.ccw_enabled]
 
     def set_hard_limit_enabled(
         self,
@@ -1873,8 +1802,9 @@ class PM2CDsingle:
         """リミット設定を意味値のリストで取得する。
 
         Returns:
-            ``[software_enable, CW_enable, CCW_enable, HP_enable,
+            ``[digital_limit_enable, CW_enable, CCW_enable,
             CW_normally_closed, CCW_normally_closed, HP_normally_closed]``。
+            HP LS は常時 enable のため enable 値には含めない。
             取得に失敗した場合は None。
         """
         motor = self._resolve_motor(motor)
@@ -1886,7 +1816,6 @@ class PM2CDsingle:
             setting.digital_limit_enabled,
             setting.cw_enabled,
             setting.ccw_enabled,
-            setting.hp_enabled,
             setting.cw_nc,
             setting.ccw_nc,
             setting.hp_nc,
@@ -2132,5 +2061,45 @@ def main() -> None:
         ctrl.close()
 
 
+def main1() -> None:
+    ip_address = "10.170.10.62"
+    port = 7777
+
+    ctrl = PM2CDsingle(ip_address=ip_address, port=port)
+    ctrl.remote()
+
+    try:
+        if not ctrl.is_connected():
+            print("PM2CD へ接続できませんでした")
+            return
+
+        version = ctrl.version()
+        print(f"version: {version}")
+
+    finally:
+        ctrl.close()
+
+
+def main2() -> None:
+    ip_address = "10.170.10.62"
+    port = 7777
+
+    ctrl = PM2CDsingle(ip_address=ip_address, port=port)
+    try:
+        if not ctrl.is_connected():
+            print("PM2CD へ接続できませんでした")
+            return
+        ctrl.remote()
+        ctrl.move(0, motor=1)
+        ctrl.wait_for_complete()
+        ret = ctrl.get_position()
+        print(ret)
+
+    finally:
+        ctrl.close()
+
+
 if __name__ == "__main__":
-    main()
+    # main()
+    # main1()
+    main2()

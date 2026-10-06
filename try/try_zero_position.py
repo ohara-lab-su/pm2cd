@@ -6,27 +6,33 @@ PORT = 7777
 TIMEOUT_SEC = 3.0
 MOTOR = 0
 
-logger = XLogger(log_level="DEBUG")
-# ctrl = PM2CD(ip_address=IP_ADDRESS, port=PORT, timeout_sec=TIMEOUT_SEC)
-ctrl = PM2CD(
-    ip_address=IP_ADDRESS,
-    port=PORT,
-    timeout_sec=TIMEOUT_SEC,
-    logger=logger,
-)
-try:
-    original = ctrl.get_position(MOTOR)
+
+def main():
+    logger = XLogger(log_level="DEBUG")
+    # ctrl = PM2CD(ip_address=IP_ADDRESS, port=PORT, timeout_sec=TIMEOUT_SEC)
+    ctrl = PM2CD(
+        ip_address=IP_ADDRESS,
+        port=PORT,
+        timeout_sec=TIMEOUT_SEC,
+        logger=logger,
+    )
     try:
-        ctrl.zero_position(MOTOR)
-        actual = ctrl.get_position(MOTOR)
-        if actual != 0:
-            raise AssertionError("zero_positionに失敗しました")
-        print(f"[PASS] {'zero_position'}: {actual}")
+        original = ctrl.get_position(MOTOR)
+        try:
+            ctrl.zero_position(MOTOR)
+            actual = ctrl.get_position(MOTOR)
+            if actual != 0:
+                raise AssertionError("zero_positionに失敗しました")
+            print(f"[PASS] {'zero_position'}: {actual}")
+        finally:
+            ctrl.set_position(MOTOR, original)
     finally:
-        ctrl.set_position(MOTOR, original)
-finally:
-    try:
-        # ctrl.emergency_stop_all()
-        ctrl.stop()
-    finally:
-        ctrl.close()
+        try:
+            # ctrl.emergency_stop_all()
+            ctrl.stop()
+        finally:
+            ctrl.close()
+
+
+if __name__ == "__main__":
+    main()

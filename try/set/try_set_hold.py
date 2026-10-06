@@ -6,30 +6,34 @@ PORT = 7777
 TIMEOUT_SEC = 3.0
 MOTOR = 0
 
-logger = XLogger(log_level="DEBUG")
-ctrl = PM2CD(
-    ip_address=IP_ADDRESS,
-    port=PORT,
-    timeout_sec=TIMEOUT_SEC,
-    logger=logger,
-)
-try:
-    original = ctrl.get_hold(MOTOR)
-    if original == "ON":
-        enabled = True
-    else:
-        enabled = False
-
-    ctrl.set_hold(MOTOR, enabled)
-    actual = ctrl.get_hold(MOTOR)
-
-    if actual != original:
-        raise AssertionError("HOLD read-back不一致")
-
-    print(f"[PASS] set_hold: {actual}")
-finally:
+def main():
+    logger = XLogger(log_level="DEBUG")
+    ctrl = PM2CD(
+        ip_address=IP_ADDRESS,
+        port=PORT,
+        timeout_sec=TIMEOUT_SEC,
+        logger=logger,
+    )
     try:
-        # ctrl.emergency_stop_all()
-        ctrl.stop()
+        original = ctrl.get_hold(MOTOR)
+        if original == "ON":
+            enabled = True
+        else:
+            enabled = False
+
+        ctrl.set_hold(MOTOR, enabled)
+        actual = ctrl.get_hold(MOTOR)
+
+        if actual != original:
+            raise AssertionError("HOLD read-back不一致")
+
+        print(f"[PASS] set_hold: {actual}")
     finally:
-        ctrl.close()
+        try:
+            # ctrl.emergency_stop_all()
+            ctrl.stop()
+        finally:
+            ctrl.close()
+
+if __name__ == "__main__":
+    main()

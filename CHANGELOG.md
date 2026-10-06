@@ -225,7 +225,7 @@ v0.0.2 以降、PM2CD の制御コード全体を見直し、単純な装置コ�
 
 ### Framework dependency
 
-FastAPI の完全自動ディスパッチを使用する場合は、**ese774_frame v0.6.0 以上が必要**。
+FastAPI の完全自動ディスパッチを使用する場合は、 **ese774_frame v0.6.0 以上が必要**。
 
 PM2CD は `api_spec=None` の完全自動ディスパッチを使用する。
 状態・設定値の戻り値に dataclass を使用するため、戻り値アノテーションから型情報を取得し、
@@ -501,8 +501,7 @@ dataclass は `frozen=True` とし、取得した装置状態を後から書き�
 
 ### Important
 
-PM2CD の現在版で FastAPI 完全自動ディスパッチを使用する場合、
-**ese774_frame v0.6.0 以上を使用すること。**
+PM2CD の現在版で FastAPI 完全自動ディスパッチを使用する場合、 **ese774_frame v0.6.0 以上を使用すること。**
 
 v0.5.1 以前の Framework では、PM2CD が返す dataclass の完全自動転送には対応していない。
 

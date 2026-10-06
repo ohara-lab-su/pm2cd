@@ -16,10 +16,11 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     # my-modules
-    "x_logger",
-    "packmol_util",
+    #"x_logger",
+    "xlogger-py",
+    # "packmol_util",
     # fnc
-    "pymatgen",
+    # "pymatgen",
     # basic
     "dataclasses",
     "coloredlogs",
