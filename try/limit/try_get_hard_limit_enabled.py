@@ -17,13 +17,6 @@ def main():
         logger=logger,
     )
     try:
-        value = ctrl.get_hard_limit_enabled()
-        print(f"[motor = {ctrl.motor}] get_hard_limit_enabled [CW, CCW]: {value}")
-        ctrl.motor = 1
-        value = ctrl.get_hard_limit_enabled()
-        print(f"[motor = 1] get_hard_limit_enabled [CW, CCW]: {value}")
-
-        ctrl.motor = 0
 
         value = ctrl.get_hard_limit_enabled(0)
         print(f"[motor = 0] get_hard_limit_enabled [CW, CCW]: {value}")

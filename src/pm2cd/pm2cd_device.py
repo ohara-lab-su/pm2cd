@@ -995,10 +995,14 @@ class PM2CDDevice:
     def limit_status_all(
         self,
     ) -> Optional[List[LimitStatus]]:
-        """全モーターのハード/ソフトリミット現在状態を取得する。"""
+        """
+        HDSTLS?
+        全モーターのハード/ソフトリミット現在状態を取得する。
+        """
         self._logger.info(f"== get_limit_status_all()")
 
         raw = self._communication.query("HDSTLS?")
+        self._logger.debug(f"HDSTLS?: {raw!r}")
         if raw is None:
             return None
 
@@ -1481,7 +1485,9 @@ class PM2CDDevice:
         self,
         motor: int,
     ) -> Optional[LimitSwitchSetting]:
-        """リミットスイッチ設定を取得する。
+        """
+        SETLS?
+        リミットスイッチ設定を取得する。
 
         Args:
             motor: モーター番号。0 または 1。

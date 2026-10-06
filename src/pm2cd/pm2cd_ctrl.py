@@ -570,7 +570,7 @@ class PM2CD:
         timeout_sec: float = 30.0,
         interval_sec: float = 0.1,
         target_position: Optional[int] = None,
-        show_position: bool = False,
+        show_position: bool = True,
     ) -> Optional[MotorStatus]:
         """指定モーターの最終停止を待つ。
 

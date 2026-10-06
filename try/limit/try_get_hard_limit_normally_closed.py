@@ -16,8 +16,10 @@ def main():
         logger=logger,
     )
     try:
-        value = ctrl.get_hard_limit_normally_closed(MOTOR)
-        print(f"[PASS] get_hard_limit_normally_closed [CW, CCW, HP]: {value}")
+        value = ctrl.get_hard_limit_normally_closed(0)
+        print(f"[0] get_hard_limit_normally_closed [CW, CCW, HP]: {value}")
+        value = ctrl.get_hard_limit_normally_closed(1)
+        print(f"[1] get_hard_limit_normally_closed [CW, CCW, HP]: {value}")
     finally:
         ctrl.close()
 

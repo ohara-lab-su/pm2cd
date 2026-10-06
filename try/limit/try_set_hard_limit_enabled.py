@@ -19,8 +19,12 @@ def main():
         logger=logger,
     )
     try:
-        value = ctrl.set_hard_limit_enabled(MOTOR, ENABLED)
-        print(f"[PASS] set_hard_limit_enabled: {value}")
+        ctrl.set_hard_limit_enabled(0, False)
+        ctrl.set_hard_limit_enabled(1, False)
+        motor1 = ctrl.get_hard_limit_enabled(0)
+        motor2 = ctrl.get_hard_limit_enabled(1)
+        logger.info(f"motor1: {motor1}")
+        logger.info(f"motor2: {motor2}")
     finally:
         ctrl.close()
 

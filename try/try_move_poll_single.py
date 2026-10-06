@@ -5,10 +5,12 @@ import time
 from pm2cd.pm2cd_single import PM2CDsingle
 
 IP_ADDRESS = "10.170.10.62"
+INTERVAL_SEC = 0.1
+
+POLL_COUNT = 50
+
 MOTOR = 0
 TARGET = 100
-INTERVAL_SEC = 0.1
-POLL_COUNT = 50
 
 
 def main() -> None:

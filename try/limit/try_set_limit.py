@@ -7,10 +7,6 @@ TIMEOUT_SEC = 3.0
 MOTOR = 0
 
 
-SIDE = "cw"
-PULSE = 10000
-
-
 def main():
     logger = XLogger(log_level="DEBUG")
     ctrl = PM2CD(
@@ -20,9 +16,8 @@ def main():
         logger=logger,
     )
     try:
-        value = ctrl.set_limit(0, SIDE, PULSE)
-        value = ctrl.set_limit(1, SIDE, PULSE)
-        print(f"[motor] set_limit (cw, ccw): {value}")
+        ctrl.set_limit(0, "cw", 1000)
+        ctrl.set_limit(1, "cw", 1000)
     finally:
         ctrl.close()
 

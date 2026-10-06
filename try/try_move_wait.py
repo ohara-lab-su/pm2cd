@@ -1,14 +1,19 @@
 import time
 
-# from pm2cd.pm2cd_ctrl import PM2CD
-from pm2cd.pm2cd_single import PM2CDsingle as PM2CD
+from pm2cd.pm2cd_ctrl import PM2CD
+
+# from pm2cd.pm2cd_single import PM2CDsingle as PM2CD
 from x_logger import XLogger
 
 IP_ADDRESS = "10.170.10.62"
 PORT = 7777
 TIMEOUT_SEC = 3.0
 MOTION_TIMEOUT_SEC = 30.0
+
+###############
 TARGET = 2000
+# TARGET = 0
+###############
 
 
 def main():
@@ -24,7 +29,8 @@ def main():
         ctrl.stop()
         time.sleep(0.05)
         ctrl.remote()
-        ctrl.motor = 1
+        ctrl.motor = 0
+        # ctrl.motor = 1
 
         print("[INFO] status:", ctrl.get_status())
         print("[INFO] position:", ctrl.get_position())

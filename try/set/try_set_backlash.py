@@ -6,26 +6,32 @@ PORT = 7777
 TIMEOUT_SEC = 3.0
 MOTOR = 0
 
-logger = XLogger(log_level="DEBUG")
-# ctrl = PM2CD(ip_address=IP_ADDRESS, port=PORT, timeout_sec=TIMEOUT_SEC)
-ctrl = PM2CD(
-    ip_address=IP_ADDRESS,
-    port=PORT,
-    timeout_sec=TIMEOUT_SEC,
-    logger=logger,
-)
-try:
-    original = ctrl.get_backlash(MOTOR)
-    ctrl.set_backlash(MOTOR, original)
-    actual = ctrl.get_backlash(MOTOR)
 
-    if actual != original:
-        raise AssertionError("backlash read-back不一致")
-    print(f"[PASS] {'set_backlash'}: {actual}")
-
-finally:
+def main():
+    logger = XLogger(log_level="DEBUG")
+    # ctrl = PM2CD(ip_address=IP_ADDRESS, port=PORT, timeout_sec=TIMEOUT_SEC)
+    ctrl = PM2CD(
+        ip_address=IP_ADDRESS,
+        port=PORT,
+        timeout_sec=TIMEOUT_SEC,
+        logger=logger,
+    )
     try:
-        # ctrl.emergency_stop_all()
-        ctrl.stop()
+        original = ctrl.get_backlash(MOTOR)
+        ctrl.set_backlash(MOTOR, original)
+        actual = ctrl.get_backlash(MOTOR)
+
+        if actual != original:
+            raise AssertionError("backlash read-back不一致")
+        print(f"[PASS] {'set_backlash'}: {actual}")
+
     finally:
-        ctrl.close()
+        try:
+            # ctrl.emergency_stop_all()
+            ctrl.stop()
+        finally:
+            ctrl.close()
+
+
+if __name__ == "__main__":
+    main()

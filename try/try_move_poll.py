@@ -9,6 +9,7 @@ TIMEOUT_SEC = 3.0
 MOTION_TIMEOUT_SEC = 30.0
 POLL_INTERVAL_SEC = 0.1
 
+MOTOR = 0
 TARGET = 1000
 
 
@@ -25,7 +26,7 @@ def main():
         ctrl.stop()
         time.sleep(0.05)
         ctrl.remote()
-        ctrl.motor = 1
+        ctrl.motor = MOTOR
 
         print("[INFO] status:", ctrl.get_status())
         print("[INFO] position:", ctrl.get_position())

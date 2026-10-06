@@ -1,4 +1,5 @@
-from pm2cd.pm2cd_ctrl import PM2CD
+# from pm2cd.pm2cd_ctrl import PM2CD
+from pm2cd.pm2cd_single import PM2CDsingle as PM2CD
 from x_logger import XLogger
 
 IP_ADDRESS = "10.170.10.62"
@@ -16,14 +17,14 @@ def main():
         logger=logger,
     )
     try:
-        value = ctrl.get_limit(0, "cw")
-        print(f"[motor = 0, cw] get_limit: {value}")
-        value = ctrl.get_limit(0, "ccw")
-        print(f"[motor = 0, ccw] get_limit: {value}")
-        value = ctrl.get_limit(1, "cw")
-        print(f"[motor = 1, cw] get_limit: {value}")
-        value = ctrl.get_limit(1, "ccw")
-        print(f"[motor = 1, ccw] get_limit: {value}")
+        cw0 = ctrl.get_limit(0, "cw")
+        ccw0 = ctrl.get_limit(0, "ccw")
+        cw1 = ctrl.get_limit(1, "cw")
+        ccw1 = ctrl.get_limit(1, "ccw")
+        logger.info(f"[motor = 0, cw] get_limit: {cw0}")
+        logger.info(f"[motor = 0, ccw] get_limit: {ccw0}")
+        logger.info(f"[motor = 1, cw] get_limit: {cw1}")
+        logger.info(f"[motor = 1, ccw] get_limit: {ccw1}")
     finally:
         ctrl.close()
 
