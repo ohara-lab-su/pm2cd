@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pm2cd"
-version = "0.1.0"
+version = "0.1.1"
 
 description = "tuji pm2cd"
 authors = [
