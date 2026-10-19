@@ -1,5 +1,8 @@
 # pm2cd
 
+[![en](https://img.shields.io/badge/lang-en-red.svg)](https://github.com/ohara-lab-su/pm2cd/blob/main/README.en.md)
+[![ja](https://img.shields.io/badge/lang-ja-yellow.svg)](https://github.com/ohara-lab-su/pm2cd/blob/main/README.md)
+
 PM2CD / PM2C-06A を Python から制御するためのパッケージです。
 
 本パッケージは、既存の C版/MADOCA Device handler
