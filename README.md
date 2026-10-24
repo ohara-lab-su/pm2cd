@@ -3,68 +3,29 @@
 [![en](https://img.shields.io/badge/lang-en-red.svg)](https://github.com/ohara-lab-su/pm2cd/blob/main/README.en.md)
 [![ja](https://img.shields.io/badge/lang-ja-yellow.svg)](https://github.com/ohara-lab-su/pm2cd/blob/main/README.md)
 
-PM2CD / PM2C-06A を Python から制御するためのパッケージです。
+A Python package for controlling PM2CD / PM2C-06A.
 
-本パッケージは、既存の C版/MADOCA Device handler
-の実装思想と装置操作の意味を参照しながら、 Python
-では通信、装置固有処理、データ解析、利用者向け制御、multi-process 実行、
-FastAPI 通信を分離して構成しています。
+This package draws on the design principles and semantics of device operations in the existing C/MADOCA Device handlers. The Python implementation separates communication, device-specific processing, data parsing, user-facing control, multi-process execution, and FastAPI communication.
 
-現在のバージョンは **v0.1.0** です。
+The current version is **v0.1.0**.
 
-この README は、単なるインストールメモではなく、PM2CD Python 版の
-総合マニュアル・設計仕様・チュートリアルとして記述しています。
+This README serves not merely as installation notes, but as a comprehensive manual, design specification, and tutorial for the Python implementation of PM2CD.
 
 ------------------------------------------------------------------------
 
-## 1. 対象
+## 1. Scope
 
-対象装置は PM2CD / PM2C-06A です。
-
-PM16C-16 と PM2CD / PM2C-06A は同一装置ではありません。 PM16C-16
-の仕様をそのまま PM2CD の装置仕様として流用しません。
-
-一方、既存の C版 `dev_pm16c16_*` Device handler 群には、 PM2CD Python
-版を設計する上で重要な先行実装があります。
-
-Python 版では、それら C ファイルを機械的に一対一移植するのではなく、
-
-- 一つの意味ある装置操作を一つの Device handler として扱う
-- 一つの操作に複数コマンドが必要なら Device 層で完結させる
-- 通信そのものは共通通信層へ分離する
-- raw response の複合解析は core parser へ分離する
-- Ctrl は raw bit / nibble / command string を利用者へ露出しない
-
-という設計思想を引き継いでいます。
+The target devices are PM2CD and PM2C-06A. PM16C-16 is a different device; its specifications must not be assumed to apply to PM2CD. The C `dev_pm16c16_*` Device handlers nevertheless provide useful design precedents. The Python design follows these principles: one meaningful device operation per handler; multi-command operations completed inside Device; communication delegated to a common layer; compound response parsing delegated to core; and no exposure of raw bits, nibbles, or command strings through Ctrl.
 
 ------------------------------------------------------------------------
 
-## 2. C版/MADOCA と Python 版の関係
+## 2. Relationship Between the C/MADOCA and Python Implementations
 
-### 2.1 C版の位置づけ
+The original C code implements Device handlers in the MADOCA environment. The Python implementation refers to command generation, send/receive, command sequencing, response conversion, and handler granularity—not the entire MADOCA network API. Reviewed handlers cover rotate/check_rotate, number/rate conversion, emergency stop, backlash, display, hold, limit, pause, pulse, rate, speed, speed mode, status/status_all, SETLS, TTL, version, home, ALLREP, remote, stop, and CRLF I/O. The Python version redistributes these responsibilities. For example, a handler that reads settings, changes bits, sends a configuration command, and performs an operation remains one operation within `PM2CDDevice`. `set_limit()` reads `SETLS?x`, parses `LimitSwitchSetting`, enables the software limit if necessary, writes `SETLSx...`, then issues `FLx...` / `BLx...`. Users need not orchestrate these commands themselves. MADOCA and FastAPI / `ese774_frame` are distinct frameworks: device logic is independent of network transport, and the Python DeviceClass works locally without a server.
 
-既存 C版は MADOCA 環境の Device handler として実装されてきたコードです。
+### 2.1 Role of the C Implementation
 
-今回 Python 版の基準として参照しているのは、MADOCA 全体のネットワーク
-API を Python へ移植することではなく、Device handler
-内部で実際に行われている
-
-- command 生成
-- send / receive
-- 複数 command の処理順序
-- response の変換
-- 装置操作としての handler の粒度
-
-です。
-
-確認してきた C版 handler には、rotate/check_rotate、number/rate 変換、
-emergency stop、backlash、display、hold、limit、pause、pulse、rate、
-speed、speed mode、status/status_all、SETLS、TTL、version、home、
-ALLREP、remote、stop、CRLF 送受信などがあります。
-
-### 2.2 Python 版は C版の一対一翻訳ではない
-
-Python 版では C版の責務を次のように再配置しています。
+### 2.2 The Python Implementation Is Not a One-to-One Translation
 
 ``` text
 C版/MADOCA
@@ -79,18 +40,6 @@ Python
         + PM2CDsingle
         + PM2CD
 ```
-
-例えば C版の一つの handler が、
-
-1. 設定値を問い合わせる
-2. 必要な bit を変更する
-3. 設定 command を送る
-4. 本来の操作 command を送る
-
-という処理を行う場合、Python 版でも「一つの意味ある装置操作」として
-`PM2CDDevice` 内で完結させます。
-
-`set_limit()` はその代表例です。
 
 ``` text
 SETLS?x
@@ -107,17 +56,7 @@ SETLSx...
 FLx... / BLx...
 ```
 
-利用者に `SETLS?` と `FL/BL` を別々に操作させる設計にはしません。
-
-### 2.3 MADOCA と Python server は別レイヤー
-
-C版で使用されてきた MADOCA と、Python 版で使用する FastAPI /
-`ese774_frame` は同じ通信 framework ではありません。
-
-Python 版 PM2CD は DeviceClass として単独でも利用でき、 必要な場合に
-FastAPI server/client を上に載せます。
-
-したがって Python 版の設計では、
+### 2.3 MADOCA and the Python Server Are Different Layers
 
 ``` text
 装置制御ロジック
@@ -125,13 +64,11 @@ FastAPI server/client を上に載せます。
 ネットワーク framework
 ```
 
-を明確に分離しています。
-
 ------------------------------------------------------------------------
 
-## 3. Python 版の全体構成
+## 3. Overall Python Architecture
 
-v0.1.0 の基本構造は次の通りです。
+The following diagrams show the v0.1.0 architecture and the flow from raw responses through core parsers and frozen dataclasses to the control and client layers.
 
 ``` text
 利用プログラム
@@ -175,8 +112,6 @@ v0.1.0 の基本構造は次の通りです。
              PM2CD / PM2C-06A
 ```
 
-受信データについては、
-
 ``` text
 raw response
     |
@@ -196,48 +131,15 @@ PM2CDsingle
 PM2CD / client
 ```
 
-という流れになります。
-
 ------------------------------------------------------------------------
 
-## 4. 各層の責務
+## 4. Responsibilities of Each Layer
+
+`Communication` manages only TCP connect/disconnect, CRLF termination, send/receive/query, timeouts and socket errors, and the receive buffer. It does not interpret device commands. `query()` locks the combined send/receive operation so replies remain associated with requests. `core` parses compound responses into immutable dataclasses such as `MotorStatus`, `ControllerStatus`, `HomeStatus`, `LimitStatus`, `MotorSetting`, `LimitSwitchSetting`, and `StopMode`. Parsing and data storage remain separate; an unparseable response generally causes a retrieval API to return `None`. `PM2CDDevice` implements the device-specific handlers: commands, input validation, communication, multi-command sequences, parsing, and conversion into Python values. It must not be reduced to a trivial send/query wrapper. `PM2CDsingle` provides a single-process, user-facing control API, default motor selection, movement context, `wait_for_complete()`, and backlash-aware completion checks. It accepts an injected `Communication` instance, including for sharing one physical connection across workers. `PM2CD` is the v0.1.0 multi-process facade, dispatching compatible operations through `ProcessExecutor.submit()` and `wait()`. Calls appear synchronous to the user although handlers execute in worker processes.
 
 ### 4.1 `Communication`
 
-TCP 接続と文字列送受信だけを担当します。
-
-主な責務は、
-
-- TCP connect / disconnect
-- command への CRLF 付加
-- send
-- receive
-- query
-- timeout / socket error 処理
-- receive buffer 管理
-
-です。
-
-PM2CD 固有の `STS?`、`SETLS?`、`FL?` などの意味は知りません。
-
-`query()` は send と receive を同一 lock 範囲で処理し、
-要求と応答の対応を維持します。
-
 ### 4.2 `core`
-
-装置の複合 response を意味のある Python データへ変換します。
-
-現在の主要データ型は frozen dataclass として扱います。
-
-- `MotorStatus`
-- `ControllerStatus`
-- `HomeStatus`
-- `LimitStatus`
-- `MotorSetting`
-- `LimitSwitchSetting`
-- `StopMode`
-
-データ保持と parsing は分離します。
 
 ``` text
 raw response
@@ -249,41 +151,9 @@ parse_xxx()
 @dataclass(frozen=True)
 ```
 
-解析不能な response について、不正な状態 object を無理に生成せず、 取得
-API の失敗として `None` を返す設計を基本とします。
-
 ### 4.3 `PM2CDDevice`
 
-装置固有の実 handler 層です。
-
-ここが C版 Device handler に最も近い責務を持ちます。
-
-- command 名を知る
-- command を組み立てる
-- 入力値を検証する
-- `Communication` を使用して send/query する
-- 必要な複数 command を一つの操作として実行する
-- core parser を呼ぶ
-- 装置固有 response を Python 値へ変換する
-
-Device を単純な `send()` / `query()` wrapper にはしません。
-
 ### 4.4 `PM2CDsingle`
-
-単一 process で動作する高水準の制御クラスです。
-
-主な責務は、
-
-- 利用者向け API
-- default `motor`
-- 移動コンテキスト
-- `wait_for_complete()`
-- backlash を含む位置決め完了判定
-- Device API を意味ベースの公開 API へ整理
-
-です。
-
-`PM2CDsingle` は `Communication` の外部 injection に対応しています。
 
 ``` python
 ctrl = PM2CDsingle(
@@ -292,17 +162,7 @@ ctrl = PM2CDsingle(
 )
 ```
 
-この dependency injection point は test 用だけではなく、 v0.1.0 の
-multi-process 構成で一つの物理 Communication を 複数 worker
-から使用するためにも利用します。
-
 ### 4.5 `PM2CD`
-
-v0.1.0 では、利用者向け `PM2CD` は `ProcessExecutor` を使用する
-multi-process facade です。
-
-公開 API の意味は `PM2CDsingle` と揃え、 実際の handler 実行を worker
-process へ dispatch します。
 
 ``` text
 PM2CD.method(...)
@@ -320,16 +180,13 @@ ProcessExecutor.wait(...)
 return value
 ```
 
-このため利用者から見る API は同期的ですが、 内部では handler が worker
-process で実行されます。
-
 ------------------------------------------------------------------------
 
-## 5. `PM2CDsingle` と `PM2CD` の使い分け
+## 5. Choosing Between `PM2CDsingle` and `PM2CD`
+
+Use `PM2CDsingle` for direct control in one Python process. Use `PM2CD` for the normal multi-process configuration. `worker_count` is the number of worker processes managed by `ProcessExecutor`.
 
 ### 5.1 `PM2CDsingle`
-
-一つの Python process 内で直接装置を制御する場合に使用します。
 
 ``` python
 from pm2cd.pm2cd_single import PM2CDsingle
@@ -347,8 +204,6 @@ try:
 finally:
     ctrl.close()
 ```
-
-構造は単純です。
 
 ``` text
 application
@@ -368,8 +223,6 @@ PM2CD
 
 ### 5.2 `PM2CD`
 
-worker process を使用する通常の multi-process 構成です。
-
 ``` python
 from pm2cd.pm2cd_ctrl import PM2CD
 
@@ -388,16 +241,13 @@ finally:
     ctrl.close()
 ```
 
-`worker_count` は `ProcessExecutor` の worker process 数です。
-
 ------------------------------------------------------------------------
 
-## 6. なぜ複数 worker でも Communication は一つなのか
+## 6. Why There Is Only One Communication Instance with Multiple Workers
 
-### 6.1 誤った構成
+If every worker constructs its own `PM2CDsingle` and `Communication`, its locks are independent and cannot ensure ordering across the entire device. In v0.1.0, a `BaseManager` owns exactly one `Communication` and supplies proxies to all workers. There are N worker processes and N `PM2CDsingle` instances, but only one `Communication` and one TCP connection. This sharing is explicitly designed and owned by PM2CD; `ProcessExecutor` does not provide it automatically.
 
-worker ごとに `PM2CDsingle` を通常生成すると、 各 worker が自分の
-`Communication` を作ります。
+### 6.1 Incorrect Architecture
 
 ``` text
 worker 1 -> Communication 1 --+
@@ -405,21 +255,13 @@ worker 2 -> Communication 2 --+--> same PM2CD
 worker 3 -> Communication 3 --+
 ```
 
-各 `Communication` の lock は別 process / 別 instance なので、
-装置全体の通信順序を保証しません。
-
-### 6.2 v0.1.0 の構成
-
-v0.1.0 では `BaseManager` が一つの `Communication` を所有し、 各 worker
-には proxy を渡します。
+### 6.2 Architecture in v0.1.0
 
 ``` text
 worker 1 --+
 worker 2 --+--> Communication proxy --> Communication x 1 --> PM2CD
 worker N --+
 ```
-
-したがって、
 
 ``` text
 worker process      N
@@ -428,33 +270,11 @@ Communication       1
 TCP connection      1
 ```
 
-となります。
-
-これは `ProcessExecutor` が PM2CD
-の通信を自動的に共有しているのではありません。
-
-**物理 resource の ownership は PM2CD 側の設計です。**
-
 ------------------------------------------------------------------------
 
-## 7. `ProcessExecutor` との関係
+## 7. Relationship with `ProcessExecutor`
 
-`ProcessExecutor` は PM2CD 専用 framework ではありません。
-
-PM2CD 側が利用している主な機能は、
-
-- worker process の生成
-- `worker_factory(context)`
-- handler dispatch
-- `submit()`
-- `wait()`
-- `SharedContext`
-- manager-backed shared state
-- process-safe lock
-
-です。
-
-概念上の責務は次のように分離します。
+`ProcessExecutor` is a general-purpose framework, not a PM2CD-specific one. PM2CD uses worker creation, `worker_factory(context)`, dispatch, `submit()`, `wait()`, `SharedContext`, manager-backed state, and process-safe locks. The executor manages processes, jobs, and shared context without understanding the PM2CD protocol. PM2CD creates worker-local `PM2CDsingle` objects, owns the single shared `Communication`, and places controller state in `SharedContext`. Each worker receives the common communication proxy and `SharedContext.state`. Because ordinary instance variables are process-local, the default motor and movement context must be shared.
 
 ``` text
 ProcessExecutor
@@ -476,49 +296,15 @@ PM2CD
 
 ### 7.1 `worker_factory(context)`
 
-PM2CD は `worker_factory(context)` を使用して各 worker の `PM2CDsingle`
-を生成します。
-
-その際、
-
-- 共通 `Communication` proxy
-- `SharedContext.state`
-
-を worker に接続します。
-
-### 7.2 shared state
-
-worker が複数あると、通常の instance variable は worker ごとに別です。
-
-PM2CD では少なくとも、
-
-- default `motor`
-- 移動コンテキスト
-
-は worker をまたいで意味を維持する必要があります。
-
-そのため `SharedContext.state` を使用します。
+### 7.2 Shared State
 
 ------------------------------------------------------------------------
 
-## 8. 移動コンテキストと `wait_for_complete()`
+## 8. Movement Context and `wait_for_complete()`
 
-`move()` / `move_relative()` は、単に command を送るだけではありません。
+`move()` and `move_relative()` store each motor’s last movement conditions for completion checks: target position, backlash request, whether backlash is enabled, and backlash value. Without backlash, completion normally means reaching the target while inactive; the active state need not have been observed, because short moves can occur between polls. With backlash, the motion can pass through a backlash point and return to the target, so the first inactive observation at the target is not necessarily final completion. `wait_for_complete()` uses the stored movement context to detect the final return and accommodates active/inactive transitions missed between polls. Because one worker may run `move()` and another `wait_for_complete()`, v0.1.0 stores movement context in `SharedContext.state` to preserve semantics independently of scheduling.
 
-位置決め完了判定のため、モーターごとに直前の移動条件を保持します。
-
-主な内容は、
-
-- target position
-- backlash 指定
-- backlash enabled
-- backlash value
-
-です。
-
-### 8.1 backlash なし
-
-基本的な完了判定は、
+### 8.1 Without Backlash
 
 ``` text
 move
@@ -533,15 +319,7 @@ target position + inactive
 complete
 ```
 
-です。
-
-ただし短い移動では polling 間で active
-状態を観測できない場合があるため、 active
-を観測したこと自体を必須条件にはしません。
-
-### 8.2 backlash あり
-
-backlash 補正では概念的に、
+### 8.2 With Backlash
 
 ``` text
 target
@@ -553,24 +331,7 @@ backlash point
 target
 ```
 
-という追加動作が入ります。
-
-そのため最初に target position で inactive になっただけでは、
-補正完了と即断できません。
-
-`wait_for_complete()` は直前の移動コンテキストを参照して、 最終 target
-への復帰までを判定します。
-
-短い backlash 動作では active/inactive 遷移が polling
-間で縮退する場合も考慮します。
-
-### 8.3 multi-process での共有
-
-`move()` を worker 1、`wait_for_complete()` を worker 2
-が処理する可能性があります。
-
-そのため v0.1.0 の `PM2CD` では移動コンテキストを `SharedContext.state`
-へ置きます。
+### 8.3 Sharing Across Processes
 
 ``` text
 worker 1: move()
@@ -582,36 +343,26 @@ SharedContext.state
 worker 2: wait_for_complete()
 ```
 
-これにより worker scheduling に依存せず同じ制御意味を維持します。
-
 ------------------------------------------------------------------------
 
-## 9. `motor` property
+## 9. The `motor` Property
 
-`PM2CDsingle` / `PM2CD` は default motor を `motor` property
-で保持します。
+Both `PM2CDsingle` and `PM2CD` expose a default motor through the `motor` property. An explicitly supplied motor takes precedence. In multi-process mode the default is shared across workers.
 
 ``` python
 ctrl.motor = 0
 position = ctrl.get_position()
 ```
 
-各 API で motor を明示した場合は、その値を優先します。
-
 ``` python
 position = ctrl.get_position(1)
 ```
-
-multi-process `PM2CD` では default motor も shared state として扱い、
-worker ごとに異なる default motor にならないようにします。
 
 ------------------------------------------------------------------------
 
 ## 10. FastAPI / `ese774_frame`
 
-PM2CD は `ese774_frame` の完全自動ディスパッチを使用します。
-
-基本設定は、
+PM2CD uses fully automatic dispatch in `ese774_frame`, with `FastApiServer`, `api_spec=None`, and `object_name="pm2cd"`. Public methods and type annotations generate the API without manually listing Pydantic models or `ApiSpec` objects. Status APIs return frozen dataclasses (`MotorStatus`, `ControllerStatus`, `HomeStatus`, `LimitStatus`, `MotorSetting`, `LimitSwitchSetting`, and `StopMode`). **`ese774_frame >= 0.6.0`** is required to serialize these as JSON and reconstruct the original types on the client. Both `SyncPM2CDClient` and `AsyncPM2CDClient` use the matching object name.
 
 ``` text
 FastApiServer
@@ -619,46 +370,22 @@ api_spec=None
 object_name="pm2cd"
 ```
 
-です。
+### 10.1 Transferring Dataclasses
 
-個別の Pydantic model や `ApiSpec` を PM2CD 側で列挙せず、
-公開メソッドとアノテーションを利用して API を構成します。
-
-### 10.1 dataclass の転送
-
-PM2CD は状態取得 API で frozen dataclass を返します。
-
-例:
-
-- `MotorStatus`
-- `ControllerStatus`
-- `HomeStatus`
-- `LimitStatus`
-- `MotorSetting`
-- `LimitSwitchSetting`
-- `StopMode`
-
-これらを完全自動ディスパッチで JSON 化し、 client
-側で元の型へ復元するため、 **`ese774_frame v0.6.0` 以上を使用します。**
-
-### 10.2 client
-
-同期 client と非同期 client を使用できます。
+### 10.2 Clients
 
 ``` text
 SyncPM2CDClient
 AsyncPM2CDClient
 ```
 
-client は `object_name="pm2cd"` で server と対応します。
-
 ------------------------------------------------------------------------
 
-## 11. server の起動
+## 11. Starting the Server
 
-### 11.1 module 側
+The server module accepts a worker count, passed from `run()` through `create_server()` and `FastApiServer(device_kwargs)` into `PM2CD(worker_count=...)`. The number of server processes is distinct from the number of internal `ProcessExecutor` workers. The startup example specifies the worker count directly in code, not through CLI arguments.
 
-v0.1.0 の server module は worker 数を受け取れます。
+### 11.1 Server Module
 
 ``` python
 from pm2cd.server import run
@@ -667,8 +394,6 @@ run(
     worker_count=2,
 )
 ```
-
-内部では、
 
 ``` text
 run(worker_count)
@@ -683,14 +408,7 @@ FastApiServer(device_kwargs)
 PM2CD(worker_count=worker_count)
 ```
 
-と渡されます。
-
-server process の数と、PM2CD 内部の `ProcessExecutor.worker_count` は
-別の概念です。
-
-### 11.2 example server
-
-実際の起動 example は worker 数をコード側で設定します。
+### 11.2 Example Server
 
 ``` python
 from pm2cd.server import run
@@ -708,15 +426,13 @@ if __name__ == "__main__":
     main()
 ```
 
-worker 数のための CLI option は使用しません。
-
 ------------------------------------------------------------------------
 
-## 12. 基本チュートリアル
+## 12. Basic Tutorial
 
-以下では `PM2CD` を使用します。
+The following examples use `PM2CD`. Connect and close it using `try/finally`; switch to REMOTE with `remote()` and back to LOCAL with `local()`; read individual or all-axis status; retrieve positions using an explicit or default motor; move to an absolute position, optionally with backlash; wait for completion; move relatively; and distinguish normal stops from emergency stops. Because movement context is shared, `move()` and `wait_for_complete()` retain backlash semantics even when dispatched to different workers.
 
-### 12.1 接続と終了
+### 12.1 Connecting and Closing
 
 ``` python
 from pm2cd.pm2cd_ctrl import PM2CD
@@ -734,21 +450,17 @@ finally:
     ctrl.close()
 ```
 
-### 12.2 REMOTE へ切り替える
+### 12.2 Switching to REMOTE
 
 ``` python
 ctrl.remote()
 ```
 
-LOCAL へ戻す場合は、
-
 ``` python
 ctrl.local()
 ```
 
-です。
-
-### 12.3 状態を取得する
+### 12.3 Reading Status
 
 ``` python
 status = ctrl.get_status(0)
@@ -758,27 +470,23 @@ if status is not None:
     print(status.is_busy)
 ```
 
-全軸:
-
 ``` python
 statuses = ctrl.get_status_all()
 ```
 
-### 12.4 現在位置を取得する
+### 12.4 Reading the Current Position
 
 ``` python
 position = ctrl.get_position(0)
 print(position)
 ```
 
-default motor を使用する場合:
-
 ``` python
 ctrl.motor = 0
 position = ctrl.get_position()
 ```
 
-### 12.5 絶対位置移動
+### 12.5 Absolute Movement
 
 ``` python
 ctrl.move(
@@ -793,7 +501,7 @@ status = ctrl.wait_for_complete(
 )
 ```
 
-### 12.6 backlash 付き位置決め
+### 12.6 Positioning with Backlash
 
 ``` python
 ctrl.move(
@@ -808,11 +516,7 @@ status = ctrl.wait_for_complete(
 )
 ```
 
-`PM2CD` では移動コンテキストが worker 間で共有されるため、 `move()` と
-`wait_for_complete()` が別 worker で実行されても backlash
-条件を引き継ぎます。
-
-### 12.7 相対移動
+### 12.7 Relative Movement
 
 ``` python
 ctrl.move_relative(
@@ -827,42 +531,34 @@ ctrl.wait_for_complete(
 )
 ```
 
-### 12.8 通常停止と非常停止
-
-通常停止:
+### 12.8 Normal and Emergency Stops
 
 ``` python
 ctrl.stop(0)
 ctrl.stop_all()
 ```
 
-非常停止:
-
 ``` python
 ctrl.emergency_stop(0)
 ctrl.emergency_stop_all()
 ```
 
-通常停止と非常停止は別 API として扱います。
-
 ------------------------------------------------------------------------
 
-## 13. 速度・rate・backlash
+## 13. Speed, Rate, and Backlash
 
-### 13.1 speed
+The API supports current speed, speed profiles (LOW / MIDDLE / HIGH), individual speed settings, rate numbers, rate values, conversions between rate and number, and backlash retrieval and configuration.
+
+### 13.1 Speed
 
 ``` python
 speed = ctrl.get_speed(0)
 ctrl.set_speed(0, 1000)
 ```
 
-LOW / MIDDLE / HIGH をまとめて扱う API:
-
 ``` python
 profile = ctrl.get_speed_profile(0)
 ```
-
-個別 API:
 
 ``` text
 get_high_speed / set_high_speed
@@ -870,30 +566,24 @@ get_middle_speed / set_middle_speed
 get_low_speed / set_low_speed
 ```
 
-### 13.2 rate
-
-rate number:
+### 13.2 Rate
 
 ``` python
 number = ctrl.get_rate_number(0)
 ctrl.set_rate_number(0, number)
 ```
 
-rate 値:
-
 ``` python
 rate = ctrl.get_rate(0)
 ctrl.set_rate(0, rate)
 ```
-
-変換 API:
 
 ``` python
 rate = ctrl.number_to_rate(number)
 number = ctrl.rate_to_number(rate)
 ```
 
-### 13.3 backlash
+### 13.3 Backlash
 
 ``` python
 backlash = ctrl.get_backlash(0)
@@ -902,13 +592,11 @@ ctrl.set_backlash(0, backlash)
 
 ------------------------------------------------------------------------
 
-## 14. limit
+## 14. Limits
 
-PM2CD Python API では、無修飾の `limit` は software limit を意味します。
+An unqualified `limit` in the Python API means a software limit; hardware limits explicitly use `hard_`. Software limit positions can be read and set for CW and CCW. Software limit status is ordered `[CW, CCW]`; hardware limit status is `[CW, CCW, HP]`. Both software/digital and hardware limit enable states are available. Hardware limit normally-closed/open configuration is provided through typed methods; callers do not manipulate raw `DYYY0yyy` strings.
 
-hardware limit は `hard_` を明示します。
-
-### 14.1 software limit position
+### 14.1 Software Limit Positions
 
 ``` python
 cw = ctrl.get_limit(0, "cw")
@@ -918,47 +606,39 @@ ctrl.set_limit(0, "cw", 10000)
 ctrl.set_limit(0, "ccw", -10000)
 ```
 
-### 14.2 software limit state
+### 14.2 Software Limit Status
 
 ``` python
 status = ctrl.get_limit_status(0)
 ```
 
-意味順序:
-
 ``` text
 [CW, CCW]
 ```
 
-### 14.3 hardware limit state
+### 14.3 Hardware Limit Status
 
 ``` python
 status = ctrl.get_hard_limit_status(0)
 ```
 
-意味順序:
-
 ``` text
 [CW, CCW, HP]
 ```
 
-### 14.4 enable
-
-software/digital limit:
+### 14.4 Enable Settings
 
 ``` python
 enabled = ctrl.get_limit_enabled(0)
 ctrl.set_limit_enabled(0, True)
 ```
 
-hardware limit:
-
 ``` python
 enabled = ctrl.get_hard_limit_enabled(0)
 ctrl.set_hard_limit_enabled(0, True)
 ```
 
-### 14.5 normally closed / open
+### 14.5 Normally Closed / Open
 
 ``` python
 setting = ctrl.get_hard_limit_normally_closed(0)
@@ -970,13 +650,11 @@ ctrl.set_hard_limit_normally_closed(
 )
 ```
 
-公開 API では raw `DYYY0yyy` を直接扱いません。
-
 ------------------------------------------------------------------------
 
 ## 15. HOME / HOLD / PAUSE
 
-HOME:
+The following public methods cover home operations, presets, jog pulses, HOLD settings, and PAUSE operations.
 
 ``` text
 home
@@ -990,16 +668,12 @@ get_home_offset
 set_home_offset
 ```
 
-preset / JOG:
-
 ``` text
 get_preset_position
 set_preset_position
 get_jog_pulse
 set_jog_pulse
 ```
-
-HOLD:
 
 ``` text
 get_hold
@@ -1010,8 +684,6 @@ get_hold_off_time
 set_hold_off_time
 ```
 
-PAUSE:
-
 ``` text
 pause
 resume
@@ -1020,29 +692,25 @@ get_pause_status
 
 ------------------------------------------------------------------------
 
-## 16. motor / stop setting
+## 16. Motor / Stop Settings
 
-motor setting:
+Motor settings and stop modes are accessed through the methods below. Retrieved settings are represented as dataclasses.
 
 ``` text
 get_motor_setting
 set_motor_setting
 ```
 
-stop mode:
-
 ``` text
 get_stop_mode
 set_stop_mode
 ```
 
-取得値は dataclass として扱います。
-
 ------------------------------------------------------------------------
 
-## 17. 主な公開 API
+## 17. Main Public APIs
 
-### 接続・mode
+The following lists summarize the main public API, grouped by purpose.
 
 ``` text
 motor
@@ -1054,8 +722,6 @@ local
 close
 ```
 
-### version / controller
-
 ``` text
 version
 get_version
@@ -1063,8 +729,6 @@ get_hardware_version
 get_controller_status
 controller_status
 ```
-
-### motion
 
 ``` text
 move
@@ -1084,8 +748,6 @@ is_busy
 wait_for_complete
 ```
 
-### status / position
-
 ``` text
 get_status
 get_status_all
@@ -1094,8 +756,6 @@ get_position
 set_position
 zero_position
 ```
-
-### speed / rate / backlash
 
 ``` text
 get_speed
@@ -1120,8 +780,6 @@ get_backlash
 set_backlash
 ```
 
-### limit
-
 ``` text
 get_limit
 set_limit
@@ -1138,8 +796,6 @@ set_hard_limit_normally_closed
 get_limit_switch_setting
 ```
 
-### pause / hold
-
 ``` text
 pause
 resume
@@ -1151,8 +807,6 @@ set_hold_on_time
 get_hold_off_time
 set_hold_off_time
 ```
-
-### HOME / preset / JOG
 
 ``` text
 get_home_status
@@ -1167,8 +821,6 @@ get_jog_pulse
 set_jog_pulse
 ```
 
-### setting
-
 ``` text
 get_motor_setting
 set_motor_setting
@@ -1178,9 +830,9 @@ set_stop_mode
 
 ------------------------------------------------------------------------
 
-## 18. 戻り値の基本方針
+## 18. Return Value Conventions
 
-装置制御 API は概ね次の方針です。
+Operations generally return `bool` for success/failure; retrieval methods return a value on success and `None` on failure. Some retrieval methods are annotated `Optional[...]`. Status and settings are frozen dataclasses and should not be mutated after retrieval.
 
 ``` text
 操作成功/失敗    bool
@@ -1188,29 +840,17 @@ set_stop_mode
 値取得失敗       None
 ```
 
-取得 API は `Optional[...]` のアノテーションを持つものがあります。
+------------------------------------------------------------------------
 
-状態・設定 object は frozen dataclass として扱い、
-取得後に状態を書き換える設計にはしません。
+## 19. Errors and Input Validation
+
+`PM2CDDevice` validates inputs wherever possible to avoid sending invalid values to the device. Communication errors belong to the communication layer; response parsing failures belong to parser/Device. Ctrl does not expose raw protocol error representations as its primary public interface.
 
 ------------------------------------------------------------------------
 
-## 19. エラーと入力検証
+## 20. Server/Client Architecture
 
-入力値は可能な限り `PM2CDDevice` 側で検証し、
-不正な値を装置へ送らない構成にします。
-
-通信層の error は通信責務として扱い、 装置 response の解析失敗は parser
-/ Device の責務として扱います。
-
-Ctrl は装置 protocol の raw error 表現を利用者 API
-の中心には置きません。
-
-------------------------------------------------------------------------
-
-## 20. server/client 利用時の構成
-
-network 越しの利用では次の構成になります。
+Network access uses synchronous or asynchronous clients, HTTP/FastAPI, `ese774_frame` `FastApiServer`, `PM2CD`, `ProcessExecutor`, worker-local `PM2CDsingle`, and the shared `Communication`. Increasing the worker count must not create additional TCP connections to the device.
 
 ``` text
 client application
@@ -1241,53 +881,29 @@ shared Communication
 PM2CD
 ```
 
-`PM2CD` の内部 worker 数を増やしても、 装置への TCP connection
-を増やさないことが v0.1.0 の重要な設計条件です。
-
 ------------------------------------------------------------------------
 
-## 21. example の考え方
+## 21. Purpose of the Examples
 
-example は段階的に確認できるようにします。
+Examples are organized for incremental verification. Single local mode tests `PM2CDsingle`, the device protocol, Device, and Ctrl without a framework. Multi local mode tests `PM2CD` with `ProcessExecutor`, real worker control, and a single Communication even with two or more workers. FastAPI examples test fully automatic `ese774_frame` dispatch, dataclass transfer, and the same public API over the network. The server example specifies `WORKER_COUNT` as a constant; it does not accept a CLI worker-count option.
 
-### 21.1 single local
+### 21.1 Single-Process Local
 
-目的:
+### 21.2 Multi-Process Local
 
-- framework を介さず PM2CDsingle 自体を確認する
-- 装置 protocol / Device / Ctrl の基準動作を確認する
+### 21.3 FastAPI Server/Client
 
-### 21.2 multi local
-
-目的:
-
-- `PM2CD` + `ProcessExecutor` を確認する
-- worker process からの実制御を確認する
-- worker 数を2以上にしても Communication が一つである構成を確認する
-
-### 21.3 FastAPI server/client
-
-目的:
-
-- `ese774_frame` の完全自動ディスパッチを確認する
-- dataclass の server/client 間転送を確認する
-- network 越しでも同じ PM2CD 公開 API を使用する
-
-### 21.4 server 起動 example
-
-worker 数は example script の定数で指定します。
+### 21.4 Server Startup Example
 
 ``` python
 WORKER_COUNT = 2
 ```
 
-CLI option で worker 数を与える方式にはしません。
-
 ------------------------------------------------------------------------
 
-## 22. 推奨する確認順序
+## 22. Recommended Verification Sequence
 
-装置を使った動作確認は、層を一度に増やさず次の順序で行います。
+Test in the order shown below, adding one layer at a time: `Communication`, `PM2CDDevice`, local `PM2CDsingle`, local multi-process `PM2CD`, FastAPI server, and sync/async clients. This avoids conflating multi-process failures with network framework failures. Validate each new motion method at a small scale before moving upward.
 
 ``` text
 1. Communication
@@ -1303,23 +919,11 @@ CLI option で worker 数を与える方式にはしません。
 6. Sync/Async client
 ```
 
-multi-process の問題と network framework
-の問題を同時に切り分けないためです。
-
-特に新しい motion API の確認では、一つの method を小さく確認してから
-次の層へ進めます。
-
 ------------------------------------------------------------------------
 
-## 23. `close()` と resource ownership
+## 23. `close()` and Resource Ownership
 
-multi-process `PM2CD` では `Communication` は全 worker の共有 resource
-です。
-
-したがって、一つの worker に `PM2CDsingle.close()`
-を実行させてはいけません。
-
-`PM2CD.close()` は、
+In multi-process mode, all workers share one `Communication` resource. No individual worker should call `PM2CDsingle.close()`. `PM2CD.close()` first closes `ProcessExecutor`, then the shared `Communication`, then shuts down `CommunicationManager`. The creator and owner of a physical resource closes it exactly once, after its users have stopped.
 
 ``` text
 ProcessExecutor.close()
@@ -1331,58 +935,31 @@ shared Communication.close()
 CommunicationManager.shutdown()
 ```
 
-の順で終了します。
+------------------------------------------------------------------------
 
-物理 resource を作成した owner が最後に一度だけ閉じる、という構成です。
+## 24. Important Design Principles
+
+Keep Ctrl and Device separate: device-specific command strings belong in Device, not Ctrl. Do not make Device so thin that meaningful multi-command operations escape into Ctrl. Core dataclasses represent data; parser functions perform parsing. Keep device-specific sockets and protocols out of the general-purpose `ProcessExecutor`; PM2CD decides how communication is shared. Do not expose implementation-specific methods such as `get_shared_xxx()` in the public API: shared state is internal.
+
+### 24.1 Keep Ctrl and Device Separate
+
+### 24.2 Do Not Make Device Too Thin
+
+### 24.3 Keep Processing Out of Core Dataclasses
+
+### 24.4 Keep Device-Specific Logic Out of ProcessExecutor
+
+### 24.5 Do Not Expose Shared State as a Public API
 
 ------------------------------------------------------------------------
 
-## 24. 設計上の重要事項
+## 25. Dependencies
 
-### 24.1 Ctrl と Device を混ぜない
-
-Ctrl に command string を直接書き始めると、 C版で整理されていた Device
-handler の責務が崩れます。
-
-装置固有 command は Device に置きます。
-
-### 24.2 Device を薄くしすぎない
-
-一つの意味ある操作に複数 command が必要なら、 その一連の処理は Device
-handler に残します。
-
-### 24.3 core dataclass に処理を持たせすぎない
-
-dataclass はデータを表します。
-
-response parsing は parser 関数へ分離します。
-
-### 24.4 ProcessExecutor に装置固有責務を入れない
-
-ProcessExecutor は PM2CD の TCP socket や protocol を知りません。
-
-Communication の共有方法は PM2CD が決めます。
-
-### 24.5 shared は公開 API の概念にしない
-
-worker 間で state を共有していても、 `get_shared_xxx()` のような専用 API
-を利用者へ追加しません。
-
-shared state は multi-process 実装の内部事情です。
-
-------------------------------------------------------------------------
-
-## 25. dependency
-
-FastAPI 完全自動ディスパッチを使用する場合:
+Fully automatic FastAPI dispatch requires `ese774_frame >= 0.6.0`. Multi-process PM2CD uses `worker_factory`, `SharedContext`, `shared_context`, `submit`, and `wait` from `ProcessExecutor`. The executor remains free of PM2CD-specific code.
 
 ``` text
 ese774_frame >= 0.6.0
 ```
-
-が必要です。
-
-multi-process `PM2CD` は `ProcessExecutor` の、
 
 ``` text
 worker_factory
@@ -1392,30 +969,11 @@ submit
 wait
 ```
 
-を使用します。
-
-PM2CD と ProcessExecutor の責務は分離されており、 ProcessExecutor
-自体には PM2CD 固有コードを入れません。
-
 ------------------------------------------------------------------------
 
-## 26. v0.1.0 の位置づけ
+## 26. Role of v0.1.0
 
-v0.0.x では主に、
-
-- C版 Device handler の意味の整理
-- Communication / core / Device / Ctrl の責務分離
-- `PM2CDsingle` API の拡張
-- backlash を含む `wait_for_complete()`
-- frozen dataclass + parser
-- FastAPI 完全自動ディスパッチ
-
-を整備しました。
-
-v0.1.0 では、その single-process 制御ロジックを壊さず、 `PM2CD`
-を実用的な multi-process facade として成立させました。
-
-中心となる設計は、
+The v0.0.x series established C Device handler semantics, separation of Communication/core/Device/Ctrl, expanded `PM2CDsingle` APIs, backlash-aware `wait_for_complete()`, frozen dataclasses and parsers, and fully automatic FastAPI dispatch. Version 0.1.0 builds a practical multi-process `PM2CD` facade without breaking single-process logic. Its key structure is N `PM2CDsingle` workers, one `SharedContext`, one `Communication`, and one TCP connection. Single-process control, multi-process control, and FastAPI server/client therefore share the same Device/Ctrl architecture.
 
 ``` text
 PM2CDsingle worker x N
@@ -1427,8 +985,5 @@ Communication x 1
 TCP connection x 1
 ```
 
-です。
+------------------------------------------------------------------------
 
-これにより、単一 process の装置制御クラス、multi-process 制御、 FastAPI
-server/client を同じ Device/Ctrl
-設計の上に積み上げる構成になっています。
