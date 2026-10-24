@@ -19,7 +19,7 @@ for LANG_CODE in en ja; do
 modules
 ```
 EOF
-  DOC_LANGUAGE="$LANG_CODE" sphinx-build --builder html --config-dir "$DOCS_DIR" "$DOCS_DIR/$LANG_CODE" "$OUT_DIR/$LANG_CODE"
+  DOC_LANGUAGE="$LANG_CODE" sphinx-build --builder html -c "$DOCS_DIR" "$DOCS_DIR/$LANG_CODE" "$OUT_DIR/$LANG_CODE"
 done
 cp -a "$OUT_DIR/en/." "$OUT_DIR/"
 touch "$OUT_DIR/.nojekyll"
