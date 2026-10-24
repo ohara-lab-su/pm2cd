@@ -1,6 +1,6 @@
 # Core Concepts
 
-[English](../../en/manual/concepts.html) | [日本語](../../ja/manual/concepts.html)
+<a href="https://ohara-lab-su.github.io/pm2cd/en/manual/concepts.html">English</a> | <a href="https://ohara-lab-su.github.io/pm2cd/ja/manual/concepts.html">日本語</a>
 
 ## Layers and responsibilities
 

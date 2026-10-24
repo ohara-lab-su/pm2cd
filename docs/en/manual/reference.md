@@ -1,6 +1,6 @@
 # Manual Reference
 
-[English](../../en/manual/reference.html) | [日本語](../../ja/manual/reference.html)
+<a href="https://ohara-lab-su.github.io/pm2cd/en/manual/reference.html">English</a> | <a href="https://ohara-lab-su.github.io/pm2cd/ja/manual/reference.html">日本語</a>
 
 ## Public control classes
 

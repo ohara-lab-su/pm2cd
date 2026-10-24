@@ -1,6 +1,6 @@
 # Quick Start
 
-[English](../../en/manual/quickstart.html) | [日本語](../../ja/manual/quickstart.html)
+<a href="https://ohara-lab-su.github.io/pm2cd/en/manual/quickstart.html">English</a> | <a href="https://ohara-lab-su.github.io/pm2cd/ja/manual/quickstart.html">日本語</a>
 
 `PM2CDsingle` provides a single-process interface; `PM2CD` uses `ProcessExecutor` with multiple worker processes. The device is fixed at two channels, numbered `0` and `1`. The default TCP port is `7777`, and the default timeout is `3.0` seconds.
 

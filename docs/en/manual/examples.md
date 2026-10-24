@@ -1,6 +1,6 @@
 # Examples
 
-[English](../../en/manual/examples.html) | [日本語](../../ja/manual/examples.html)
+<a href="https://ohara-lab-su.github.io/pm2cd/en/manual/examples.html">English</a> | <a href="https://ohara-lab-su.github.io/pm2cd/ja/manual/examples.html">日本語</a>
 
 ## Read-only status query
 
