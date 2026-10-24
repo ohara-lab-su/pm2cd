@@ -1,10 +1,8 @@
 # pm2cd ドキュメント
 
-[![en](https://img.shields.io/badge/lang-en-red.svg)](../en/index.md)
-[![ja](https://img.shields.io/badge/lang-ja-yellow.svg)](index.md)
+[![en](https://img.shields.io/badge/lang-en-red.svg)](/pm2cd/en/index.html) [![ja](https://img.shields.io/badge/lang-ja-yellow.svg)](/pm2cd/ja/index.html)
 
-PM2CD / PM2C-06A のPython制御ライブラリ。
-手動ガイドは添付ソースコードとツジ電子のPM4C-06Aシリーズ取扱説明書（改訂4、2022-04-15）に基づきます。
+PM2CD / PM2C-06A のPython制御ライブラリ。手動ガイドは添付ソースコードとツジ電子のPM4C-06Aシリーズ取扱説明書（改訂4、2022-04-15）に基づきます。
 
 ```{toctree}
 :maxdepth: 2
