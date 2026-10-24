@@ -3,23 +3,39 @@ set -euo pipefail
 
 DOCS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$DOCS_DIR/.." && pwd)"
-OUT_DIR="$DOCS_DIR/_build/html"
+SOURCE_DIR="$ROOT_DIR/src/pm2cd"
+STAGE_DIR="$DOCS_DIR/_generated"
+OUTPUT_DIR="$DOCS_DIR/_build/html"
 
-rm -rf "$DOCS_DIR/en/api" "$DOCS_DIR/ja/api" "$OUT_DIR"
-mkdir -p "$DOCS_DIR/en/api" "$DOCS_DIR/ja/api" "$OUT_DIR"
+if [[ ! -d "$SOURCE_DIR" ]]; then
+  echo "ERROR: pm2cd package not found: $SOURCE_DIR" >&2
+  exit 1
+fi
 
-for LANG_CODE in en ja; do
-  sphinx-apidoc --force --module-first --output-dir "$DOCS_DIR/$LANG_CODE/api" "$ROOT_DIR/src/pm2cd"
-  cat > "$DOCS_DIR/$LANG_CODE/api/index.md" <<'EOF'
-# API Reference
+export PYTHONPATH="$ROOT_DIR/src:${PYTHONPATH:-}"
+rm -rf "$STAGE_DIR" "$DOCS_DIR/_build"
+mkdir -p "$OUTPUT_DIR"
 
-```{toctree}
-:maxdepth: 2
-
-modules
-```
-EOF
-  DOC_LANGUAGE="$LANG_CODE" sphinx-build --builder html -c "$DOCS_DIR" "$DOCS_DIR/$LANG_CODE" "$OUT_DIR/$LANG_CODE"
+for lang in en ja; do
+  mkdir -p "$STAGE_DIR/$lang"
+  cp -R "$DOCS_DIR/$lang/." "$STAGE_DIR/$lang/"
+  sphinx-apidoc --force --module-first -o "$STAGE_DIR/$lang/api" "$SOURCE_DIR"
+  if [[ ! -s "$STAGE_DIR/$lang/api/modules.rst" ]]; then
+    echo "ERROR: API reference was not generated for $lang" >&2
+    exit 1
+  fi
 done
-cp -a "$OUT_DIR/en/." "$OUT_DIR/"
-touch "$OUT_DIR/.nojekyll"
+
+# Follow the same three-build layout used by the other multilingual projects.
+# The root is built from the actual English Sphinx source, not copied HTML.
+DOC_LANGUAGE=en sphinx-build -b html -c "$DOCS_DIR" -D language=en "$STAGE_DIR/en" "$OUTPUT_DIR"
+DOC_LANGUAGE=en sphinx-build -b html -c "$DOCS_DIR" -D language=en "$STAGE_DIR/en" "$OUTPUT_DIR/en"
+DOC_LANGUAGE=ja sphinx-build -b html -c "$DOCS_DIR" -D language=ja "$STAGE_DIR/ja" "$OUTPUT_DIR/ja"
+
+for page in index.html en/index.html ja/index.html api/modules.html en/api/modules.html ja/api/modules.html; do
+  if [[ ! -f "$OUTPUT_DIR/$page" ]]; then
+    echo "ERROR: expected HTML file is missing: $page" >&2
+    exit 1
+  fi
+done
+touch "$OUTPUT_DIR/.nojekyll"
