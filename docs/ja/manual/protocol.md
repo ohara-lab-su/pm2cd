@@ -1,6 +1,6 @@
 # 装置プロトコル
 
-[English](../../en/manual/protocol.html) | [日本語](../../ja/manual/protocol.html)
+<a href="https://ohara-lab-su.github.io/pm2cd/en/manual/protocol.html">English</a> | <a href="https://ohara-lab-su.github.io/pm2cd/ja/manual/protocol.html">日本語</a>
 
 ## 対象と出典
 

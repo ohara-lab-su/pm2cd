@@ -13,3 +13,7 @@ html_theme = "sphinx_rtd_theme"
 html_static_path = []
 exclude_patterns = ["_build"]
 language = os.environ.get("DOC_LANGUAGE", "en")
+
+# The controller runtime is not needed to render API signatures.
+# Mock only unavailable runtime infrastructure; retain actual pm2cd source.
+autodoc_mock_imports = ["process_executor", "x_logger"]

@@ -1,6 +1,6 @@
 # Quick Start
 
-[English](../../en/manual/quickstart.html) | [日本語](../../ja/manual/quickstart.html)
+<a href="https://ohara-lab-su.github.io/pm2cd/en/manual/quickstart.html">English</a> | <a href="https://ohara-lab-su.github.io/pm2cd/ja/manual/quickstart.html">日本語</a>
 
 `PM2CDsingle` は単一プロセス用、`PM2CD` は `ProcessExecutor` を用いた複数ワーカープロセス用です。装置は2チャンネル固定で、モーター番号は `0` と `1` です。デフォルトTCPポートは `7777`、タイムアウトは `3.0` 秒です。
 
