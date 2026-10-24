@@ -1,34 +1,25 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-DOCS_DIR="$SCRIPT_DIR"
+DOCS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$DOCS_DIR/.." && pwd)"
-SRC_DIR="$ROOT_DIR/src"
+OUT_DIR="$DOCS_DIR/_build/html"
 
-PKG_NAME="pm2cd"   # パッケージ名を明示
+rm -rf "$DOCS_DIR/en/api" "$DOCS_DIR/ja/api" "$OUT_DIR"
+mkdir -p "$DOCS_DIR/en/api" "$DOCS_DIR/ja/api" "$OUT_DIR"
 
-export PYTHONPATH="$SRC_DIR:${PYTHONPATH:-}"
+for LANG_CODE in en ja; do
+  sphinx-apidoc --force --module-first --output-dir "$DOCS_DIR/$LANG_CODE/api" "$ROOT_DIR/src/pm2cd"
+  cat > "$DOCS_DIR/$LANG_CODE/api/index.md" <<'EOF'
+# API Reference
 
-echo "Cleaning build..."
-rm -rf "$DOCS_DIR/_build" "$DOCS_DIR/api"
-mkdir -p "$DOCS_DIR/api"
+```{toctree}
+:maxdepth: 2
 
-echo "Generating API stubs with sphinx-apidoc..."
-sphinx-apidoc -o "$DOCS_DIR/api" "$SRC_DIR/$PKG_NAME" -f --module-first
-
-echo "Building HTML..."
-sphinx-build -b html "$DOCS_DIR" "$DOCS_DIR/_build/html"
-
-echo "Done."
-
-echo "Creating local redirect index.html..."
-
-cat > "$DOCS_DIR/index.html" << 'HTML'
-<!doctype html>
-<meta charset="utf-8">
-<meta http-equiv="refresh" content="0; url=./_build/html/">
-<link rel="canonical" href="./_build/html/">
-<title>Redirecting…</title>
-<p>Redirecting to <a href="./_build/html/">./_build/html/</a></p>
-HTML
+modules
+```
+EOF
+  DOC_LANGUAGE="$LANG_CODE" sphinx-build --builder html --config-dir "$DOCS_DIR" "$DOCS_DIR/$LANG_CODE" "$OUT_DIR/$LANG_CODE"
+done
+cp -a "$OUT_DIR/en/." "$OUT_DIR/"
+touch "$OUT_DIR/.nojekyll"

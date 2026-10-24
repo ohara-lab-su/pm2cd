@@ -1,25 +1,17 @@
-# PM2CD制御
+# pm2cd documentation
 
-view on [github](https://github.com/ohara-lab-su/pm2cd/) / [ohara-lab-su (doc)](https://ohara-lab-su.github.io/)
+[![en](https://img.shields.io/badge/lang-en-red.svg)](../en/index.html) [![ja](https://img.shields.io/badge/lang-ja-yellow.svg)](../ja/index.html)
 
----
+Python control library for PM2CD / PM2C-06A. The guides are grounded in the supplied Python source and the Tsujicon PM4C-06A Series operating manual (Revision 4, 2022-04-15).
 
 ```{toctree}
 :maxdepth: 2
-:caption: Contents:
+:caption: pm2cd documentation
 
-api/modules
-tutorials/index
+manual/quickstart
+manual/concepts
+manual/reference
+manual/examples
+manual/protocol
+api/index
 ```
-
----
-
-## PM2CD制御クラス
-
-現在はまだα版(動作テストもまだ)
-
----
-
-## 作者
-
-- Kengo NAKADA
