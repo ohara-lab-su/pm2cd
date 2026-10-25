@@ -2,6 +2,8 @@
 
 [![en](https://img.shields.io/badge/lang-en-red.svg)](https://ohara-lab-su.github.io/pm2cd/en/) [![ja](https://img.shields.io/badge/lang-ja-blue.svg)](https://ohara-lab-su.github.io/pm2cd/ja/)
 
+[GitHub repository](https://github.com/ohara-lab-su/pm2cd/) · [Project documentation](https://ohara-lab-su.github.io/)
+
 PM2CD / PM2C-06A のPython制御ライブラリ。手動ガイドは添付ソースコードとツジ電子のPM4C-06Aシリーズ取扱説明書（改訂4、2022-04-15）に基づきます。
 
 ```{toctree}
