@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "pm2cd"
 version = "0.1.3"
 
-description = "tuji pm2cd"
+description = "Python control package for Tsuji PM2CD/PM2C-06A pulse motor controllers, supporting local, multiprocessing, and REST API operation."
 authors = [
     { name = "Kengo NAKADA", email = "kengo.nakada@email.com" },
     #{ name = "Kentaro Kobayashi", email = "kobayashi@mat.shimane-u.ac.jp" }
@@ -39,6 +39,13 @@ dependencies = [
     "sphinxcontrib-napoleon",
     "linkify-it-py"
 ]
+
+
+[project.urls]
+Homepage = "https://ohara-lab-su.github.io/pm2cd/"
+Documentation = "https://ohara-lab-su.github.io/pm2cd/"
+Repository = "https://github.com/ohara-lab-su/pm2cd"
+Issues = "https://github.com/ohara-lab-su/pm2cd/issues"
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
